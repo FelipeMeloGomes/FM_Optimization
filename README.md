@@ -31,6 +31,8 @@
 
 Electron 35 · React 19 · TypeScript · Vite · Tailwind CSS 4 · Framer Motion
 
+Tipografia **Inter Variable** (com eixo óptico `opsz` 14–32) e **JetBrains Mono Variable**, empacotadas no app via `@fontsource` — sem CDN e sem requisição externa em runtime.
+
 ---
 
 ## Segurança
@@ -67,5 +69,5 @@ Documentação técnica em `docs/`:
 npm install
 npm run dev      # desenvolvimento
 npm run build    # produção (out/)
-npm test         # testes do main process (Vitest)
+npm test         # testes do main process e do renderer (Vitest)
 ```
