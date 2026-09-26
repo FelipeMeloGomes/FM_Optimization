@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 # ─── Validações iniciais ───
 
 if (-not (Test-Path ".env.local")) {
-  throw ".env.local não encontrado. Crie com GITHUB_TOKEN=ghp_..."
+  throw ".env.local não encontrado. Crie com GITHUB_TOKEN=<token fine-grained github_pat_...> (classic ghp_ também funciona)"
 }
 if (-not (Test-Path ".git")) {
   throw "Diretório não é um repositório git"

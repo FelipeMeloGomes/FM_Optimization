@@ -8,6 +8,7 @@ FM-Optimize — toolkit de otimização Windows.
 - **Package manager:** npm
 - **Dados do usuário:** `%APPDATA%\fm-optimize\`
 - **`.env.local` na raiz contém `GITHUB_TOKEN` — NUNCA commitar (já está no `.gitignore`)**
+  - Token fine-grained (`github_pat_...`) ou classic PAT (`ghp_...`) — ambos funcionam via `Authorization: Bearer`
 
 # Build
 
@@ -28,6 +29,8 @@ npm run lint && npm run typecheck && npm run test
 ```
 
 Se houver erros, corrigir antes de commitar.
+
+A suíte do Vitest cobre `electron/main/**/*.test.ts` **e** `src/**/*.test.ts` (main process + renderer). Vale ler o que foi realmente coberto: um teste com catálogo transcrito à mão prova a aritmética, não a fiação com o `scripts.json` real.
 
 # Commit
 
@@ -90,7 +93,7 @@ Template:
 
 ## Pré-requisitos
 
-- [ ] `.env.local` na raiz com `GITHUB_TOKEN=ghp_...`
+- [ ] `.env.local` na raiz com `GITHUB_TOKEN` (fine-grained `github_pat_...` ou classic `ghp_...`)
 - [ ] `README.md` revisado e atualizado (se houver mudanças visuais/funcionais)
 - [ ] Working directory é a raiz do repositório
 - [ ] Working tree limpo (sem arquivos não commitados)
