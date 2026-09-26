@@ -15,6 +15,7 @@ import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Badge, Button } from '../components/ui';
 import { useScriptPage } from '../hooks/use-script-page';
+import { countCuratedScripts, resolveCuratedItems } from '../lib/resolve-curated-scripts';
 import { cn } from '../lib/utils';
 
 interface DeviceCard {
@@ -296,8 +297,21 @@ export default function InputLagPage() {
     handleConfirm,
   } = useScriptPage('Input Lag');
 
-  const registryScripts = useMemo(
-    () => inputLagScripts.filter((s) => s.subcategory === 'Regedit'),
+  // Both section badges count what their section actually renders. The catalog's
+  // subcategory buckets cannot be used for this: inputlag-9 and inputlag-11 are
+  // filed as "Regedit" in scripts.json but presented under the keyboard and
+  // mouse cards, which is why the badges used to read 9/3 against 7/5 rendered.
+  const registryItems = useMemo(
+    () => resolveCuratedItems(inputLagScripts, REGISTRY_SCRIPTS),
+    [inputLagScripts]
+  );
+
+  const deviceScriptCount = useMemo(
+    () =>
+      countCuratedScripts(
+        inputLagScripts,
+        DEVICE_CARDS.map((c) => c.scriptIds)
+      ),
     [inputLagScripts]
   );
 
@@ -360,7 +374,7 @@ export default function InputLagPage() {
             <h3 className="text-sm font-semibold text-foreground">Dispositivos</h3>
           </div>
           <Badge variant="secondary" className="text-[10px]">
-            {inputLagScripts.filter((s) => s.subcategory !== 'Regedit').length} tweaks
+            {deviceScriptCount} tweaks
           </Badge>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -385,14 +399,12 @@ export default function InputLagPage() {
             <h3 className="text-sm font-semibold text-foreground">Otimizações do Registro</h3>
           </div>
           <Badge variant="secondary" className="text-[10px]">
-            {registryScripts.length} tweaks
+            {registryItems.length} tweaks
           </Badge>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {REGISTRY_SCRIPTS.map((item) => {
-            const script = inputLagScripts.find((s) => s.id === item.scriptId);
-            if (!script) return null;
+          {registryItems.map(({ item, script }) => {
             const isExecuting = activeExecution === script.id;
 
             return (
