@@ -1,7 +1,6 @@
 import {
   Cpu,
   Eraser,
-  FileText,
   Gauge,
   MousePointerClick,
   Play,
@@ -108,7 +107,6 @@ export const ScriptCard = memo(function ScriptCard({
   const [showRestartPrompt, setShowRestartPrompt] = useState(false);
   const wasExecuting = useRef(false);
   const { settings } = useSettingsContext();
-  const isTxt = script.extension === 'txt';
 
   useEffect(() => {
     if (wasExecuting.current && !isExecuting && script.requiresRestart) {
@@ -121,9 +119,7 @@ export const ScriptCard = memo(function ScriptCard({
   const Icon = config.icon;
 
   function handleExecute() {
-    if (isTxt) {
-      onExecute();
-    } else if (settings.confirmOnExecute) {
+    if (settings.confirmOnExecute) {
       setShowConfirm(true);
     } else {
       onExecute();
@@ -147,6 +143,7 @@ export const ScriptCard = memo(function ScriptCard({
           </div>
           <div className="flex-1 min-w-0">
             <span className="font-semibold text-foreground truncate block">{script.name}</span>
+            {/* Every chip is mono, not just the `.ext` one: see ScriptBadge. */}
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="secondary" className="gap-1 font-mono text-[10px] px-1.5 py-0">
                 <Terminal className="size-3" aria-hidden="true" />.{script.extension}
@@ -235,14 +232,10 @@ export const ScriptCard = memo(function ScriptCard({
             size="sm"
             onClick={handleExecute}
             className="flex-1 gap-2"
-            aria-label={isTxt ? 'Abrir guia' : 'Executar script'}
+            aria-label="Executar script"
           >
-            {isTxt ? (
-              <FileText className="size-3.5" aria-hidden="true" />
-            ) : (
-              <Play className="size-3.5" aria-hidden="true" />
-            )}
-            {isTxt ? 'Abrir' : 'Executar'}
+            <Play className="size-3.5" aria-hidden="true" />
+            Executar
           </Button>
         )}
       </div>
@@ -272,7 +265,7 @@ export const ScriptCard = memo(function ScriptCard({
       <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>{isTxt ? 'Abrir guia' : 'Confirmar Execução'}</DialogTitle>
+            <DialogTitle>Confirmar Execução</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div>

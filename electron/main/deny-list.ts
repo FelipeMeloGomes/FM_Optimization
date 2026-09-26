@@ -26,7 +26,7 @@ export const DENY_LIST_PATTERNS = [
   /Set-NetFirewallProfile\s+-Enabled\s+False/i,
 ];
 
-export const ALLOWED_EXTENSIONS = ['.bat', '.cmd', '.ps1', '.reg', '.exe', '.txt'] as const;
+export const ALLOWED_EXTENSIONS = ['.bat', '.cmd', '.ps1', '.reg', '.exe'] as const;
 export type AllowedExtension = (typeof ALLOWED_EXTENSIONS)[number];
 
 export function checkScriptContent(content: string): { allowed: boolean; violations: string[] } {

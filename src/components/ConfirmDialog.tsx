@@ -84,8 +84,6 @@ export function ConfirmDialog({
 
   if (!script) return null;
 
-  const isTxt = script.extension === 'txt';
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm p-0 overflow-hidden">
@@ -111,8 +109,6 @@ export function ConfirmDialog({
                 <Loader2 className="size-5 text-primary animate-spin" />
               ) : phase === 'done' ? (
                 <CheckCircle2 className="size-5 text-emerald-400" />
-              ) : isTxt ? (
-                <Terminal className="size-5 text-primary" />
               ) : (
                 <Play className="size-5 text-primary" />
               )}
@@ -123,18 +119,14 @@ export function ConfirmDialog({
                   ? 'Executando...'
                   : phase === 'done'
                     ? 'Concluído'
-                    : isTxt
-                      ? 'Abrir Guia'
-                      : 'Confirmar Execução'}
+                    : 'Confirmar Execução'}
               </DialogTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {phase === 'executing'
                   ? 'Script em execução'
                   : phase === 'done'
                     ? `Finalizado em ${formatElapsed(elapsed)}`
-                    : isTxt
-                      ? 'Documento de referência'
-                      : 'Confirme a execução'}
+                    : 'Confirme a execução'}
               </p>
             </div>
           </div>
@@ -145,6 +137,7 @@ export function ConfirmDialog({
           {/* Script info */}
           <div className="rounded-lg bg-muted/50 p-3 mb-4">
             <p className="text-sm font-semibold text-foreground mb-2">{script.name}</p>
+            {/* Every chip is mono, not just the `.ext` one: see ScriptBadge. */}
             <div className="flex flex-wrap gap-1.5">
               {script.extension && (
                 <Badge variant="secondary" className="gap-1 font-mono text-[10px] px-1.5 py-0">
@@ -277,23 +270,10 @@ export function ConfirmDialog({
               <Button
                 size="sm"
                 onClick={handleConfirm}
-                className={cn(
-                  'flex-1 gap-1.5',
-                  !isTxt &&
-                    'shadow-[0_0_15px_rgba(0,68,255,0.3)] hover:shadow-[0_0_20px_rgba(0,68,255,0.5)]'
-                )}
+                className="flex-1 gap-1.5 shadow-[0_0_15px_rgba(0,68,255,0.3)] hover:shadow-[0_0_20px_rgba(0,68,255,0.5)]"
               >
-                {isTxt ? (
-                  <>
-                    <Terminal className="size-3.5" />
-                    Abrir
-                  </>
-                ) : (
-                  <>
-                    <Play className="size-3.5" />
-                    Executar
-                  </>
-                )}
+                <Play className="size-3.5" />
+                Executar
               </Button>
             </div>
           )}

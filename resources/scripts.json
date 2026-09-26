@@ -503,7 +503,7 @@
   },
   {
     "id": "builtin-15",
-    "name": "Prioridade CPU/GPU - Registry Guide",
+    "name": "Prioridade CPU/GPU para Jogos",
     "description": "Configura prioridade de CPU (Win32PrioritySeparation) e GPU para jogos via registro. Ajusta NetworkThrottlingIndex, SystemResponsiveness e perfil de agendamento de jogos.",
     "category": "Utilities",
     "subcategory": "Regedit",

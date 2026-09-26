@@ -63,19 +63,6 @@ export function executeScript(id: string): string {
 
   const ext = filePath.split('.').pop()?.toLowerCase() as ScriptExtension | undefined;
 
-  if (ext === 'txt') {
-    const proc = spawn('cmd.exe', ['/c', 'start', '', filePath], {
-      detached: true,
-      stdio: 'ignore',
-    });
-    proc.unref();
-    sendEnded(win, { id, code: 0, scriptName: script?.name });
-    const now = Date.now();
-    addHistoryEntry(createHistoryEntry(id, script?.name || id, now, now, 0, false));
-    auditScriptExecution(id, script?.name || id, false, true, 0, true);
-    return 'opened';
-  }
-
   if (loadSettings().autoRestorePoint && script) {
     const safeName = script.name
       .replace(/[^a-zA-Z0-9 áéíóúàèìòùâêîôûãõçÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕÇ\s.:_-]/g, '')
@@ -201,8 +188,6 @@ function getCommand(
       return { command: 'regedit.exe', args: ['/s', filePath] };
     case 'exe':
       return { command: filePath, args: [] };
-    case 'txt':
-      return { command: 'notepad.exe', args: [filePath] };
     default: {
       const _exhaustive: never = ext;
       return _exhaustive;

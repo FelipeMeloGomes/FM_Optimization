@@ -1,4 +1,4 @@
-import { FileText, HardDrive, Info, Play, Shield, Square, Wrench, Zap } from 'lucide-react';
+import { Gauge, HardDrive, Play, Shield, Square, Wrench, Zap } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -61,10 +61,11 @@ const UTIL_SECTIONS: UtilSection[] = [
     scriptIds: ['builtin-22', 'builtin-27'],
   },
   {
-    id: 'guides',
-    name: 'Guias',
-    description: 'Guias explicativos sobre configurações avançadas do sistema.',
-    icon: FileText,
+    id: 'performance',
+    name: 'Performance',
+    description:
+      'Prioridade de CPU e GPU, escalonamento e responsividade para melhor desempenho em jogos.',
+    icon: Gauge,
     color: 'text-cyan-400',
     bgColor: 'bg-cyan-500/10',
     borderColor: 'border-cyan-500/20',
@@ -130,7 +131,6 @@ function UtilSectionCard({
         <div className="mt-4 space-y-2">
           {sectionScripts.map((script) => {
             const isScriptExecuting = activeExecution === script.id;
-            const isTxt = script.extension === 'txt';
             return (
               <div
                 key={script.id}
@@ -144,15 +144,6 @@ function UtilSectionCard({
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium truncate">{script.name}</p>
                     <ScriptBadge script={script} />
-                    {isTxt && (
-                      <Badge
-                        variant="secondary"
-                        className="gap-1 font-mono text-[10px] px-1.5 py-0 shrink-0"
-                      >
-                        <Info className="size-3" />
-                        Guia
-                      </Badge>
-                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                     {script.description}
@@ -170,11 +161,6 @@ function UtilSectionCard({
                     <>
                       <Square className="size-3" />
                       Cancelar
-                    </>
-                  ) : isTxt ? (
-                    <>
-                      <FileText className="size-3" />
-                      Abrir
                     </>
                   ) : (
                     <>
