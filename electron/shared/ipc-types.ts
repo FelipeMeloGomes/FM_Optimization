@@ -1,5 +1,9 @@
+export type CpuVendor = 'intel' | 'amd' | 'unknown';
+
 export interface CpuInfo {
   model: string;
+  manufacturer: string;
+  vendor: CpuVendor;
   cores: number;
   logicalProcessors: number;
   architecture: string;
@@ -77,6 +81,7 @@ export interface AppSettings {
   accentColor: string;
   confirmOnExecute: boolean;
   autoRestorePoint: boolean;
+  cpuVendorOverride: CpuVendor | null;
   security: SecuritySettings;
   pageLock: PageLockSettings;
   soundEnabled: boolean;

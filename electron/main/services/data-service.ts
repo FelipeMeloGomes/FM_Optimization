@@ -9,6 +9,7 @@ import {
 import { resolve } from 'node:path';
 import { app, safeStorage } from 'electron';
 import type { AppSettings, ExecutionHistoryEntry, PageLockSettings } from '../../shared/ipc-types';
+import { rewriteHistoryScriptIds } from '../legacy-script-ids';
 
 interface UserData {
   customScripts: Array<{ name: string; content: string; extension: string }>;
@@ -28,6 +29,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   accentColor: '#22d3ee',
   confirmOnExecute: true,
   autoRestorePoint: true,
+  cpuVendorOverride: null,
   security: {
     enableIpcValidation: true,
     enableDenyListBlock: false,
@@ -63,7 +65,14 @@ export function loadUserData(): UserData {
 
   try {
     const raw = readFileSync(filePath, 'utf-8');
-    return JSON.parse(raw);
+    const data: UserData = JSON.parse(raw);
+    // One-shot: normalise any scriptId retired by the AMD/Intel catalog merge.
+    // Runs on every launch, so the alias shim only has to outlive the first
+    // start of this version rather than every version from here on.
+    if (Array.isArray(data.executionHistory) && rewriteHistoryScriptIds(data.executionHistory)) {
+      saveUserData(data);
+    }
+    return data;
   } catch {
     copyFileSync(filePath, `${filePath}.bak`);
     return { customScripts: [], executionHistory: [] };
@@ -110,6 +119,10 @@ export function loadSettings(): AppSettings {
         typeof parsed.autoRestorePoint === 'boolean'
           ? parsed.autoRestorePoint
           : DEFAULT_SETTINGS.autoRestorePoint,
+      cpuVendorOverride:
+        parsed.cpuVendorOverride === 'intel' || parsed.cpuVendorOverride === 'amd'
+          ? parsed.cpuVendorOverride
+          : DEFAULT_SETTINGS.cpuVendorOverride,
       security:
         parsed.security && typeof parsed.security === 'object'
           ? {

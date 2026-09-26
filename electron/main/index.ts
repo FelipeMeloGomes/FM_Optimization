@@ -3,6 +3,7 @@ import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, Menu, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { registerIpcHandlers } from './ipc-handlers';
+import { resolveScriptId } from './legacy-script-ids';
 import { executeScript } from './services/script-executor';
 import { loadScripts } from './services/script-registry';
 import { DnsAddressesSchema } from './validation';
@@ -14,7 +15,7 @@ export { mainWindow };
 // Valida que o scriptId pertence à allowlist de scripts conhecidos.
 function isValidScriptId(scriptId: string): boolean {
   const scripts = loadScripts();
-  return scripts.some((s) => s.id === scriptId);
+  return scripts.some((s) => s.id === resolveScriptId(scriptId));
 }
 
 // Handle elevated script execution argument
@@ -27,11 +28,13 @@ function handleElevatedScript(): boolean {
       console.error('Blocked elevated script: invalid scriptId', scriptId);
       return true;
     }
+    // Normalise before executing so history records the current id.
+    const currentId = resolveScriptId(scriptId);
     // Wait a bit for window to be ready, then execute
     setTimeout(() => {
       if (mainWindow) {
         try {
-          executeScript(scriptId);
+          executeScript(currentId);
         } catch (e) {
           console.error('Failed to execute elevated script:', e);
         }

@@ -42,6 +42,7 @@ export const SettingsSchema = z.object({
     .default('#3b82f6'),
   confirmOnExecute: z.boolean().default(true),
   autoRestorePoint: z.boolean().default(true),
+  cpuVendorOverride: z.enum(['intel', 'amd']).nullable().default(null),
   security: SecuritySettingsSchema.default(() => SecuritySettingsSchema.parse({})),
   pageLock: PageLockSchema.default(() => PageLockSchema.parse({})),
   soundEnabled: z.boolean().default(true),

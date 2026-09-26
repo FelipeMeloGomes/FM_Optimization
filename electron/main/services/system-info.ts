@@ -7,6 +7,7 @@ import type {
   OsInfo,
   StorageDrive,
 } from '../../shared/ipc-types';
+import { getCpuIdentityOnce, normalizeCpuVendor } from './cpu-vendor';
 import {
   formatVramGb,
   matchRegistryVram,
@@ -25,7 +26,8 @@ export async function getCpuInfo(): Promise<CpuInfo> {
   const model = cpu?.model || 'Unknown';
   const fallbackCores = cpus().length;
 
-  const [cpuDetail, usageOutput] = await Promise.all([
+  const [identity, cpuDetail, usageOutput] = await Promise.all([
+    getCpuIdentityOnce(),
     execPowerShell(
       'Get-CimInstance Win32_Processor | Select-Object -First 1 NumberOfCores,NumberOfLogicalProcessors | ConvertTo-Json'
     ).catch(() => ''),
@@ -49,7 +51,15 @@ export async function getCpuInfo(): Promise<CpuInfo> {
 
   const usage = usageOutput ? parseInt(usageOutput.trim(), 10) || 0 : 0;
 
-  return { model, cores, logicalProcessors, architecture: arch(), usage };
+  return {
+    model,
+    manufacturer: identity.manufacturer ?? '',
+    vendor: normalizeCpuVendor(identity),
+    cores,
+    logicalProcessors,
+    architecture: arch(),
+    usage,
+  };
 }
 
 const REGISTRY_VRAM_CMD =

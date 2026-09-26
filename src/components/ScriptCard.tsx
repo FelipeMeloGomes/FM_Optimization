@@ -76,17 +76,11 @@ const CATEGORY_CONFIG: Record<
     bgColor: 'bg-yellow-500/10',
     borderColor: 'border-yellow-500/20',
   },
-  AMD: {
+  CPU: {
     icon: Cpu,
-    color: 'text-red-400',
-    bgColor: 'bg-red-500/10',
-    borderColor: 'border-red-500/20',
-  },
-  Intel: {
-    icon: Cpu,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20',
+    color: 'text-cyan-400',
+    bgColor: 'bg-cyan-500/10',
+    borderColor: 'border-cyan-500/20',
   },
 };
 

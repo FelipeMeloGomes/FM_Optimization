@@ -26,7 +26,7 @@ describe('IpcSchemas', () => {
 
   it('validates elevate-app with scriptId', () => {
     const schema = IpcSchemas['elevate-app'];
-    expect(schema.safeParse({ scriptId: 'amd-31' }).success).toBe(true);
+    expect(schema.safeParse({ scriptId: 'cpu-31' }).success).toBe(true);
   });
 
   it('validates get-system-info as undefined', () => {
@@ -74,6 +74,30 @@ describe('SettingsSchema pageLock', () => {
       pageLock: { lockedPages: ['/emuladores', '/apps'] },
     });
     expect(r.pageLock.lockedPages).toEqual(['/emuladores', '/apps']);
+  });
+});
+
+describe('SettingsSchema cpuVendorOverride', () => {
+  it('defaults to null so detection wins until the user picks manually', () => {
+    expect(SettingsSchema.parse({}).cpuVendorOverride).toBeNull();
+  });
+
+  it('accepts a real vendor', () => {
+    expect(SettingsSchema.parse({ cpuVendorOverride: 'amd' }).cpuVendorOverride).toBe('amd');
+    expect(SettingsSchema.parse({ cpuVendorOverride: 'intel' }).cpuVendorOverride).toBe('intel');
+  });
+
+  it('accepts an explicit null to clear the override', () => {
+    expect(SettingsSchema.parse({ cpuVendorOverride: null }).cpuVendorOverride).toBeNull();
+  });
+
+  it('rejects unknown, which would be indistinguishable from no override', () => {
+    const r = SettingsSchema.safeParse({ cpuVendorOverride: 'unknown' });
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects a non-vendor string', () => {
+    expect(SettingsSchema.safeParse({ cpuVendorOverride: 'nvidia' }).success).toBe(false);
   });
 });
 

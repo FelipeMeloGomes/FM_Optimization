@@ -1,19 +1,14 @@
-export type CpuVendor = 'intel' | 'amd' | 'unknown';
+export type { CpuVendor } from '../../electron/shared/ipc-types';
 
-export function detectCpuVendor(model: string): CpuVendor {
-  const lower = model.toLowerCase();
-  if (lower.includes('amd')) return 'amd';
-  if (lower.includes('intel')) return 'intel';
-  return 'unknown';
-}
+/**
+ * Every processor tweak in the catalog lives under this one category. The
+ * former AMD/Intel split was folder organisation only: all 37 pairs were
+ * byte-identical or differed solely in banner/credit lines, so there was no
+ * vendor-gated content to filter on. Detection still runs and the manual
+ * override still persists, but they now label the page instead of splitting it.
+ */
+export const CPU_CATEGORY = 'CPU';
 
-export function getCpuCategory(vendor: CpuVendor): string {
-  switch (vendor) {
-    case 'amd':
-      return 'AMD';
-    case 'intel':
-      return 'Intel';
-    default:
-      return '';
-  }
+export function getCpuCategories(): string[] {
+  return [CPU_CATEGORY];
 }

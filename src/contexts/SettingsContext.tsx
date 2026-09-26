@@ -26,6 +26,7 @@ const DEFAULT: AppSettings = {
   accentColor: '#22d3ee',
   confirmOnExecute: true,
   autoRestorePoint: true,
+  cpuVendorOverride: null,
   security: {
     enableIpcValidation: true,
     enableDenyListBlock: false,

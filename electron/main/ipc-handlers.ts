@@ -7,6 +7,7 @@ import type {
   SetPageLockPasswordResult,
 } from '../shared/ipc-types';
 import { auditIpcValidation } from './audit-logger';
+import { resolveScriptId } from './legacy-script-ids';
 import {
   backupApp,
   clearRemovedApp,
@@ -458,7 +459,7 @@ export function registerIpcHandlers(): void {
         if (validated.scriptId) {
           const scripts = loadScripts();
           const validIds = new Set(scripts.map((s) => s.id));
-          if (!validIds.has(validated.scriptId)) {
+          if (!validIds.has(resolveScriptId(validated.scriptId))) {
             throw new Error(`Invalid scriptId: ${validated.scriptId}`);
           }
         }
@@ -469,7 +470,9 @@ export function registerIpcHandlers(): void {
         const args = process.argv.slice(1).filter((arg) => !arg.startsWith('--elevate-script'));
 
         if (validated.scriptId) {
-          args.push('--elevate-script', validated.scriptId);
+          // Hand the elevated process the current id, so history and the audit
+          // log record cpu-N rather than a retired alias.
+          args.push('--elevate-script', resolveScriptId(validated.scriptId));
         }
 
         // Pass DNS parameters if provided

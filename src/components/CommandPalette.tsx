@@ -1,10 +1,10 @@
 import { Search, Terminal } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScriptContext } from '../contexts/ScriptContext';
-import { useCpuContext, useMemoryContext } from '../contexts/SystemContext';
+import { useMemoryContext } from '../contexts/SystemContext';
 import { getCategoryRoute } from '../lib/category-routes';
-import { type CpuVendor, detectCpuVendor } from '../lib/cpu-vendor';
+import { getRamScriptId } from '../lib/ram-script';
 import { cn } from '../lib/utils';
 import { ScriptBadge } from './ScriptBadge';
 
@@ -19,13 +19,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { state, filteredScripts } = useScriptContext();
-  const { state: cpuState } = useCpuContext();
   const { state: memoryState } = useMemoryContext();
-
-  const cpuVendor: CpuVendor = useMemo(() => {
-    if (cpuState.status !== 'success') return 'unknown';
-    return detectCpuVendor(cpuState.data.model);
-  }, [cpuState]);
 
   const userRamGb = useMemo<number | null>(() => {
     if (memoryState.status !== 'success') return null;
@@ -33,40 +27,19 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     return match ? parseFloat(match[1]) : null;
   }, [memoryState]);
 
-  const getRamScriptId = useCallback((vendor: CpuVendor, ramGb: number): string => {
-    const prefix = vendor === 'amd' ? 'amd' : 'intel';
-    if (ramGb <= 4) return `${prefix}-30`;
-    if (ramGb <= 6) return `${prefix}-31`;
-    if (ramGb <= 8) return `${prefix}-32`;
-    if (ramGb <= 12) return `${prefix}-33`;
-    if (ramGb <= 16) return `${prefix}-34`;
-    if (ramGb <= 32) return `${prefix}-35`;
-    return `${prefix}-36`;
-  }, []);
-
   const recommendedRamScriptId = useMemo<string | null>(() => {
-    if (!userRamGb || cpuVendor === 'unknown') return null;
-    return getRamScriptId(cpuVendor, userRamGb);
-  }, [userRamGb, cpuVendor, getRamScriptId]);
+    if (!userRamGb) return null;
+    return getRamScriptId(userRamGb);
+  }, [userRamGb]);
 
   const scripts = useMemo(() => {
     if (state.status !== 'success') return [];
 
     return filteredScripts.filter((script) => {
-      // --- Filtro VENDOR (categoria AMD/Intel + tags) ---
-      if (script.category === 'AMD' && cpuVendor !== 'amd') return false;
-      if (script.category === 'Intel' && cpuVendor !== 'intel') return false;
-
-      const isAmdSpecific = script.tags.includes('amd');
-      const isIntelSpecific = script.tags.includes('intel');
-
-      if (isAmdSpecific && cpuVendor !== 'amd') return false;
-      if (isIntelSpecific && cpuVendor !== 'intel') return false;
-
       // --- Filtro RAM (subcategory RAM) ---
       if (script.subcategory === 'RAM') {
-        // Script de reset (amd-37/intel-37) sempre visível
-        if (script.id === 'amd-37' || script.id === 'intel-37') return true;
+        // Script de reset (cpu-37) sempre visível
+        if (script.id === 'cpu-37') return true;
 
         // Só mostrar script da tier exata do usuário
         if (recommendedRamScriptId && script.id !== recommendedRamScriptId) {
@@ -79,7 +52,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
       return true;
     });
-  }, [state.status, filteredScripts, cpuVendor, userRamGb, recommendedRamScriptId]);
+  }, [state.status, filteredScripts, userRamGb, recommendedRamScriptId]);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return scripts;

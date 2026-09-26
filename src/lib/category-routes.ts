@@ -1,7 +1,6 @@
 export const CATEGORY_ROUTES: Record<string, string> = {
   Tweaks: '/tweaks',
-  AMD: '/cpu',
-  Intel: '/cpu',
+  CPU: '/cpu',
   Cleaner: '/cleaner',
   Internet: '/rede',
   'DNS Manager': '/rede',
