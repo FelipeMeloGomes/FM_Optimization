@@ -27,8 +27,8 @@
   --color-sidebar-primary: #22d3ee;
   --color-sidebar-accent: #06b6d4;
   --color-sidebar-border: #1e2a42;
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", monospace;
   --radius: 0.75rem;
 }
 
@@ -287,6 +287,7 @@ body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
+  font-optical-sizing: auto;
   font-variant-numeric: tabular-nums;
   margin: 0;
   transition:
@@ -303,7 +304,10 @@ h3,
 h4,
 h5,
 h6 {
-  letter-spacing: -0.025em;
+  /* -0.02em and not -0.025em: Inter's optical axis (opsz, 14-32) already
+   * tightens the large sizes on its own, and -0.025em on top of it made the
+   * letters touch in Portuguese. */
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 

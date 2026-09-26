@@ -242,7 +242,7 @@ function NetworkPageContent() {
                     <Zap className={cn('size-4', getLatencyColor(fastestLatency))} />
                     <span
                       className={cn(
-                        'text-2xl font-bold font-mono',
+                        'text-2xl font-bold tabular-nums',
                         getLatencyColor(fastestLatency)
                       )}
                     >
@@ -357,10 +357,14 @@ function NetworkPageContent() {
                         >
                           <Zap className={cn('size-3', getLatencyColor(latency))} />
                           <span
-                            className={cn('font-mono text-sm font-bold', getLatencyColor(latency))}
+                            className={cn(
+                              'text-sm font-bold tabular-nums',
+                              getLatencyColor(latency)
+                            )}
                           >
-                            {latency}ms
+                            {latency}
                           </span>
+                          <span className="text-[11px] text-muted-foreground">ms</span>
                         </div>
                       ) : benchmarkStatus === 'loading' ? (
                         <Loader2 className="size-4 animate-spin text-muted-foreground" />

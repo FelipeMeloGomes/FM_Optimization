@@ -27,6 +27,10 @@ export default defineConfig({
   renderer: {
     root: '.',
     build: {
+      // Fontes nunca podem ser embutidas como data: URI — o CSP do renderer
+      // (`font-src 'self'` em index.html) bloqueia o esquema data:.
+      // Sem isto, qualquer .woff2 abaixo de 4 KB vira uma @font-face morta.
+      assetsInlineLimit: (filePath) => (filePath.endsWith('.woff2') ? false : undefined),
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'index.html')
