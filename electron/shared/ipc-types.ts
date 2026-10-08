@@ -185,6 +185,7 @@ export type RemoveMode = 'uninstalled' | 'disabled';
 
 export interface RemoveAppResult {
   mode: RemoveMode;
+  hasBackup: boolean;
 }
 
 export interface RemovedApp {

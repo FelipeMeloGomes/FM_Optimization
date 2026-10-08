@@ -1,12 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   assertRestoreAllowed,
   buildInstallArgs,
+  isPackageInstalled,
+  parseCodePathLines,
   parsePackagePaths,
   parsePmResult,
   pmCommandSucceeded,
+  removeAppFlow,
+  resolveBackupPaths,
   resolveLabel,
-  shouldBackupOnRemoval,
+  restoreOnDevice,
 } from '../services/adb';
 import type { RemovedAppRecord } from '../services/removed-apps';
 
@@ -129,21 +133,6 @@ describe('parsePackagePaths', () => {
   });
 });
 
-describe('shouldBackupOnRemoval', () => {
-  it('backs up system paths', () => {
-    expect(shouldBackupOnRemoval('/system/app/Foo/Foo.apk', 'com.foo')).toBe(true);
-    expect(shouldBackupOnRemoval('/vendor/app/Bar/Bar.apk', 'com.bar')).toBe(true);
-  });
-
-  it('backs up critical packages even on user path', () => {
-    expect(shouldBackupOnRemoval('/data/app/Foo/Foo.apk', 'com.android.systemui')).toBe(true);
-  });
-
-  it('skips regular user apps', () => {
-    expect(shouldBackupOnRemoval('/data/app/Spotify/Spotify.apk', 'com.spotify.music')).toBe(false);
-  });
-});
-
 describe('buildInstallArgs', () => {
   it('uses install for a single file', () => {
     expect(buildInstallArgs(['/a.apk'])).toEqual(['install', '-r', '/a.apk']);
@@ -256,5 +245,289 @@ describe('pmCommandSucceeded', () => {
       ok: false,
       reason: 'boom',
     });
+  });
+});
+
+type Exec = (args: string[]) => Promise<string>;
+
+describe('isPackageInstalled', () => {
+  it('returns true when pm path reports a package line', async () => {
+    const exec: Exec = async () => 'package:/system/app/Foo/Foo.apk\n';
+    await expect(isPackageInstalled(exec, 'emulator-5554', 'com.foo')).resolves.toBe(true);
+  });
+
+  it('returns false when pm path output is empty', async () => {
+    const exec: Exec = async () => '';
+    await expect(isPackageInstalled(exec, 'emulator-5554', 'com.foo')).resolves.toBe(false);
+  });
+
+  it('returns false when the adb command fails', async () => {
+    const exec: Exec = async () => {
+      throw new Error('device offline');
+    };
+    await expect(isPackageInstalled(exec, 'emulator-5554', 'com.foo')).resolves.toBe(false);
+  });
+});
+
+describe('restoreOnDevice', () => {
+  it('restores with pm install-existing when the system APK is still present', async () => {
+    const calls: string[][] = [];
+    const exec: Exec = async (args) => {
+      calls.push(args);
+      if (args.includes('path')) return 'package:/system/app/Foo/Foo.apk\n';
+      return 'Success';
+    };
+
+    await restoreOnDevice(exec, 'emulator-5554', 'com.foo', ['/bk/com.foo.apk']);
+
+    const cmds = calls.map((a) => a.join(' '));
+    expect(cmds[0]).toBe('-s emulator-5554 shell pm install-existing --user 0 com.foo');
+    expect(cmds.some((c) => c.includes('install -r'))).toBe(false);
+  });
+
+  it('falls back to adb install with the backup when install-existing does not restore', async () => {
+    const calls: string[][] = [];
+    let pathCalls = 0;
+    const exec: Exec = async (args) => {
+      calls.push(args);
+      if (args.includes('path')) {
+        pathCalls++;
+        return pathCalls === 1 ? '' : 'package:/data/app/com.foo/base.apk\n';
+      }
+      return 'Success';
+    };
+
+    await restoreOnDevice(exec, 'emulator-5554', 'com.foo', ['/bk/com.foo.apk']);
+
+    const cmds = calls.map((a) => a.join(' '));
+    expect(cmds[0]).toContain('pm install-existing --user 0 com.foo');
+    expect(cmds.some((c) => c === '-s emulator-5554 install -r /bk/com.foo.apk')).toBe(true);
+  });
+
+  it('falls back to adb install when the install-existing command fails', async () => {
+    const calls: string[][] = [];
+    const exec: Exec = async (args) => {
+      calls.push(args);
+      if (args.includes('install-existing')) throw new Error('Error: package not found');
+      if (args.includes('path')) return 'package:/data/app/com.foo/base.apk\n';
+      return 'Success';
+    };
+
+    await restoreOnDevice(exec, 'emulator-5554', 'com.foo', ['/bk/com.foo.apk']);
+
+    const cmds = calls.map((a) => a.join(' '));
+    expect(cmds[0]).toBe('-s emulator-5554 shell pm install-existing --user 0 com.foo');
+    expect(cmds.some((c) => c === '-s emulator-5554 install -r /bk/com.foo.apk')).toBe(true);
+  });
+
+  it('throws when the package does not come back after every attempt', async () => {
+    const calls: string[][] = [];
+    const exec: Exec = async (args) => {
+      calls.push(args);
+      if (args.includes('path')) return '';
+      return 'Success';
+    };
+
+    await expect(
+      restoreOnDevice(exec, 'emulator-5554', 'com.foo', ['/bk/com.foo.apk'])
+    ).rejects.toThrow(/não voltou a ficar instalado/);
+    expect(calls.map((a) => a.join(' ')).some((c) => c.includes('install -r'))).toBe(true);
+  });
+
+  it('reports missing backup files when install-existing fails and no backups exist', async () => {
+    const exec: Exec = async (args) => {
+      if (args.includes('path')) return '';
+      return 'Success';
+    };
+
+    await expect(restoreOnDevice(exec, 'emulator-5554', 'com.foo', [])).rejects.toThrow(
+      /Arquivos de backup/
+    );
+  });
+});
+
+describe('parseCodePathLines', () => {
+  it('extracts codePath values from dumpsys output', () => {
+    const output = [
+      'Package [com.android.chrome] (2d0ee2c):',
+      '    userId=1000',
+      '    codePath=/data/downloads/com.android.chrome',
+      '    resourcePath=/data/downloads/com.android.chrome',
+      '    legacyNativeLibraryDir=/data/downloads/com.android.chrome/lib',
+    ].join('\n');
+    expect(parseCodePathLines(output)).toEqual(['/data/downloads/com.android.chrome']);
+  });
+
+  it('returns every codePath when an updated copy exists', () => {
+    const output = [
+      '    codePath=/data/app/com.android.contacts-abc/base.apk',
+      '    codePath=/system/priv-app/Contacts',
+    ].join('\n');
+    expect(parseCodePathLines(output)).toEqual([
+      '/data/app/com.android.contacts-abc/base.apk',
+      '/system/priv-app/Contacts',
+    ]);
+  });
+
+  it('returns empty when no codePath is present', () => {
+    expect(parseCodePathLines('Package [x]: not found')).toEqual([]);
+  });
+});
+
+describe('resolveBackupPaths', () => {
+  it('prefers explicit pm paths over the codePath fallback', () => {
+    expect(resolveBackupPaths(['/system/app/A.apk'], ['/data/app/A/base.apk'])).toEqual([
+      '/system/app/A.apk',
+    ]);
+  });
+
+  it('falls back to codePath/base.apk when pm path is empty', () => {
+    expect(resolveBackupPaths([], ['/data/downloads/com.android.chrome'])).toEqual([
+      '/data/downloads/com.android.chrome/base.apk',
+    ]);
+  });
+
+  it('keeps a codePath that already points to a file', () => {
+    expect(resolveBackupPaths([], ['/data/app/com.android.chrome/base.apk'])).toEqual([
+      '/data/app/com.android.chrome/base.apk',
+    ]);
+  });
+
+  it('dedupes repeated codePath-derived sources', () => {
+    expect(resolveBackupPaths([], ['/a/chrome', '/a/chrome'])).toEqual(['/a/chrome/base.apk']);
+  });
+
+  it('returns empty when there is nothing to pull', () => {
+    expect(resolveBackupPaths([], [])).toEqual([]);
+  });
+});
+
+describe('removeAppFlow', () => {
+  const ctx = {
+    serial: 'emulator-5554',
+    instanceId: 'pie-64',
+    instanceName: 'Dubronxx',
+    arch: '64-bit',
+    packageName: 'com.foo',
+  };
+
+  const ok = (stdout = 'Success') => ({ code: 0, stdout, stderr: '' });
+
+  it('backs up the app before uninstalling, even outside /system paths', async () => {
+    const events: string[] = [];
+    const result = await removeAppFlow(
+      {
+        execResult: async () => {
+          events.push('uninstall');
+          return ok();
+        },
+        backupApp: async () => {
+          events.push('backup');
+          return 'C:/data/backups/pie-64/com.foo.apk';
+        },
+        record: (rec) => {
+          events.push(`record:${rec.mode}:hasBackup=${rec.hasBackup}`);
+        },
+        deleteBackups: () => events.push('deleteBackups'),
+      },
+      ctx
+    );
+
+    expect(result).toEqual({ mode: 'uninstalled', hasBackup: true });
+    expect(events).toEqual(['backup', 'uninstall', 'record:uninstalled:hasBackup=true']);
+  });
+
+  it('backs up even a critical system package — there is no package allow/deny list', async () => {
+    const events: string[] = [];
+    const result = await removeAppFlow(
+      {
+        execResult: async () => {
+          events.push('uninstall');
+          return ok();
+        },
+        backupApp: async () => {
+          events.push('backup');
+          return 'C:/data/backups/pie-64/com.android.systemui.apk';
+        },
+        record: (rec) =>
+          events.push(`record:${rec.mode}:hasBackup=${rec.hasBackup}:pkg=${rec.packageName}`),
+        deleteBackups: () => events.push('deleteBackups'),
+      },
+      { ...ctx, packageName: 'com.android.systemui' }
+    );
+
+    expect(result).toEqual({ mode: 'uninstalled', hasBackup: true });
+    expect(events).toEqual([
+      'backup',
+      'uninstall',
+      'record:uninstalled:hasBackup=true:pkg=com.android.systemui',
+    ]);
+  });
+
+  it('still uninstalls and records hasBackup=false when the backup fails', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const records: Array<{ mode: string; hasBackup: boolean; backupPath?: string }> = [];
+    try {
+      const result = await removeAppFlow(
+        {
+          execResult: async () => ok(),
+          backupApp: async () => {
+            throw new Error('pull failed');
+          },
+          record: (rec) => records.push(rec),
+          deleteBackups: () => {},
+        },
+        ctx
+      );
+
+      expect(result).toEqual({ mode: 'uninstalled', hasBackup: false });
+      expect(records).toHaveLength(1);
+      expect(records[0].hasBackup).toBe(false);
+      expect(records[0].backupPath).toBeUndefined();
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('falls back to disabling when uninstall fails', async () => {
+    const events: string[] = [];
+    const result = await removeAppFlow(
+      {
+        execResult: async (args) => {
+          if (args.includes('uninstall'))
+            return { code: 0, stdout: 'Failure [DELETE_FAILED_INTERNAL_ERROR]', stderr: '' };
+          events.push('disable');
+          return ok();
+        },
+        backupApp: async () => '/bk/com.foo.apk',
+        record: (rec) => events.push(`record:${rec.mode}`),
+        deleteBackups: () => events.push('deleteBackups'),
+      },
+      ctx
+    );
+
+    expect(result).toEqual({ mode: 'disabled', hasBackup: true });
+    expect(events).toEqual(['disable', 'record:disabled']);
+  });
+
+  it('cleans up backups and throws when the app cannot be removed', async () => {
+    const events: string[] = [];
+    const failing = {
+      code: 0,
+      stdout: 'Failure [DELETE_FAILED_DEVICE_POLICY_MANAGER]',
+      stderr: '',
+    };
+    await expect(
+      removeAppFlow(
+        {
+          execResult: async () => failing,
+          backupApp: async () => '/bk/com.foo.apk',
+          record: () => events.push('record'),
+          deleteBackups: () => events.push('deleteBackups'),
+        },
+        ctx
+      )
+    ).rejects.toThrow(/Não foi possível remover/);
+    expect(events).toEqual(['deleteBackups']);
   });
 });

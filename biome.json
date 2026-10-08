@@ -61,7 +61,10 @@
       "!**/build",
       "!**/.vite",
       "!**/*.config.*",
-      "!**/*.lock"
+      "!**/*.lock",
+      "!data/removed-apps.json",
+      "!data/settings.json",
+      "!electron/data"
     ]
   },
   "overrides": [

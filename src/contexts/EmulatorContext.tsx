@@ -13,7 +13,6 @@ interface EmulatorContextValue {
   setDeviceSerial: (serial: string | null) => void;
   setListaApps: (apps: AdbApp[]) => void;
   toggleAppSelection: (packageName: string) => void;
-  selectAllApps: () => void;
   clearSelection: () => void;
   setAppsSelecionados: (apps: Set<string>) => void;
   setCarregando: (loading: boolean) => void;
@@ -41,15 +40,6 @@ export function EmulatorProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const selectAllApps = useCallback(() => {
-    setAppsSelecionados((prev) => {
-      if (prev.size === listaApps.length) {
-        return new Set();
-      }
-      return new Set(listaApps.map((app) => app.packageName));
-    });
-  }, [listaApps]);
-
   const clearSelection = useCallback(() => {
     setAppsSelecionados(new Set());
   }, []);
@@ -68,7 +58,6 @@ export function EmulatorProvider({ children }: { children: ReactNode }) {
         setDeviceSerial,
         setListaApps,
         toggleAppSelection,
-        selectAllApps,
         clearSelection,
         setAppsSelecionados,
         setCarregando,

@@ -13,3 +13,4 @@ superpowers/
 data/removed-apps.json
 data/backups/
 data/settings.json
+electron/data/

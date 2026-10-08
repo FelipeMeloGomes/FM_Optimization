@@ -2,7 +2,6 @@ import {
   ArrowLeft,
   Bookmark,
   ChevronDown,
-  Download,
   History,
   Loader2,
   RefreshCw,
@@ -52,7 +51,6 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
     appsSelecionados,
     carregando,
     toggleAppSelection,
-    selectAllApps,
     clearSelection,
     setListaApps,
     setAppsSelecionados,
@@ -63,7 +61,6 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
   const [filter, setFilter] = useState<FilterType>('all');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [removing, setRemoving] = useState(false);
-  const [restoring, setRestoring] = useState(false);
   const [removalProgress, setRemovalProgress] = useState<{
     current: number;
     total: number;
@@ -155,6 +152,15 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
     [listaApps, setAppsSelecionados]
   );
 
+  const handleSelectAll = useCallback(() => {
+    if (allSelected) {
+      clearSelection();
+    } else {
+      setAppsSelecionados(new Set(filteredApps.map((app) => app.packageName)));
+    }
+    setPresetsOpen(false);
+  }, [allSelected, filteredApps, clearSelection, setAppsSelecionados]);
+
   const loadRemovedApps = useCallback(async () => {
     try {
       setRemovedApps(await window.electronAPI.adbListRemovedApps());
@@ -169,6 +175,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
     setRemoving(true);
     setRemovalProgress({ current: 0, total: pkgs.length });
     const failures: string[] = [];
+    const noBackup: string[] = [];
     let uninstalledCount = 0;
     let disabledCount = 0;
     for (let i = 0; i < pkgs.length; i++) {
@@ -183,6 +190,10 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
         });
         if (result.mode === 'disabled') disabledCount++;
         else uninstalledCount++;
+        if (!result.hasBackup) {
+          const label = listaApps.find((a) => a.packageName === pkgs[i])?.label ?? pkgs[i];
+          noBackup.push(label);
+        }
       } catch (e) {
         const errMsg = e instanceof Error ? e.message : String(e);
         const label = listaApps.find((a) => a.packageName === pkgs[i])?.label ?? pkgs[i];
@@ -207,6 +218,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
           disabledCount > 0
             ? `${disabledCount} desabilitado${disabledCount !== 1 ? 's' : ''}`
             : null,
+          noBackup.length > 0 ? `${noBackup.length} sem backup (${noBackup.join(', ')})` : null,
           failures.join(' · '),
         ]
           .filter(Boolean)
@@ -221,7 +233,12 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
       showEnhancedToast({
         type: 'success',
         title: 'Remoção concluída',
-        description: `${uninstalledCount} removido${uninstalledCount !== 1 ? 's' : ''} · ${disabledCount} desabilitado${disabledCount !== 1 ? 's' : ''} (protegidos)`,
+        description: [
+          `${uninstalledCount} removido${uninstalledCount !== 1 ? 's' : ''} · ${disabledCount} desabilitado${disabledCount !== 1 ? 's' : ''} (protegidos)`,
+          noBackup.length > 0 ? `${noBackup.length} sem backup (${noBackup.join(', ')})` : null,
+        ]
+          .filter(Boolean)
+          .join(' — '),
         duration: 'medium',
         sound: settings.soundEnabled,
       });
@@ -231,6 +248,8 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
     showEnhancedToast({
       type: 'success',
       title: `${uninstalledCount} ${uninstalledCount === 1 ? 'app removido' : 'apps removidos'}`,
+      description:
+        noBackup.length > 0 ? `${noBackup.length} sem backup (${noBackup.join(', ')})` : undefined,
       duration: 'medium',
       sound: settings.soundEnabled,
     });
@@ -244,68 +263,6 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
     listaApps,
     settings.soundEnabled,
   ]);
-
-  const handleBackup = useCallback(async () => {
-    const pkgs = Array.from(appsSelecionados);
-    let backedUpCount = 0;
-    try {
-      for (const pkg of pkgs) {
-        await window.electronAPI.adbBackupApp({
-          serial: deviceSerial,
-          instanceId: instance.id,
-          packageName: pkg,
-        });
-        backedUpCount++;
-      }
-      showEnhancedToast({
-        type: 'success',
-        title: `${backedUpCount} ${backedUpCount === 1 ? 'app copiado' : 'apps copiados'}`,
-        duration: 'medium',
-        sound: settings.soundEnabled,
-      });
-    } catch {
-      showEnhancedToast({
-        type: 'error',
-        title: 'Falha ao copiar apps',
-        description: backedUpCount > 0 ? `${backedUpCount} copiados antes do erro` : undefined,
-        duration: 'medium',
-        sound: settings.soundEnabled,
-      });
-    }
-  }, [appsSelecionados, deviceSerial, instance, settings.soundEnabled]);
-
-  const handleRestore = useCallback(async () => {
-    const pkgs = Array.from(appsSelecionados);
-    setRestoring(true);
-    let restoredCount = 0;
-    try {
-      for (const pkg of pkgs) {
-        await window.electronAPI.adbRestoreAppByName({
-          serial: deviceSerial,
-          instanceId: instance.id,
-          packageName: pkg,
-        });
-        restoredCount++;
-      }
-      showEnhancedToast({
-        type: 'success',
-        title: `${restoredCount} ${restoredCount === 1 ? 'app restaurado' : 'apps restaurados'}`,
-        duration: 'medium',
-        sound: settings.soundEnabled,
-      });
-      clearSelection();
-    } catch {
-      showEnhancedToast({
-        type: 'error',
-        title: 'Falha ao restaurar apps',
-        description: restoredCount > 0 ? `${restoredCount} restaurados antes do erro` : undefined,
-        duration: 'medium',
-        sound: settings.soundEnabled,
-      });
-    } finally {
-      setRestoring(false);
-    }
-  }, [appsSelecionados, deviceSerial, instance, clearSelection, settings.soundEnabled]);
 
   const handleRestoreRemoved = useCallback(
     async (app: RemovedApp) => {
@@ -324,6 +281,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
           sound: settings.soundEnabled,
         });
         await loadRemovedApps();
+        await handleRefresh();
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         setRestoreError(msg);
@@ -338,7 +296,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
         setRestoreBusy(false);
       }
     },
-    [deviceSerial, loadRemovedApps, settings.soundEnabled]
+    [deviceSerial, loadRemovedApps, handleRefresh, settings.soundEnabled]
   );
 
   const handleClearRemoved = useCallback(
@@ -424,8 +382,8 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
             </Button>
           ))}
         </div>
-        <div className="flex gap-1.5 relative" ref={presetsRef}>
-          <div className="relative">
+        <div className="flex gap-1.5">
+          <div className="relative" ref={presetsRef}>
             <Button
               variant="outline"
               size="sm"
@@ -488,7 +446,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
             <History className="size-3.5" />
             Restaurar
           </Button>
-          <Button variant="ghost" size="sm" onClick={selectAllApps} className="text-xs">
+          <Button variant="ghost" size="sm" onClick={handleSelectAll} className="text-xs">
             {allSelected ? 'Desmarcar Todos' : 'Selecionar Todos'}
           </Button>
         </div>
@@ -601,32 +559,11 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
             </span>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={clearSelection}>
-              Limpar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleBackup}
-              disabled={removing || restoring}
-              title="Copiar APKs selecionados"
-            >
-              <Download className="size-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRestore}
-              disabled={removing || restoring}
-              title="Restaurar apps selecionados"
-            >
-              <RotateCcw className="size-4" />
-            </Button>
             <Button
               variant="default"
               size="sm"
               onClick={() => setConfirmOpen(true)}
-              disabled={removing || restoring}
+              disabled={removing}
             >
               <Trash2 className="size-4" />
             </Button>
