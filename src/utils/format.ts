@@ -13,3 +13,11 @@ export function formatDuration(seconds: number): string {
   if (secs === 0) return `~${mins} min`;
   return `~${mins} min ${secs}s`;
 }
+
+export function formatMemoryTotal(total: string): string {
+  const match = total.match(/^([\d.,]+)\s*(\w+)/);
+  if (!match) return total;
+  const value = parseFloat(match[1].replace(',', '.'));
+  if (Number.isNaN(value)) return total;
+  return `${Math.round(value)} ${match[2]}`;
+}

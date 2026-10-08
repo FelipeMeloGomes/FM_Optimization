@@ -8,13 +8,39 @@ import {
   MemoryStick,
   Monitor,
   Shield,
+  ShieldAlert,
   Zap,
 } from 'lucide-react';
 import { useMemo } from 'react';
+import { formatMemoryTotal } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
-import { Button, Skeleton } from '../components/ui';
+import { Badge, Button, Skeleton } from '../components/ui';
+import { useHistoryContext } from '../contexts/HistoryContext';
+import { useScriptContext } from '../contexts/ScriptContext';
 import { useSystemContext } from '../contexts/SystemContext';
 import { cn } from '../lib/utils';
+
+const TWEAK_CATEGORIES = ['Tweaks', 'Input Lag', 'CPU', 'Internet'] as const;
+
+const OPTIMIZED_RATIO_THRESHOLD = 0.5;
+
+// Reverts (desfazem outros scripts do catálogo) e variantes redundantes do
+// mesmo ajuste (ex.: "Liberar RAM" 4-64GB escreve o mesmo registro; cpu-11/12
+// são a mesma lista de serviços). Contá-las inflaria o X sem cobertura real.
+const EXCLUDED_SCRIPT_IDS: ReadonlySet<string> = new Set([
+  'builtin-6', // AMD - Reverter 3 Frames
+  'builtin-7', // AMD - Reverter Tweak Melody
+  'internet-11', // Reverter Internet
+  'cpu-37', // Resetar RAM Padrao
+  'cpu-31', // Liberar RAM 6GB  (cpu-30 "4GB" fica como representante da família)
+  'cpu-32', // Liberar RAM 8GB
+  'cpu-33', // Liberar RAM 12GB
+  'cpu-34', // Liberar RAM 16GB
+  'cpu-35', // Liberar RAM 32GB
+  'cpu-36', // Liberar RAM 64GB
+  'cpu-12', // Desabilitar Servicos (Versao 2) — duplicata de cpu-11
+  'internet-5', // Desabilitar Auto-Tuning — conflita com internet-1 (normal)
+]);
 
 function formatUptime(seconds: number): string {
   const d = Math.floor(seconds / 86400);
@@ -52,6 +78,8 @@ function parseMemoryPercent(used: string, total: string): number {
 
 export default function DashboardPage() {
   const { state, refreshing, refresh } = useSystemContext();
+  const { state: scriptsState } = useScriptContext();
+  const { state: historyState } = useHistoryContext();
 
   const systemHealth = useMemo(() => {
     if (state.status !== 'success') return null;
@@ -71,6 +99,32 @@ export default function DashboardPage() {
 
     return { health, memPercent, avgDriveUsage };
   }, [state]);
+
+  // Status do rodapé é puramente "tweaks aplicados": o mesmo filtro define o
+  // numerador e o denominador, então X nunca ultrapassa Y. Scripts revertidos
+  // ou redundantes (EXCLUDED_SCRIPT_IDS) ficam fora dos dois lados.
+  const tweakStatus = useMemo(() => {
+    if (scriptsState.status !== 'success' || historyState.status !== 'success') return null;
+
+    const eligibleIds = new Set(
+      scriptsState.data
+        .filter(
+          (s) =>
+            (TWEAK_CATEGORIES as readonly string[]).includes(s.category) &&
+            s.interactive !== true &&
+            !EXCLUDED_SCRIPT_IDS.has(s.id)
+        )
+        .map((s) => s.id)
+    );
+
+    const appliedIds = new Set(
+      historyState.data
+        .filter((h) => h.exitCode === 0 && !h.wasCancelled && eligibleIds.has(h.scriptId))
+        .map((h) => h.scriptId)
+    );
+
+    return { applied: appliedIds.size, total: eligibleIds.size };
+  }, [scriptsState, historyState]);
 
   if (state.status === 'loading') {
     return (
@@ -107,6 +161,22 @@ export default function DashboardPage() {
 
   const { data } = state;
   const memPercent = systemHealth?.memPercent ?? 0;
+
+  const tweakRatio =
+    tweakStatus && tweakStatus.total > 0 ? tweakStatus.applied / tweakStatus.total : 0;
+  const footerStatus = (() => {
+    if (!tweakStatus || tweakStatus.total === 0) {
+      return { label: 'Verificando tweaks…', color: 'text-muted-foreground', Icon: Shield };
+    }
+    if (tweakStatus.applied === 0) {
+      return { label: 'Nenhum tweak aplicado', color: 'text-muted-foreground', Icon: Shield };
+    }
+    if (tweakRatio < OPTIMIZED_RATIO_THRESHOLD) {
+      return { label: 'Parcialmente Otimizado', color: 'text-amber-400', Icon: ShieldAlert };
+    }
+    return { label: 'Sistema Otimizado', color: 'text-emerald-400', Icon: Shield };
+  })();
+  const FooterIcon = footerStatus.Icon;
 
   return (
     <div className="space-y-6">
@@ -199,7 +269,7 @@ export default function DashboardPage() {
           <DashboardWidget
             icon={MemoryStick}
             label="RAM"
-            value={data.memory.total}
+            value={formatMemoryTotal(data.memory.total)}
             detail={`${data.memory.type} · ${data.memory.frequency} · ${data.memory.slots} slots · ${data.memory.used} em uso`}
             progress={memPercent}
             status={getMemoryStatus(memPercent)}
@@ -239,9 +309,18 @@ export default function DashboardPage() {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Shield className="size-3.5 text-emerald-400" />
-          <span className="text-xs text-emerald-400 font-medium">Sistema Otimizado</span>
+        <div className="flex items-center gap-3">
+          {tweakStatus ? (
+            <Badge variant="secondary" className="text-[10px] text-muted-foreground">
+              {tweakStatus.applied} de {tweakStatus.total} tweaks aplicados
+            </Badge>
+          ) : (
+            <Skeleton className="h-5 w-36 rounded-full" />
+          )}
+          <FooterIcon className={cn('size-3.5', footerStatus.color)} />
+          <span className={cn('text-xs font-medium', footerStatus.color)}>
+            {footerStatus.label}
+          </span>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import {
+  ChevronDown,
   Keyboard,
   Monitor,
   Mouse,
@@ -161,6 +162,8 @@ function DeviceSection({
   const isAnyExecuting = card.scriptIds.some((id) => activeExecution === id);
   const executingScript = cardScripts.find((s) => activeExecution === s.id);
 
+  const hasMultiple = cardScripts.length > 1;
+
   return (
     <div
       className={cn(
@@ -219,16 +222,27 @@ function DeviceSection({
               variant="default"
               size="sm"
               onClick={() => {
-                if (cardScripts.length === 1) {
-                  onConfirmExecute(cardScripts[0]);
-                } else {
+                if (hasMultiple) {
                   setExpanded(!expanded);
+                } else {
+                  onConfirmExecute(cardScripts[0]);
                 }
               }}
               className="flex-1 gap-2"
             >
-              <Play className="size-3.5" />
-              Executar
+              {hasMultiple ? (
+                <>
+                  <ChevronDown
+                    className={cn('size-3.5 transition-transform', expanded && 'rotate-180')}
+                  />
+                  {expanded ? 'Ocultar tweaks' : 'Ver tweaks'}
+                </>
+              ) : (
+                <>
+                  <Play className="size-3.5" />
+                  Executar
+                </>
+              )}
             </Button>
           )}
         </div>
@@ -377,7 +391,7 @@ export default function InputLagPage() {
             {deviceScriptCount} tweaks
           </Badge>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
           {DEVICE_CARDS.map((card) => (
             <DeviceSection
               key={card.id}
