@@ -8,3 +8,8 @@ dist/
 
 # Skills
 superpowers/
+
+# Runtime data (dev)
+data/removed-apps.json
+data/backups/
+data/settings.json
