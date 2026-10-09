@@ -1,7 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   assertRestoreAllowed,
   buildInstallArgs,
+  findAdbInFolder,
   isPackageInstalled,
   parseCodePathLines,
   parsePackagePaths,
@@ -529,5 +533,43 @@ describe('removeAppFlow', () => {
       )
     ).rejects.toThrow(/Não foi possível remover/);
     expect(events).toEqual(['deleteBackups']);
+  });
+});
+
+describe('findAdbInFolder', () => {
+  const tempDirs: string[] = [];
+
+  const makeDir = () => {
+    const dir = mkdtempSync(join(tmpdir(), 'adb-test-'));
+    tempDirs.push(dir);
+    return dir;
+  };
+
+  afterEach(() => {
+    while (tempDirs.length > 0) {
+      rmSync(tempDirs.pop() as string, { recursive: true, force: true });
+    }
+  });
+
+  it('finds adb.exe regardless of case', () => {
+    const dir = makeDir();
+    writeFileSync(join(dir, 'ADB.EXE'), '');
+    expect(findAdbInFolder(dir)).toBe(join(dir, 'ADB.EXE'));
+  });
+
+  it('finds BlueStacks HD-Adb.exe', () => {
+    const dir = makeDir();
+    writeFileSync(join(dir, 'HD-Adb.exe'), '');
+    expect(findAdbInFolder(dir)).toBe(join(dir, 'HD-Adb.exe'));
+  });
+
+  it('returns null when the folder has no adb executable', () => {
+    const dir = makeDir();
+    writeFileSync(join(dir, 'notepad.exe'), '');
+    expect(findAdbInFolder(dir)).toBeNull();
+  });
+
+  it('returns null for a missing folder', () => {
+    expect(findAdbInFolder(join(tmpdir(), 'adb-does-not-exist-xyz'))).toBeNull();
   });
 });

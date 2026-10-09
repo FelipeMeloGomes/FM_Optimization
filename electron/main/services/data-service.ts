@@ -39,6 +39,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   pageLock: DEFAULT_PAGE_LOCK,
   soundEnabled: true,
   toastDuration: 'medium',
+  adbPath: null,
 };
 
 function getDataDir(): string {
@@ -175,6 +176,8 @@ export function loadSettings(): AppSettings {
       toastDuration: ['short', 'medium', 'long'].includes(parsed.toastDuration)
         ? parsed.toastDuration
         : DEFAULT_SETTINGS.toastDuration,
+      adbPath:
+        typeof parsed.adbPath === 'string' && parsed.adbPath.length > 0 ? parsed.adbPath : null,
     };
   } catch {
     return DEFAULT_SETTINGS;

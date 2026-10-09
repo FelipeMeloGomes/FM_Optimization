@@ -42,6 +42,7 @@ const DEFAULT: AppSettings = {
   },
   soundEnabled: true,
   toastDuration: 'medium',
+  adbPath: null,
 };
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } {

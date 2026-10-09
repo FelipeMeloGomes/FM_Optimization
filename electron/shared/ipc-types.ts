@@ -86,6 +86,7 @@ export interface AppSettings {
   pageLock: PageLockSettings;
   soundEnabled: boolean;
   toastDuration: 'short' | 'medium' | 'long';
+  adbPath: string | null;
 }
 
 export interface SecuritySettings {
@@ -203,6 +204,11 @@ export interface AdbConfig {
   adbPath: string;
 }
 
+export interface AdbChoosePathResult {
+  canceled: boolean;
+  adbPath?: string;
+}
+
 export interface AdbEmulatorResult {
   installed: boolean;
   adbPath: string;
@@ -287,6 +293,7 @@ export interface ElectronAPI {
   importData(jsonData: string): Promise<{ success: boolean }>;
   adbGetPath(): Promise<string>;
   adbSetPath(path: string): Promise<void>;
+  adbChoosePath(): Promise<AdbChoosePathResult>;
   adbListDevices(): Promise<AdbDevice[]>;
   adbDetectEmulator(emulatorId: string): Promise<AdbEmulatorResult>;
   adbListApps(serial: string): Promise<AdbApp[]>;

@@ -1,8 +1,10 @@
-import { AlertCircle, Gamepad2, Loader2, MonitorSmartphone } from 'lucide-react';
+import { AlertCircle, FolderCog, Gamepad2, Loader2, MonitorSmartphone } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import bluestacksLogo from '../assets/bluestacks-logo.png';
+import { showEnhancedToast } from '../components/EnhancedToast';
 import { Badge, Button, Card, CardContent, Switch } from '../components/ui';
 import { EmulatorProvider, useEmulatorContext } from '../contexts/EmulatorContext';
+import { useSettingsContext } from '../contexts/SettingsContext';
 import { cn } from '../lib/utils';
 import type { EmulatorInstance } from '../types/emulator';
 import { AppListView } from './EmuladoresPage/AppListView';
@@ -60,6 +62,8 @@ function EmuladoresPageContent() {
     setCarregando,
   } = useEmulatorContext();
 
+  const { settings, update } = useSettingsContext();
+
   const [currentView, setCurrentView] = useState<'select-emulator' | 'app-list'>('select-emulator');
   const [selectedInstance, setSelectedInstance] = useState<EmulatorInstance | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -67,6 +71,7 @@ function EmuladoresPageContent() {
   const [connecting, setConnecting] = useState(false);
   const [adbPath, setAdbPath] = useState('');
   const [adbError, setAdbError] = useState<string | null>(null);
+  const [choosingAdb, setChoosingAdb] = useState(false);
   const [instances, setInstances] = useState<EmulatorInstance[]>([]);
   const [instancesLoading, setInstancesLoading] = useState(false);
   const [detectedVersions, setDetectedVersions] = useState<Record<string, string>>({});
@@ -184,6 +189,35 @@ function EmuladoresPageContent() {
     [selectedEmulator, deviceSerial, setInstanciaSelecionada, setListaApps, setCarregando]
   );
 
+  const handleChooseAdbFolder = useCallback(async () => {
+    setChoosingAdb(true);
+    setAdbError(null);
+    try {
+      const result = await window.electronAPI.adbChoosePath();
+      if (result.canceled || !result.adbPath) return;
+      setAdbPath(result.adbPath);
+      update({ adbPath: result.adbPath });
+      showEnhancedToast({
+        type: 'success',
+        title: 'Caminho ADB atualizado',
+        description: result.adbPath,
+        duration: settings.toastDuration,
+        sound: settings.soundEnabled,
+      });
+    } catch (e: unknown) {
+      const msg = typeof e === 'string' ? e : (e as Error).message;
+      showEnhancedToast({
+        type: 'error',
+        title: 'Não foi possível alterar o ADB',
+        description: msg,
+        duration: settings.toastDuration,
+        sound: settings.soundEnabled,
+      });
+    } finally {
+      setChoosingAdb(false);
+    }
+  }, [update, settings.toastDuration, settings.soundEnabled]);
+
   if (currentView === 'app-list' && emulatorAtivo) {
     const emulator = EMULATORS.find((e) => e.id === emulatorAtivo);
     const fallbackInstance: EmulatorInstance = {
@@ -237,6 +271,20 @@ function EmuladoresPageContent() {
               <p className="text-xs text-muted-foreground">Caminho ADB</p>
               <p className="text-sm font-medium font-mono truncate">{adbPath || 'Detectando...'}</p>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleChooseAdbFolder}
+              disabled={choosingAdb}
+              title="Alterar pasta do ADB"
+              aria-label="Alterar pasta do ADB"
+            >
+              {choosingAdb ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <FolderCog className="size-4" />
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>

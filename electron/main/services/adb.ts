@@ -1,6 +1,6 @@
 import { execFile, spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { app } from 'electron';
 import type {
   AdbApp,
@@ -10,6 +10,7 @@ import type {
   RemoveMode,
 } from '../../shared/ipc-types';
 import { formatError, logger } from '../utils/logger';
+import { loadSettings } from './data-service';
 import {
   createRemovedAppsStore,
   type RemovedAppRecord,
@@ -215,6 +216,25 @@ function detectAdbPath(): string {
   return 'adb';
 }
 
+const ADB_EXE_NAMES = ['adb.exe', 'hd-adb.exe', 'adb', 'hd-adb'];
+
+export function findAdbInFolder(folder: string): string | null {
+  if (!folder || !existsSync(folder)) return null;
+  try {
+    const entries = readdirSync(folder);
+    for (const target of ADB_EXE_NAMES) {
+      const entry = entries.find((name) => name.toLowerCase() === target);
+      if (entry) {
+        const full = join(folder, entry);
+        if (existsSync(full)) return full;
+      }
+    }
+  } catch (e: unknown) {
+    logger.warn('[ADB] findAdbInFolder failed', { folder, error: formatError(e) });
+  }
+  return null;
+}
+
 export function detectEmulatorAdbPath(emulatorId: string): { installed: boolean; adbPath: string } {
   const candidates = EMULATOR_ADB_PATHS[emulatorId];
   if (!candidates) return { installed: false, adbPath: '' };
@@ -391,7 +411,13 @@ export function setAdbPath(path: string): void {
 }
 
 export function getAdbPath(): string {
-  if (!adbPath) adbPath = detectAdbPath();
+  if (adbPath) return adbPath;
+  const persisted = loadSettings().adbPath;
+  if (persisted && existsSync(persisted)) {
+    adbPath = persisted;
+    return adbPath;
+  }
+  adbPath = detectAdbPath();
   return adbPath;
 }
 

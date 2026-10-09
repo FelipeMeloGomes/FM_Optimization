@@ -1,6 +1,7 @@
 import { contextBridge, type IpcRendererEvent, ipcRenderer } from 'electron';
 import type {
   AdbApp,
+  AdbChoosePathResult,
   AdbDevice,
   AppSettings,
   BenchmarkResult,
@@ -155,6 +156,7 @@ const electronAPI: ElectronAPI = {
   importData: (jsonData: string) => ipc<{ success: boolean }>('import-data', jsonData),
   adbGetPath: () => ipc<string>('adb:get-path'),
   adbSetPath: (path: string) => ipcVoid('adb:set-path', { path }),
+  adbChoosePath: () => ipc<AdbChoosePathResult>('adb:choose-path'),
   adbListDevices: () => ipc<AdbDevice[]>('adb:list-devices'),
   adbDetectEmulator: (emulatorId: string) =>
     ipc<{ installed: boolean; adbPath: string; version?: string }>('adb:detect-emulator', {

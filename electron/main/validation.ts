@@ -47,6 +47,7 @@ export const SettingsSchema = z.object({
   pageLock: PageLockSchema.default(() => PageLockSchema.parse({})),
   soundEnabled: z.boolean().default(true),
   toastDuration: z.enum(['short', 'medium', 'long']).default('medium'),
+  adbPath: z.string().nullable().default(null),
 });
 
 export const VerifyPageLockPasswordSchema = z.object({
@@ -196,6 +197,7 @@ export const IpcSchemas: Record<string, z.ZodSchema> = {
   'import-data': z.string(),
   'adb:get-path': z.undefined(),
   'adb:set-path': adbSetPathSchema,
+  'adb:choose-path': z.undefined(),
   'adb:list-devices': z.undefined(),
   'adb:detect-emulator': adbDetectEmulatorSchema,
   'adb:list-apps': adbListAppsSchema,

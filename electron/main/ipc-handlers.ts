@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, type OpenDialogOptions } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import type {
   AppSettings,
@@ -14,6 +14,7 @@ import {
   clearRemovedHistory,
   detectEmulatorAdbPath,
   detectEmulatorVersion,
+  findAdbInFolder,
   getAdbPath,
   listApps,
   listDevices,
@@ -341,6 +342,31 @@ export function registerIpcHandlers(): void {
       setAdbPath((validated as { path: string }).path);
     });
   });
+
+  ipcMain.handle('adb:choose-path', () =>
+    handleIpcNoInput('adb:choose-path', async () => {
+      const options: OpenDialogOptions = {
+        title: 'Selecione a pasta do ADB',
+        properties: ['openDirectory'],
+      };
+      const focused = BrowserWindow.getFocusedWindow();
+      const result = focused
+        ? await dialog.showOpenDialog(focused, options)
+        : await dialog.showOpenDialog(options);
+      if (result.canceled || result.filePaths.length === 0) {
+        return { canceled: true };
+      }
+      const folder = result.filePaths[0];
+      const adbExe = findAdbInFolder(folder);
+      if (!adbExe) {
+        throw new Error(
+          'Nenhum executável ADB (adb.exe ou HD-Adb.exe) foi encontrado na pasta selecionada.'
+        );
+      }
+      setAdbPath(adbExe);
+      return { canceled: false, adbPath: adbExe };
+    })
+  );
 
   ipcMain.handle('adb:list-devices', () =>
     handleIpcNoInput('adb:list-devices', () => listDevices())
