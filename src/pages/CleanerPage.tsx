@@ -17,6 +17,7 @@ import { Button } from '../components/ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { formatBytes, useCleanerStats } from '../hooks/use-cleaner-stats';
+import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
 import { cn } from '../lib/utils';
 
@@ -189,6 +190,7 @@ export default function CleanerPage() {
   } = useCleanerStats();
 
   const { settings } = useSettingsContext();
+  const isScriptApplied = useIsScriptApplied();
 
   const getScriptData = useCallback(
     (scriptId: string) => cleanerScripts.find((s) => s.id === scriptId),
@@ -350,6 +352,7 @@ export default function CleanerPage() {
           {CLEANER_CARDS.map((card) => {
             const script = getScriptData(card.id);
             const isExecuting = activeExecution === card.id;
+            const isApplied = !!script && isScriptApplied(script);
             const cardStats = stats[card.id];
             const hasData = cardStats && cardStats.fileCount > 0;
             const hasError = cardStats?.error === true;
@@ -466,7 +469,11 @@ export default function CleanerPage() {
                     size="sm"
                     onClick={() => handleButtonClick(card)}
                     disabled={isExecuting}
-                    aria-label={`Executar limpeza ${card.name}`}
+                    aria-label={
+                      isApplied
+                        ? `Executar novamente a limpeza ${card.name}`
+                        : `Executar limpeza ${card.name}`
+                    }
                     className={cn('flex-1 gap-2', isExecuting && 'animate-pulse')}
                   >
                     {isExecuting ? (
@@ -477,7 +484,7 @@ export default function CleanerPage() {
                     ) : (
                       <>
                         <card.icon className="size-3.5" aria-hidden="true" />
-                        Executar
+                        {isApplied ? 'Executar novamente' : 'Executar'}
                       </>
                     )}
                   </Button>

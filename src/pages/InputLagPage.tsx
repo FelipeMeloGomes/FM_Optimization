@@ -15,6 +15,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Badge, Button } from '../components/ui';
+import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
 import { countCuratedScripts, resolveCuratedItems } from '../lib/resolve-curated-scripts';
 import { cn } from '../lib/utils';
@@ -153,6 +154,7 @@ function DeviceSection({
 }) {
   const [expanded, setExpanded] = useState(false);
   const Icon = card.icon;
+  const isScriptApplied = useIsScriptApplied();
 
   const cardScripts = useMemo(
     () => scripts.filter((s) => card.scriptIds.includes(s.id)),
@@ -240,7 +242,7 @@ function DeviceSection({
               ) : (
                 <>
                   <Play className="size-3.5" />
-                  Executar
+                  {cardScripts.some((s) => isScriptApplied(s)) ? 'Executar novamente' : 'Executar'}
                 </>
               )}
             </Button>
@@ -286,7 +288,7 @@ function DeviceSection({
                   ) : (
                     <>
                       <Play className="size-3" />
-                      Executar
+                      {isScriptApplied(script) ? 'Executar novamente' : 'Executar'}
                     </>
                   )}
                 </Button>
@@ -310,6 +312,7 @@ export default function InputLagPage() {
     setConfirmScript,
     handleConfirm,
   } = useScriptPage('Input Lag');
+  const isScriptApplied = useIsScriptApplied();
 
   // Both section badges count what their section actually renders. The catalog's
   // subcategory buckets cannot be used for this: inputlag-9 and inputlag-11 are
@@ -478,7 +481,7 @@ export default function InputLagPage() {
                       className="flex-1 gap-2"
                     >
                       <Play className="size-3.5" />
-                      Executar
+                      {isScriptApplied(script) ? 'Executar novamente' : 'Executar'}
                     </Button>
                   )}
                 </div>

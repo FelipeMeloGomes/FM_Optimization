@@ -18,29 +18,10 @@ import { Badge, Button, Skeleton } from '../components/ui';
 import { useHistoryContext } from '../contexts/HistoryContext';
 import { useScriptContext } from '../contexts/ScriptContext';
 import { useSystemContext } from '../contexts/SystemContext';
+import { summarizeAppliedScripts } from '../lib/applied-scripts';
 import { cn } from '../lib/utils';
 
-const TWEAK_CATEGORIES = ['Tweaks', 'Input Lag', 'CPU', 'Internet'] as const;
-
 const OPTIMIZED_RATIO_THRESHOLD = 0.5;
-
-// Reverts (desfazem outros scripts do catálogo) e variantes redundantes do
-// mesmo ajuste (ex.: "Liberar RAM" 4-64GB escreve o mesmo registro; cpu-11/12
-// são a mesma lista de serviços). Contá-las inflaria o X sem cobertura real.
-const EXCLUDED_SCRIPT_IDS: ReadonlySet<string> = new Set([
-  'builtin-6', // AMD - Reverter 3 Frames
-  'builtin-7', // AMD - Reverter Tweak Melody
-  'internet-11', // Reverter Internet
-  'cpu-37', // Resetar RAM Padrao
-  'cpu-31', // Liberar RAM 6GB  (cpu-30 "4GB" fica como representante da família)
-  'cpu-32', // Liberar RAM 8GB
-  'cpu-33', // Liberar RAM 12GB
-  'cpu-34', // Liberar RAM 16GB
-  'cpu-35', // Liberar RAM 32GB
-  'cpu-36', // Liberar RAM 64GB
-  'cpu-12', // Desabilitar Servicos (Versao 2) — duplicata de cpu-11
-  'internet-5', // Desabilitar Auto-Tuning — conflita com internet-1 (normal)
-]);
 
 function formatUptime(seconds: number): string {
   const d = Math.floor(seconds / 86400);
@@ -100,30 +81,13 @@ export default function DashboardPage() {
     return { health, memPercent, avgDriveUsage };
   }, [state]);
 
-  // Status do rodapé é puramente "tweaks aplicados": o mesmo filtro define o
-  // numerador e o denominador, então X nunca ultrapassa Y. Scripts revertidos
-  // ou redundantes (EXCLUDED_SCRIPT_IDS) ficam fora dos dois lados.
+  // Rodapé usa a mesma regra do selo "Aplicado" (isCountableScript + execução
+  // bem-sucedida no histórico), então o contador mostra exatamente o que as
+  // páginas marcam. O mesmo predicado define numerador e denominador, então X
+  // nunca ultrapassa Y.
   const tweakStatus = useMemo(() => {
     if (scriptsState.status !== 'success' || historyState.status !== 'success') return null;
-
-    const eligibleIds = new Set(
-      scriptsState.data
-        .filter(
-          (s) =>
-            (TWEAK_CATEGORIES as readonly string[]).includes(s.category) &&
-            s.interactive !== true &&
-            !EXCLUDED_SCRIPT_IDS.has(s.id)
-        )
-        .map((s) => s.id)
-    );
-
-    const appliedIds = new Set(
-      historyState.data
-        .filter((h) => h.exitCode === 0 && !h.wasCancelled && eligibleIds.has(h.scriptId))
-        .map((h) => h.scriptId)
-    );
-
-    return { applied: appliedIds.size, total: eligibleIds.size };
+    return summarizeAppliedScripts(scriptsState.data, historyState.data);
   }, [scriptsState, historyState]);
 
   if (state.status === 'loading') {
@@ -166,10 +130,10 @@ export default function DashboardPage() {
     tweakStatus && tweakStatus.total > 0 ? tweakStatus.applied / tweakStatus.total : 0;
   const footerStatus = (() => {
     if (!tweakStatus || tweakStatus.total === 0) {
-      return { label: 'Verificando tweaks…', color: 'text-muted-foreground', Icon: Shield };
+      return { label: 'Verificando ajustes…', color: 'text-muted-foreground', Icon: Shield };
     }
     if (tweakStatus.applied === 0) {
-      return { label: 'Nenhum tweak aplicado', color: 'text-muted-foreground', Icon: Shield };
+      return { label: 'Nenhum ajuste aplicado', color: 'text-muted-foreground', Icon: Shield };
     }
     if (tweakRatio < OPTIMIZED_RATIO_THRESHOLD) {
       return { label: 'Parcialmente Otimizado', color: 'text-amber-400', Icon: ShieldAlert };
@@ -312,7 +276,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3">
           {tweakStatus ? (
             <Badge variant="secondary" className="text-[10px] text-muted-foreground">
-              {tweakStatus.applied} de {tweakStatus.total} tweaks aplicados
+              {tweakStatus.applied} de {tweakStatus.total} ajustes aplicados
             </Badge>
           ) : (
             <Skeleton className="h-5 w-36 rounded-full" />

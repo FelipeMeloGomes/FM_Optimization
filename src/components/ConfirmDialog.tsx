@@ -10,10 +10,12 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RISK_STYLES } from '../components/ScriptCard';
+import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { cn } from '../lib/utils';
 import { Badge, Button, Dialog, DialogContent, DialogTitle } from './ui';
 
 interface ConfirmDialogItem {
+  id?: string;
   name: string;
   description: string;
   extension?: string;
@@ -50,6 +52,9 @@ export function ConfirmDialog({
   const wasExecuting = useRef(false);
   const startTime = useRef<number>(0);
   const [elapsed, setElapsed] = useState(0);
+  const isScriptApplied = useIsScriptApplied();
+  const isApplied =
+    !!script?.id && isScriptApplied({ id: script.id, interactive: script.interactive });
 
   useEffect(() => {
     if (wasExecuting.current && !isExecuting) {
@@ -273,7 +278,7 @@ export function ConfirmDialog({
                 className="flex-1 gap-1.5 shadow-[0_0_15px_rgba(0,68,255,0.3)] hover:shadow-[0_0_20px_rgba(0,68,255,0.5)]"
               >
                 <Play className="size-3.5" />
-                Executar
+                {isApplied ? 'Executar novamente' : 'Executar'}
               </Button>
             </div>
           )}

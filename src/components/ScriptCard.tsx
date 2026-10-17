@@ -1,4 +1,5 @@
 import {
+  CheckCircle2,
   Cpu,
   Eraser,
   Gauge,
@@ -17,6 +18,7 @@ import {
 import { memo, useEffect, useRef, useState } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { useSettingsContext } from '../contexts/SettingsContext';
+import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { cn } from '../lib/utils';
 import { Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle } from './ui';
 
@@ -101,6 +103,8 @@ export const ScriptCard = memo(function ScriptCard({
   const [showRestartPrompt, setShowRestartPrompt] = useState(false);
   const wasExecuting = useRef(false);
   const { settings } = useSettingsContext();
+  const isScriptApplied = useIsScriptApplied();
+  const isApplied = isScriptApplied(script);
 
   useEffect(() => {
     if (wasExecuting.current && !isExecuting && script.requiresRestart) {
@@ -125,6 +129,7 @@ export const ScriptCard = memo(function ScriptCard({
       className={cn(
         'group relative rounded-xl border bg-card p-5 transition-all duration-300 hover:shadow-lg',
         config.borderColor,
+        isApplied && 'hover:border-emerald-500/40',
         isExecuting && 'ring-2 ring-primary/50'
       )}
     >
@@ -180,6 +185,12 @@ export const ScriptCard = memo(function ScriptCard({
             </div>
           </div>
         </div>
+        {isApplied && (
+          <span className="flex shrink-0 items-center gap-1 font-mono text-[10px] text-emerald-400">
+            <CheckCircle2 className="size-3.5" aria-hidden="true" />
+            Aplicado
+          </span>
+        )}
       </div>
 
       <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{script.description}</p>
@@ -226,10 +237,10 @@ export const ScriptCard = memo(function ScriptCard({
             size="sm"
             onClick={handleExecute}
             className="flex-1 gap-2"
-            aria-label="Executar script"
+            aria-label={isApplied ? 'Executar novamente' : 'Executar script'}
           >
             <Play className="size-3.5" aria-hidden="true" />
-            Executar
+            {isApplied ? 'Executar novamente' : 'Executar'}
           </Button>
         )}
       </div>

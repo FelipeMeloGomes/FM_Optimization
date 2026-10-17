@@ -1,5 +1,6 @@
-import { RotateCcw, Shield } from 'lucide-react';
+import { Check, RotateCcw, Shield } from 'lucide-react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
+import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { cn } from '../lib/utils';
 import { RISK_STYLES } from './ScriptCard';
 import { Badge } from './ui';
@@ -20,8 +21,20 @@ interface ScriptBadgeProps {
  * ScriptCard and ConfirmDialog must keep matching it.
  */
 export function ScriptBadge({ script }: ScriptBadgeProps) {
+  const isScriptApplied = useIsScriptApplied();
+  const isApplied = isScriptApplied(script);
+
   return (
     <>
+      {isApplied && (
+        <Badge
+          variant="outline"
+          className="gap-1 font-mono text-[10px] px-1.5 py-0 shrink-0 border-emerald-500/50 text-emerald-400"
+        >
+          <Check className="size-3" />
+          Aplicado
+        </Badge>
+      )}
       {script.requiresAdmin && (
         <Badge variant="destructive" className="gap-1 font-mono text-[10px] px-1.5 py-0 shrink-0">
           <Shield className="size-3" />

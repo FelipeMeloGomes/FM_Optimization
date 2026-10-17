@@ -5,6 +5,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Badge, Button } from '../components/ui';
+import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
 import { cn } from '../lib/utils';
 
@@ -90,6 +91,7 @@ function TweakSectionCard({
   onConfirmExecute: (script: ScriptEntry) => void;
 }) {
   const Icon = section.icon;
+  const isScriptApplied = useIsScriptApplied();
 
   const sectionScripts = useMemo(
     () => scripts.filter((s) => section.scriptIds.includes(s.id)),
@@ -161,7 +163,7 @@ function TweakSectionCard({
                   ) : (
                     <>
                       <Play className="size-3" />
-                      Executar
+                      {isScriptApplied(script) ? 'Executar novamente' : 'Executar'}
                     </>
                   )}
                 </Button>

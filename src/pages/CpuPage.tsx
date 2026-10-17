@@ -6,6 +6,7 @@ import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Badge, Button, Card, CardContent } from '../components/ui';
 import { useCpuContext, useMemoryContext } from '../contexts/SystemContext';
 import { useCpuVendor } from '../hooks/use-cpu-vendor';
+import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
 import { getRamScriptId } from '../lib/ram-script';
 import { cn } from '../lib/utils';
@@ -40,6 +41,7 @@ export default function CpuPage() {
   const { effective: cpuVendor, categories, isManual, setOverride, clearOverride } = useCpuVendor();
 
   const isUnidentified = cpuVendor === 'unknown';
+  const isScriptApplied = useIsScriptApplied();
   const cpuModel = cpuState.status === 'success' ? cpuState.data.model : null;
   const tone = cpuVendor === 'amd' ? 'red' : cpuVendor === 'intel' ? 'blue' : 'amber';
   const vendorLabel = cpuVendor === 'amd' ? 'AMD' : cpuVendor === 'intel' ? 'Intel' : 'AMD / Intel';
@@ -311,7 +313,7 @@ export default function CpuPage() {
                         className="flex-1 gap-2"
                       >
                         <Play className="size-3.5" />
-                        Executar
+                        {isScriptApplied(script) ? 'Executar novamente' : 'Executar'}
                       </Button>
                     )}
                   </div>
