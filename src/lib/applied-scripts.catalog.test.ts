@@ -48,11 +48,10 @@ describe('catálogo real (resources/scripts.json)', () => {
     expect(missing).toEqual([]);
   });
 
-  it('o rodapé numera o que os selos mostram: Limpeza e Utilitarios contam', () => {
-    // builtin-15 (Prioridade CPU/GPU para Jogos) e cleaner-3 (Limpeza de
-    // Navegadores) são os dois scripts do histórico de dev do autor — antes o
-    // rodapé somava 0 porque as duas categorias ficavam de fora.
+  it('o rodapé não conta limpeza como tweak, mas conta Utilitarios', () => {
+    // builtin-15 (Prioridade CPU/GPU para Jogos) conta como ajuste; cleaner-3
+    // (Limpeza de Navegadores) não: limpeza tem página própria e não é tweak.
     const summary = summarizeAppliedScripts(scripts, [entry('builtin-15'), entry('cleaner-3')]);
-    expect(summary).toEqual({ applied: 2, total: 82 });
+    expect(summary).toEqual({ applied: 1, total: 78 });
   });
 });

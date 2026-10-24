@@ -87,6 +87,44 @@ export interface AppSettings {
   soundEnabled: boolean;
   toastDuration: 'short' | 'medium' | 'long';
   adbPath: string | null;
+  autoClean: AutoCleanSettings;
+}
+
+export interface AutoCleanSettings {
+  enabled: boolean;
+  /** Ids de limpeza selecionados (cleaner-1..4). */
+  cleaners: string[];
+  frequency: 'daily' | 'weekly' | 'monthly';
+  /** 0 = domingo … 6 = sábado. Usado quando frequency = weekly. */
+  weekday: number | null;
+  /** 1..28, para evitar mês sem o dia. Usado quando frequency = monthly. */
+  dayOfMonth: number | null;
+  /** "HH:mm", 24h. */
+  time: string;
+  runOnStartup: boolean;
+  catchUp: boolean;
+  lastRunAt: number | null;
+  nextRunAt: number | null;
+  /** Limpezas que exigiram admin e ficaram aguardando. */
+  pending: string[];
+}
+
+export interface AutoCleanStatus {
+  settings: AutoCleanSettings;
+  isAdmin: boolean;
+  running: boolean;
+}
+
+export interface AutoCleanRunResult {
+  ran: string[];
+  pending: string[];
+  failed: string[];
+}
+
+export interface ElevatedLaunchResult {
+  launched: boolean;
+  cancelled: boolean;
+  error?: string;
 }
 
 export interface SecuritySettings {
@@ -121,6 +159,8 @@ export interface ScriptEnded {
   id: string;
   code: number | null;
   scriptName?: string;
+  /** Ausente em eventos antigos; limpeza agendada tem toast próprio. */
+  trigger?: 'manual' | 'scheduled';
 }
 
 export interface ExecutionHistoryEntry {
@@ -132,6 +172,8 @@ export interface ExecutionHistoryEntry {
   durationMs: number;
   exitCode: number | null;
   wasCancelled: boolean;
+  /** Origem da execução; entradas antigas não têm o campo (tratadas como manuais). */
+  trigger?: 'manual' | 'scheduled';
 }
 
 export type UpdateStatus =
@@ -288,7 +330,18 @@ export interface ElectronAPI {
   applyDns(interfaceIndex: number, addresses: string[]): Promise<void>;
   minimizeWindow(): Promise<void>;
   closeWindow(): Promise<void>;
-  elevateApp(scriptId?: string, dnsInterfaceIndex?: number, dnsAddresses?: string[]): Promise<void>;
+  elevateApp(
+    scriptId?: string,
+    dnsInterfaceIndex?: number,
+    dnsAddresses?: string[],
+    relaunch?: boolean
+  ): Promise<ElevatedLaunchResult>;
+  getAutoCleanStatus(): Promise<AutoCleanStatus>;
+  runCleanerNow(cleanerIds: string[]): Promise<AutoCleanRunResult>;
+  discardPendingCleaners(cleanerIds: string[]): Promise<AutoCleanStatus>;
+  runAutoCleanPending(): Promise<AutoCleanRunResult>;
+  onAutoCleanStatus(cb: (status: AutoCleanStatus) => void): () => void;
+  onAutoCleanFinished(cb: (result: AutoCleanRunResult) => void): () => void;
   exportData(): Promise<ExportData>;
   importData(jsonData: string): Promise<{ success: boolean }>;
   adbGetPath(): Promise<string>;

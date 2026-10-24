@@ -2,22 +2,23 @@
 
 [![site](https://img.shields.io/badge/site-fmoptimize-0044ff?style=for-the-badge)](https://fmoptimize.vercel.app)
 
-41 tweaks de otimização do Windows em um único app desktop. Tudo embutido em um executável.
+41 tweaks de otimização do Windows em um único app desktop. Tudo em um único instalador.
 
 ---
 
 ## Funcionalidades
 
-- **Dashboard** — CPU, GPU, memória, armazenamento com barra de uso e tempo de atividade. O rodapé mostra quantos ajustes estão aplicados (`N de 82`): a mesma regra do selo "Aplicado", contando todos os scripts não-interativos do catálogo, exceto reverters e variantes redundantes
+- **Dashboard** — CPU, GPU, memória, armazenamento com barra de uso e tempo de atividade. O rodapé mostra quantos ajustes estão aplicados (`N de 78`), contando todos os scripts não-interativos do catálogo exceto reverters, variantes redundantes e limpezas — limpeza tem página e histórico próprios, não é tweak
 - **Tweaks de otimização** — Utilitários, Limpeza, Rede, Apps, Input Lag, Processador
 - **Debloat de apps** — Discord (Equicord + plugin FakeNitro) e Spotify (Spicetify com Marketplace e bloqueador de anúncios), ambos com opção de reverter. O debloat do Spotify funciona mesmo com o FM Optimize aberto como administrador: ele reabre sozinho em uma janela sem privilégios
 - **Armazenamento** — Limpeza de Disco do Windows e otimizações de SSD que só aparecem quando há um SSD detectado no sistema
 - **Rede** — benchmark de DNS com ordenação por latência e aplicação automática + tweaks de otimização de internet
 - **Limpeza** — limpeza de arquivos temporários, cache de navegadores e atualizações do Windows, com contagem de arquivos, tamanho por categoria e atualização em tempo real
+- **Limpeza automática** — ícone de engrenagem na barra de título agenda as limpezas (diária, semanal ou mensal) e escolhe quais executar. Com a automação ligada, fechar a janela mantém o app na bandeja (com aviso único) e ele pode iniciar junto com o Windows, já escondido. Limpezas que exigem administrador ficam pendentes quando o app roda sem elevação, com botão para reiniciar como admin e executá-las; abrir o app elevado roda as pendências automaticamente. Se o PC estava desligado no horário, a limpeza atrasada roda na próxima abertura
 - **Processador** — 37 tweaks em uma única categoria `CPU`. A antiga divisão AMD/Intel foi removida: os 37 pares eram byte a byte idênticos ou diferiam só em banner/crédito, então não havia conteúdo dependente de fabricante. A detecção via `systeminformation` continua rodando no processo principal e rotula a página, e a escolha manual de fabricante continua salva — ambas apenas informativas, sem mais filtrar a lista. A tier de RAM recomendada depende só da memória instalada, então funciona mesmo com CPU não identificada. IDs antigos (`amd-*`, `intel-*`) continuam aceitos e são migrados para `cpu-*` no histórico
 - **Emuladores** — debloat de emuladores Android (BlueStacks 4/5) com seleção de instância, lista de apps com ícones e nomes, presets de bloatware (Leve, Recomendado e Máximo, alinhados ao que está instalado no emulador), backup e remoção via ADB. O caminho do ADB é detectado automaticamente e pode ser trocado manualmente pelo ícone no card "Caminho ADB" (a pasta escolhida é validada procurando `adb.exe`/`HD-Adb.exe` e a escolha fica salva). Permite desinstalar **qualquer** app, inclusive de sistema/críticos, com backup automático do APK (único ou multi-part) antes da remoção e histórico de apps removidos com restauração por instância. A restauração tenta `pm install-existing` e cai para o APK de backup quando necessário; dados preservados via `pm uninstall -k`; backups em `%APPDATA%\fm-optimize\backups\<instância>\`. Apps protegidos que não podem ser desinstalados são desabilitados via `pm disable-user` e reativados com `pm enable`
 - **Restore Points** — crie, liste, gerencie e restaure backups do Windows (criação automática opcional antes de executar tweaks)
-- **Histórico de Execução** — registro de todos os tweaks executados com duração e status. O histórico também marca os tweaks já aplicados: cards e linhas com execução bem-sucedida ganham o selo "Aplicado" e o botão vira "Executar novamente" (cancelados e com erro não contam). Interativos ficam fora — o histórico grava a janela aberta como sucesso, então marcá-los seria afirmar algo que ele não sustenta
+- **Histórico de Execução** — registro de todos os tweaks executados com duração e status, incluindo a origem (manual ou automática). O histórico também marca os tweaks já aplicados: cards e linhas com execução bem-sucedida ganham o selo "Aplicado" e o botão vira "Executar novamente" (cancelados e com erro não contam). Interativos ficam fora — o histórico grava a janela aberta como sucesso, então marcá-los seria afirmar algo que ele não sustenta
 - **Notificações** — toast de confirmação ao finalizar a execução de um tweak (com som opcional)
 - **Mini-guia** — explicação simples do que cada tweak faz e quando usar
 - **Atualização integrada** — botão nas Configurações que baixa e instala novas versões do GitHub

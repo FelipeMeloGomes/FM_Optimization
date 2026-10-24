@@ -1,16 +1,35 @@
+import { existsSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
-import { app, BrowserWindow, Menu, shell } from 'electron';
+import { app, BrowserWindow, dialog, Menu, Notification, powerMonitor, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import { appState } from './app-state';
 import { registerIpcHandlers } from './ipc-handlers';
 import { resolveScriptId } from './legacy-script-ids';
+import { isAdmin } from './services/admin-check';
+import { getAutoCleanScheduler } from './services/auto-clean';
 import { executeScript } from './services/script-executor';
 import { loadScripts } from './services/script-registry';
+import {
+  clearHandoverRequest,
+  clearInstanceInfo,
+  isProcessAlive,
+  readHandoverRequest,
+  readInstanceInfo,
+  readNumericArg,
+  waitForProcessExit,
+  writeHandoverRequest,
+  writeInstanceInfo,
+} from './services/single-instance';
+import { destroyTray, ensureTray, isTrayActive, refreshTray } from './tray';
 import { DnsAddressesSchema } from './validation';
 
 let mainWindow: BrowserWindow | null = null;
 
 export { mainWindow };
+
+const startedHidden = process.argv.includes('--hidden');
+const waitPidArg = readNumericArg(process.argv, '--wait-pid');
 
 // Valida que o scriptId pertence à allowlist de scripts conhecidos.
 function isValidScriptId(scriptId: string): boolean {
@@ -110,6 +129,59 @@ function sendToRenderer(channel: string, ...args: unknown[]): void {
   mainWindow?.webContents.send(channel, ...args);
 }
 
+function focusMainWindow(): void {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
+/**
+ * Decide se esta instância pode seguir. Devolve false quando outra instância
+ * deve continuar dona do app (esta então encerra).
+ */
+async function ensureSingleInstance(): Promise<boolean> {
+  // Relançamento elevado: a instância antiga já combinou encerrar, então
+  // esperamos ela sair e pedimos o lock uma única vez.
+  if (waitPidArg !== null) {
+    const exited = await waitForProcessExit(waitPidArg, 10_000);
+    if (exited && app.requestSingleInstanceLock()) return true;
+    dialog.showErrorBox(
+      'FM Optimize',
+      'Não foi possível assumir o aplicativo. Feche todas as janelas do FM Optimize e abra novamente.'
+    );
+    return false;
+  }
+
+  const other = readInstanceInfo();
+  const otherAlive = other !== null && other.pid !== process.pid && isProcessAlive(other.pid);
+  const elevated = isAdmin();
+
+  if (otherAlive && elevated && !other.elevated) {
+    // Abertura manual como admin com uma instância normal viva: pedimos o
+    // handover por arquivo (não depende de WM_COPYDATA entre integridades).
+    writeHandoverRequest(process.pid);
+    const exited = await waitForProcessExit(other.pid, 10_000);
+    clearHandoverRequest();
+    if (exited && app.requestSingleInstanceLock()) return true;
+    dialog.showErrorBox(
+      'FM Optimize',
+      'O FM Optimize não liberou a instância anterior. Feche-o pelo ícone da bandeja e abra novamente como administrador.'
+    );
+    return false;
+  }
+
+  if (otherAlive && !elevated && other.elevated) {
+    dialog.showErrorBox(
+      'FM Optimize',
+      'O FM Optimize já está aberto como administrador. Feche-o antes de abrir uma instância normal.'
+    );
+    return false;
+  }
+
+  return app.requestSingleInstanceLock();
+}
+
 function setupAutoUpdater(): void {
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = false;
@@ -185,7 +257,15 @@ function createWindow(): void {
   });
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow?.show();
+    if (!startedHidden) mainWindow?.show();
+  });
+
+  mainWindow.on('close', (event) => {
+    // Com a bandeja ativa, fechar esconde. Sem ela, fecha de verdade.
+    if (appState.isQuitting || !isTrayActive()) return;
+    event.preventDefault();
+    mainWindow?.hide();
+    showTrayHintOnce();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -207,7 +287,135 @@ function createWindow(): void {
   }
 }
 
-app.whenReady().then(() => {
+/**
+ * A instância primária observa pedidos de handover feitos por uma instância
+ * elevada. Encerra só depois que o pedido é lido — todo estado já está em disco
+ * (settings.json/settings são gravados de forma síncrona e atômica).
+ */
+function watchHandoverRequests(): NodeJS.Timeout {
+  return setInterval(() => {
+    const request = readHandoverRequest();
+    if (!request || !isProcessAlive(request.pid)) return;
+    clearHandoverRequest();
+    appState.isQuitting = true;
+    app.quit();
+  }, 1_000);
+}
+
+function trayHintPath(): string {
+  return join(app.getPath('userData'), 'tray-hint-shown');
+}
+
+function showTrayHintOnce(): void {
+  if (existsSync(trayHintPath())) return;
+  if (Notification.isSupported()) {
+    new Notification({
+      title: 'FM Optimize',
+      body: 'O app continua na bandeja. Use o ícone para abrir ou sair.',
+      silent: true,
+    }).show();
+  }
+  try {
+    writeFileSync(trayHintPath(), new Date().toISOString(), 'utf-8');
+  } catch {
+    /* sem permissão de escrita: a dica aparece de novo na próxima vez */
+  }
+}
+
+/**
+ * Liga o agendador, o tray e o autostart. O tray só existe com a limpeza
+ * automática ligada: para quem não usa a feature, fechar continua encerrando.
+ */
+function setupAutoClean(): void {
+  const scheduler = getAutoCleanScheduler();
+
+  const handlers = {
+    onOpen: () => {
+      if (!mainWindow) createWindow();
+      focusMainWindow();
+    },
+    onRunNow: () => {
+      void scheduler.runNow(scheduler.getStatus().settings.cleaners);
+    },
+    onRunPending: () => {
+      void scheduler.runNow(scheduler.getStatus().settings.pending);
+    },
+    onQuit: () => {
+      appState.isQuitting = true;
+      app.quit();
+    },
+  };
+
+  scheduler.subscribe((status) => {
+    if (status.settings.enabled) {
+      ensureTray(iconPath(), handlers);
+      refreshTray(status.settings.pending.length);
+      return;
+    }
+    destroyTray();
+    // Sem tray, uma janela escondida ficaria inalcançável.
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) mainWindow.show();
+  });
+
+  scheduler.start();
+  scheduler.syncLaunchAtLogin();
+
+  const status = scheduler.getStatus();
+  if (status.settings.enabled) {
+    ensureTray(iconPath(), handlers);
+    refreshTray(status.settings.pending.length);
+  }
+
+  // Rodar pendências quando o app abre elevado: seja pelo botão do app, seja
+  // quando o usuário abre o executável como administrador por conta própria.
+  const explicitIntent =
+    process.argv.includes('--relaunch-elevated') ||
+    (isAdmin() && status.settings.pending.length > 0);
+  const delayMs = startedHidden && !explicitIntent ? 3 * 60_000 : 0;
+  void scheduler.catchUp({ explicitIntent, delayMs });
+
+  powerMonitor.on('resume', () => {
+    scheduler.handleResume();
+  });
+
+  if (startedHidden && !isTrayActive()) mainWindow?.show();
+}
+
+async function bootstrap(): Promise<void> {
+  const acquired = await ensureSingleInstance();
+  if (!acquired) {
+    app.quit();
+    return;
+  }
+
+  // A instância elevada que assumiu o lugar da anterior também é dona do
+  // estado: escreve seu pid para o próximo handover.
+  writeInstanceInfo({
+    pid: process.pid,
+    elevated: isAdmin(),
+    startedAt: new Date().toISOString(),
+  });
+  clearHandoverRequest();
+
+  app.on('before-quit', () => {
+    // OS desligando, atualização ou Cmd+Q: sem isso o handler de close
+    // esconderia a janela e abortaria o encerramento.
+    appState.isQuitting = true;
+  });
+
+  app.on('second-instance', () => {
+    focusMainWindow();
+  });
+
+  const handoverWatcher = watchHandoverRequests();
+
+  app.on('will-quit', () => {
+    clearInterval(handoverWatcher);
+    clearInstanceInfo(process.pid);
+  });
+
+  await app.whenReady();
+
   Menu.setApplicationMenu(null);
   electronApp.setAppUserModelId('com.fmoptimize');
 
@@ -218,6 +426,7 @@ app.whenReady().then(() => {
   registerIpcHandlers();
   setupAutoUpdater();
   createWindow();
+  setupAutoClean();
 
   // Handle elevated script execution after window is created
   handleElevatedScript();
@@ -225,8 +434,18 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+}
+
+bootstrap().catch((error: unknown) => {
+  console.error('Falha ao iniciar o FM Optimize:', error);
+  dialog.showErrorBox(
+    'FM Optimize',
+    error instanceof Error ? error.message : 'Erro inesperado ao iniciar.'
+  );
+  app.quit();
 });
 
 app.on('window-all-closed', () => {
+  if (isTrayActive()) return;
   if (process.platform !== 'darwin') app.quit();
 });

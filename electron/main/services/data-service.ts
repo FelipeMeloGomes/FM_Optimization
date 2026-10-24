@@ -10,6 +10,7 @@ import { resolve } from 'node:path';
 import { app, safeStorage } from 'electron';
 import type { AppSettings, ExecutionHistoryEntry, PageLockSettings } from '../../shared/ipc-types';
 import { rewriteHistoryScriptIds } from '../legacy-script-ids';
+import { DEFAULT_AUTO_CLEAN, parseAutoClean } from './auto-clean-settings';
 
 interface UserData {
   customScripts: Array<{ name: string; content: string; extension: string }>;
@@ -40,7 +41,23 @@ const DEFAULT_SETTINGS: AppSettings = {
   soundEnabled: true,
   toastDuration: 'medium',
   adbPath: null,
+  autoClean: DEFAULT_AUTO_CLEAN,
 };
+
+function defaultSettings(): AppSettings {
+  // Cópias: o agendador escreve em `autoClean` e não pode contaminar o default
+  // compartilhado (que é devolvido enquanto o arquivo não existe).
+  return {
+    ...DEFAULT_SETTINGS,
+    security: { ...DEFAULT_SETTINGS.security },
+    pageLock: { ...DEFAULT_PAGE_LOCK, lockedPages: [...DEFAULT_PAGE_LOCK.lockedPages] },
+    autoClean: {
+      ...DEFAULT_AUTO_CLEAN,
+      cleaners: [...DEFAULT_AUTO_CLEAN.cleaners],
+      pending: [],
+    },
+  };
+}
 
 function getDataDir(): string {
   return app.isPackaged
@@ -98,12 +115,12 @@ export function saveUserData(data: UserData): void {
 
 export function loadSettings(): AppSettings {
   const filePath = getSettingsFilePath();
-  if (!existsSync(filePath)) return DEFAULT_SETTINGS;
+  if (!existsSync(filePath)) return defaultSettings();
 
   try {
     const raw = readFileSync(filePath, 'utf-8');
     const parsed = JSON.parse(raw);
-    if (typeof parsed !== 'object' || parsed === null) return DEFAULT_SETTINGS;
+    if (typeof parsed !== 'object' || parsed === null) return defaultSettings();
     return {
       theme: ['light', 'dark', 'midnight', 'amber', 'emerald', 'batman'].includes(parsed.theme)
         ? parsed.theme
@@ -178,9 +195,10 @@ export function loadSettings(): AppSettings {
         : DEFAULT_SETTINGS.toastDuration,
       adbPath:
         typeof parsed.adbPath === 'string' && parsed.adbPath.length > 0 ? parsed.adbPath : null,
+      autoClean: parseAutoClean(parsed.autoClean),
     };
   } catch {
-    return DEFAULT_SETTINGS;
+    return defaultSettings();
   }
 }
 

@@ -38,10 +38,6 @@ export function auditLog(
   writeEntry(entry);
 }
 
-export function auditSecurity(event: string, details: Record<string, unknown> = {}): void {
-  auditLog('security', event, details);
-}
-
 export function auditAdminCheck(result: boolean, context: string): void {
   auditLog('info', 'admin_check', { result, context });
 }
@@ -66,10 +62,6 @@ export function auditScriptExecution(
 
 export function auditIpcValidation(channel: string, success: boolean, error?: string): void {
   auditLog(success ? 'info' : 'warn', 'ipc_validation', { channel, success, error });
-}
-
-export function auditPathValidation(scriptId: string, filePath: string, allowed: boolean): void {
-  auditLog(allowed ? 'info' : 'security', 'path_validation', { scriptId, filePath, allowed });
 }
 
 export function auditDenyListCheck(scriptId: string, allowed: boolean, violations: string[]): void {

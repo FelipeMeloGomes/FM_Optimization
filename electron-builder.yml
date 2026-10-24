@@ -18,9 +18,6 @@ files:
 win:
   executableName: fm-optimize
   target:
-    - target: portable
-      arch:
-        - x64
     - target: nsis
       arch:
         - x64
@@ -31,8 +28,6 @@ nsis:
   shortcutName: FM Optimize
   uninstallDisplayName: FM Optimize
   createDesktopShortcut: always
-portable:
-  artifactName: fm-optimize-portable.${ext}
 publish:
   provider: github
   owner: FelipeMeloGomes

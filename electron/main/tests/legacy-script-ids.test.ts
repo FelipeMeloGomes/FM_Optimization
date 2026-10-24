@@ -67,7 +67,7 @@ describe('LEGACY_SCRIPT_ID_ALIASES', () => {
   });
 
   it('points every alias at a merged script, and merges both vendors in one', () => {
-    for (const [legacy, merged] of Object.entries(LEGACY_SCRIPT_ID_ALIASES)) {
+    for (const merged of Object.values(LEGACY_SCRIPT_ID_ALIASES)) {
       expect(merged).toMatch(/^cpu-\d+$/);
     }
 

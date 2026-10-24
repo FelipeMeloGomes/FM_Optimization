@@ -43,6 +43,19 @@ const DEFAULT: AppSettings = {
   soundEnabled: true,
   toastDuration: 'medium',
   adbPath: null,
+  autoClean: {
+    enabled: false,
+    cleaners: ['cleaner-1', 'cleaner-2', 'cleaner-3', 'cleaner-4'],
+    frequency: 'weekly',
+    weekday: 0,
+    dayOfMonth: 1,
+    time: '03:00',
+    runOnStartup: false,
+    catchUp: true,
+    lastRunAt: null,
+    nextRunAt: null,
+    pending: [],
+  },
 };
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } {

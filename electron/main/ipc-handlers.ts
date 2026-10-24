@@ -6,6 +6,7 @@ import type {
   IpcResult,
   SetPageLockPasswordResult,
 } from '../shared/ipc-types';
+import { appState } from './app-state';
 import { auditIpcValidation } from './audit-logger';
 import { resolveScriptId } from './legacy-script-ids';
 import {
@@ -27,8 +28,10 @@ import {
   setAdbPath,
 } from './services/adb';
 import { isAdmin } from './services/admin-check';
+import { getAutoCleanScheduler } from './services/auto-clean';
 import { getCleanerStats } from './services/cleaner-stats';
 import { loadSettings, loadUserData, saveSettings, saveUserData } from './services/data-service';
+import { relaunchElevated } from './services/elevation';
 import { generateSalt, hashPassword, verifyPassword } from './services/page-lock';
 import { execPowerShell, execPowerShellSafe } from './services/powershell';
 import { checkRateLimit } from './services/rate-limit';
@@ -143,9 +146,51 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('save-settings', (_e, settings) => {
     return handleIpc('save-settings', settings, (validated) => {
-      saveSettings(validated as AppSettings);
+      const incoming = validated as AppSettings;
+      const current = loadSettings();
+      // `lastRunAt`, `nextRunAt` e `pending` pertencem ao agendador. O renderer
+      // pode estar com uma cópia antiga; sobrescrever apagaria pendências.
+      const merged: AppSettings = {
+        ...incoming,
+        autoClean: {
+          ...incoming.autoClean,
+          lastRunAt: current.autoClean.lastRunAt,
+          nextRunAt: current.autoClean.nextRunAt,
+          pending: current.autoClean.pending,
+        },
+      };
+      saveSettings(merged);
+      const scheduler = getAutoCleanScheduler();
+      // `merged` já está em disco: sem o estado anterior o scheduler não teria
+      // como saber se o agendamento mudou e não reagendaria.
+      scheduler.applyConfig(merged.autoClean, current.autoClean);
+      scheduler.syncLaunchAtLogin();
     });
   });
+
+  ipcMain.handle('get-auto-clean-status', () =>
+    handleIpcNoInput('get-auto-clean-status', () => getAutoCleanScheduler().getStatus())
+  );
+
+  ipcMain.handle('run-cleaner-now', (_e, payload: unknown) =>
+    handleIpc('run-cleaner-now', payload, async (validated) => {
+      const { cleanerIds } = validated as { cleanerIds: string[] };
+      return getAutoCleanScheduler().runNow(cleanerIds);
+    })
+  );
+
+  ipcMain.handle('run-auto-clean-pending', () =>
+    handleIpcNoInput('run-auto-clean-pending', () =>
+      getAutoCleanScheduler().runNow(getAutoCleanScheduler().getStatus().settings.pending)
+    )
+  );
+
+  ipcMain.handle('discard-pending-cleaners', (_e, payload: unknown) =>
+    handleIpc('discard-pending-cleaners', payload, (validated) => {
+      const { cleanerIds } = validated as { cleanerIds: string[] };
+      return getAutoCleanScheduler().discardPending(cleanerIds);
+    })
+  );
 
   ipcMain.handle('verify-page-lock-password', (_e, payload: unknown) => {
     return handleIpc('verify-page-lock-password', payload, (validated) => {
@@ -480,6 +525,7 @@ export function registerIpcHandlers(): void {
         scriptId?: string;
         dnsInterfaceIndex?: number;
         dnsAddresses?: string[];
+        relaunch?: boolean;
       }) => {
         // Validate scriptId against allowlist
         if (validated.scriptId) {
@@ -490,10 +536,16 @@ export function registerIpcHandlers(): void {
           }
         }
 
-        const { spawn } = require('node:child_process');
-
-        const exePath = process.execPath;
-        const args = process.argv.slice(1).filter((arg) => !arg.startsWith('--elevate-script'));
+        const args = process.argv
+          .slice(1)
+          .filter(
+            (arg) =>
+              !arg.startsWith('--elevate-script') &&
+              !arg.startsWith('--elevate-dns') &&
+              !arg.startsWith('--wait-pid') &&
+              !arg.startsWith('--relaunch-elevated') &&
+              arg !== '--hidden'
+          );
 
         if (validated.scriptId) {
           // Hand the elevated process the current id, so history and the audit
@@ -510,28 +562,27 @@ export function registerIpcHandlers(): void {
           );
         }
 
-        // Use spawn with detached to properly elevate
-        return new Promise((resolve, _reject) => {
-          const elevated = spawn(
-            'powershell.exe',
-            [
-              '-Command',
-              `Start-Process -FilePath "${exePath}" -ArgumentList "${args.map((a) => `"${a.replace(/"/g, '\\"')}"`).join(' ')}" -Verb RunAs -Wait`,
-            ],
-            {
-              detached: true,
-              stdio: 'ignore',
-            }
-          );
+        if (validated.relaunch) {
+          // Intenção explícita: a instância elevada roda as pendências ao abrir
+          // e mostra o app, para o usuário ver o resultado.
+          args.push('--relaunch-elevated');
+        }
 
-          elevated.unref();
+        // A instância atual vai encerrar depois do UAC; o filho espera ela sair
+        // para assumir o single-instance lock em vez de rodar como instância
+        // paralela (que deixaria duas cópias do app abertas).
+        args.push(`--wait-pid=${process.pid}`);
 
-          // Exit current non-elevated process after spawning elevated one
-          setTimeout(() => {
-            app.quit();
-            resolve({ success: true });
-          }, 500);
-        });
+        const result = await relaunchElevated(args);
+
+        if (result.launched) {
+          // Só encerra depois do ShellExecuteEx confirmar. O pequeno atraso é
+          // para a resposta do IPC chegar ao renderer antes do quit.
+          appState.isQuitting = true;
+          setTimeout(() => app.quit(), 150);
+        }
+
+        return result;
       }
     )
   );

@@ -10,9 +10,27 @@ import { extractScriptToTemp, getScriptById } from './script-registry';
 
 const activeProcesses = new Map<string, ChildProcess>();
 
-function sendEnded(win: BrowserWindow, data: ScriptEnded): void {
-  if (!win.isDestroyed()) {
-    win.webContents.send('script-ended', JSON.stringify(data));
+interface ScriptRunCompletion {
+  code: number | null;
+  cancelled: boolean;
+}
+
+interface RunOptions {
+  trigger: 'manual' | 'scheduled';
+  /** Janela que recebe `script-ended`. Sem janela, o evento vai para todas. */
+  win?: BrowserWindow | null;
+  /** Ponto de restauração é caro; limpeza agendada não cria. */
+  createRestorePoint?: boolean;
+}
+
+function notifyEnded(data: ScriptEnded, win?: BrowserWindow | null): void {
+  const payload = JSON.stringify(data);
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('script-ended', payload);
+    return;
+  }
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (!window.isDestroyed()) window.webContents.send('script-ended', payload);
   }
 }
 
@@ -22,7 +40,8 @@ function createHistoryEntry(
   startTime: number,
   endTime: number,
   exitCode: number | null,
-  wasCancelled: boolean
+  wasCancelled: boolean,
+  trigger: 'manual' | 'scheduled'
 ): ExecutionHistoryEntry {
   return {
     id: `${scriptId}_${startTime}`,
@@ -33,13 +52,18 @@ function createHistoryEntry(
     durationMs: endTime - startTime,
     exitCode,
     wasCancelled,
+    trigger,
   };
 }
 
-export function executeScript(id: string): string {
-  const win = BrowserWindow.getFocusedWindow();
-  if (!win) throw new Error('Nenhuma janela ativa');
-
+/**
+ * Núcleo compartilhado entre a execução manual (com janela) e a agendada
+ * (silenciosa). A validação de admin e de caminho vale para as duas.
+ */
+function startRun(
+  id: string,
+  options: RunOptions
+): { status: 'opened' | 'started'; completion: Promise<ScriptRunCompletion> } {
   if (activeProcesses.has(id)) {
     throw new Error(`Script "${id}" já está em execução`);
   }
@@ -63,7 +87,7 @@ export function executeScript(id: string): string {
 
   const ext = filePath.split('.').pop()?.toLowerCase() as ScriptExtension | undefined;
 
-  if (loadSettings().autoRestorePoint && script) {
+  if (options.createRestorePoint !== false && loadSettings().autoRestorePoint && script) {
     const safeName = script.name
       .replace(/[^a-zA-Z0-9 áéíóúàèìòùâêîôûãõçÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕÇ\s.:_-]/g, '')
       .trim();
@@ -88,11 +112,13 @@ export function executeScript(id: string): string {
       shell: true,
     });
     proc.unref();
-    sendEnded(win, { id, code: 0, scriptName: script?.name });
+    notifyEnded({ id, code: 0, scriptName: script?.name, trigger: options.trigger }, options.win);
     const now = Date.now();
-    addHistoryEntry(createHistoryEntry(id, script?.name || id, now, now, 0, false));
+    addHistoryEntry(
+      createHistoryEntry(id, script?.name || id, now, now, 0, false, options.trigger)
+    );
     auditScriptExecution(id, script?.name || id, false, true, 0, true);
-    return 'opened';
+    return { status: 'opened', completion: Promise.resolve({ code: 0, cancelled: false }) };
   }
 
   const { command, args } = getCommand(ext, filePath);
@@ -103,47 +129,73 @@ export function executeScript(id: string): string {
 
   activeProcesses.set(id, proc);
 
-  proc.stdout?.on('data', (_data: Buffer) => {
-    // Output streaming removed — no preload listener for script-output
-  });
-
-  proc.stderr?.on('data', (_data: Buffer) => {
-    // Error streaming removed — no preload listener for script-error
-  });
+  // Sem isso os pipes enchem e o processo filho trava esperando alguém ler.
+  proc.stdout?.on('data', () => {});
+  proc.stderr?.on('data', () => {});
 
   const startTime = Date.now();
 
-  proc.on('close', (code) => {
-    activeProcesses.delete(id);
-    sendEnded(win, { id, code, scriptName: script?.name });
-    const endTime = Date.now();
-    addHistoryEntry(createHistoryEntry(id, script?.name || id, startTime, endTime, code, false));
-    auditScriptExecution(
-      id,
-      script?.name || id,
-      script?.requiresAdmin ?? false,
-      script?.requiresAdmin ? isAdmin() : true,
-      code,
-      code === 0
-    );
+  const completion = new Promise<ScriptRunCompletion>((resolve) => {
+    proc.on('close', (code) => {
+      activeProcesses.delete(id);
+      notifyEnded({ id, code, scriptName: script?.name, trigger: options.trigger }, options.win);
+      const endTime = Date.now();
+      addHistoryEntry(
+        createHistoryEntry(id, script?.name || id, startTime, endTime, code, false, options.trigger)
+      );
+      auditScriptExecution(
+        id,
+        script?.name || id,
+        script?.requiresAdmin ?? false,
+        script?.requiresAdmin ? isAdmin() : true,
+        code,
+        code === 0
+      );
+      resolve({ code, cancelled: false });
+    });
+
+    proc.on('error', (_err) => {
+      activeProcesses.delete(id);
+      notifyEnded(
+        { id, code: -1, scriptName: script?.name, trigger: options.trigger },
+        options.win
+      );
+      const endTime = Date.now();
+      addHistoryEntry(
+        createHistoryEntry(id, script?.name || id, startTime, endTime, -1, false, options.trigger)
+      );
+      auditScriptExecution(
+        id,
+        script?.name || id,
+        script?.requiresAdmin ?? false,
+        script?.requiresAdmin ? isAdmin() : true,
+        -1,
+        false
+      );
+      resolve({ code: -1, cancelled: false });
+    });
   });
 
-  proc.on('error', (_err) => {
-    activeProcesses.delete(id);
-    sendEnded(win, { id, code: -1, scriptName: script?.name });
-    const endTime = Date.now();
-    addHistoryEntry(createHistoryEntry(id, script?.name || id, startTime, endTime, -1, false));
-    auditScriptExecution(
-      id,
-      script?.name || id,
-      script?.requiresAdmin ?? false,
-      script?.requiresAdmin ? isAdmin() : true,
-      -1,
-      false
-    );
-  });
+  return { status: 'started', completion };
+}
 
-  return 'started';
+export function executeScript(id: string): string {
+  const win = BrowserWindow.getFocusedWindow();
+  if (!win) throw new Error('Nenhuma janela ativa');
+
+  return startRun(id, { trigger: 'manual', win }).status;
+}
+
+/**
+ * Caminho sem janela, usado pelo agendador. Aguarda o processo terminar para
+ * que a fila de limpezas rode em série e o estado final seja conhecido.
+ */
+export function runScriptSilently(id: string): Promise<ScriptRunCompletion> {
+  return startRun(id, {
+    trigger: 'scheduled',
+    win: null,
+    createRestorePoint: false,
+  }).completion;
 }
 
 export function cancelExecution(id: string): void {
@@ -160,7 +212,7 @@ export function cancelExecution(id: string): void {
     }
     const script = getScriptById(id);
     const now = Date.now();
-    addHistoryEntry(createHistoryEntry(id, script?.name || id, now, now, null, true));
+    addHistoryEntry(createHistoryEntry(id, script?.name || id, now, now, null, true, 'manual'));
     auditScriptExecution(id, script?.name || id, script?.requiresAdmin ?? false, true, null, false);
     activeProcesses.delete(id);
   }

@@ -5,20 +5,25 @@ import {
   FileIcon,
   Globe,
   RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
   Trash2,
+  X,
   Zap,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CleanerCardSkeleton } from '../components/CleanerCardSkeleton';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { ScriptBadge } from '../components/ScriptBadge';
 import { Button } from '../components/ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
+import { useAutoCleanContext } from '../contexts/AutoCleanContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { formatBytes, useCleanerStats } from '../hooks/use-cleaner-stats';
 import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
+import { cleanerName } from '../lib/cleaner-options';
 import { cn } from '../lib/utils';
 
 interface CleanerCard {
@@ -192,6 +197,17 @@ export default function CleanerPage() {
   const { settings } = useSettingsContext();
   const isScriptApplied = useIsScriptApplied();
 
+  const {
+    status: autoCleanStatus,
+    runPending: runAutoCleanPending,
+    discard: discardPending,
+    relaunchAsAdmin,
+  } = useAutoCleanContext();
+  const pendingCleaners = autoCleanStatus?.settings.pending ?? [];
+  const autoCleanRunning = autoCleanStatus?.running ?? false;
+  const autoCleanIsAdmin = autoCleanStatus?.isAdmin ?? false;
+  const [confirmDiscardAll, setConfirmDiscardAll] = useState(false);
+
   const getScriptData = useCallback(
     (scriptId: string) => cleanerScripts.find((s) => s.id === scriptId),
     [cleanerScripts]
@@ -234,6 +250,10 @@ export default function CleanerPage() {
         }, 0);
 
         refresh();
+
+        // Limpeza agendada já é anunciada pelo AutoCleanProvider; aqui o toast
+        // sairia duplicado. Atualizar as estatísticas continua valendo.
+        if (data.trigger === 'scheduled') return;
 
         if (freedBytes > 0) {
           showEnhancedToast({
@@ -288,6 +308,75 @@ export default function CleanerPage() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="space-y-6">
+        {pendingCleaners.length > 0 && (
+          <section
+            aria-label="Limpezas pendentes"
+            className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <ShieldAlert className="mt-0.5 size-4 shrink-0 text-amber-400" aria-hidden="true" />
+              <div className="flex-1 space-y-2">
+                <p className="text-sm font-medium text-amber-400">
+                  {pendingCleaners.length} limpeza(s) automática(s) aguardando administrador
+                </p>
+                <ul className="flex flex-wrap gap-2">
+                  {pendingCleaners.map((id) => (
+                    <li key={id}>
+                      <span className="inline-flex items-center gap-1 rounded-md border border-border bg-background/50 py-0.5 pl-2 pr-1 text-xs text-foreground">
+                        {cleanerName(id)}
+                        <button
+                          type="button"
+                          aria-label={`Descartar pendência de ${cleanerName(id)}`}
+                          onClick={() => void discardPending([id])}
+                          className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        >
+                          <X className="size-3" aria-hidden="true" />
+                        </button>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2 sm:pl-7">
+              <Button
+                size="sm"
+                onClick={() => void runAutoCleanPending()}
+                disabled={autoCleanRunning}
+                className="gap-1.5"
+              >
+                Executar agora
+              </Button>
+              {!autoCleanIsAdmin && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => void relaunchAsAdmin()}
+                  className="gap-1.5"
+                >
+                  <ShieldCheck className="size-3.5" aria-hidden="true" />
+                  Reiniciar como admin
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant={confirmDiscardAll ? 'destructive' : 'ghost'}
+                onClick={() => {
+                  if (confirmDiscardAll) {
+                    void discardPending(pendingCleaners);
+                    setConfirmDiscardAll(false);
+                    return;
+                  }
+                  setConfirmDiscardAll(true);
+                }}
+                onBlur={() => setConfirmDiscardAll(false)}
+              >
+                {confirmDiscardAll ? 'Confirmar descarte' : 'Descartar todas'}
+              </Button>
+            </div>
+          </section>
+        )}
+
         {/* Hero Banner */}
         <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
           <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">

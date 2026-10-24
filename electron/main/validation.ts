@@ -34,6 +34,33 @@ export const PageLockSchema = z.object({
   unlocked: z.boolean().default(false),
 });
 
+export const CleanerIdSchema = z.string().regex(/^cleaner-\d+$/, 'Invalid cleaner id');
+
+export const AutoCleanSchema = z.object({
+  enabled: z.boolean().default(false),
+  cleaners: z
+    .array(CleanerIdSchema)
+    .min(1)
+    .max(4)
+    .default(['cleaner-1', 'cleaner-2', 'cleaner-3', 'cleaner-4']),
+  frequency: z.enum(['daily', 'weekly', 'monthly']).default('weekly'),
+  weekday: z.number().int().min(0).max(6).nullable().default(0),
+  dayOfMonth: z.number().int().min(1).max(28).nullable().default(1),
+  time: z
+    .string()
+    .regex(/^(?:[01]?\d|2[0-3]):[0-5]\d$/)
+    .default('03:00'),
+  runOnStartup: z.boolean().default(false),
+  catchUp: z.boolean().default(true),
+  lastRunAt: z.number().nullable().default(null),
+  nextRunAt: z.number().nullable().default(null),
+  pending: z.array(CleanerIdSchema).default([]),
+});
+
+export const CleanerIdsPayloadSchema = z.object({
+  cleanerIds: z.array(CleanerIdSchema).min(1).max(4),
+});
+
 export const SettingsSchema = z.object({
   theme: z.enum(['light', 'dark', 'midnight', 'amber', 'emerald', 'batman']).default('dark'),
   accentColor: z
@@ -48,6 +75,7 @@ export const SettingsSchema = z.object({
   soundEnabled: z.boolean().default(true),
   toastDuration: z.enum(['short', 'medium', 'long']).default('medium'),
   adbPath: z.string().nullable().default(null),
+  autoClean: AutoCleanSchema.default(() => AutoCleanSchema.parse({})),
 });
 
 export const VerifyPageLockPasswordSchema = z.object({
@@ -62,6 +90,7 @@ export const elevateAppSchema = z.object({
   scriptId: ScriptIdSchema.optional(),
   dnsInterfaceIndex: InterfaceIndexSchema.optional(),
   dnsAddresses: DnsAddressesSchema.optional(),
+  relaunch: z.boolean().optional(),
 });
 
 export const applyDnsSchema = z.object({
@@ -191,6 +220,10 @@ export const IpcSchemas: Record<string, z.ZodSchema> = {
   'benchmark-dns': benchmarkDnsSchema,
   'apply-dns': applyDnsSchema,
   'elevate-app': elevateAppSchema,
+  'get-auto-clean-status': z.undefined(),
+  'run-cleaner-now': CleanerIdsPayloadSchema,
+  'run-auto-clean-pending': z.undefined(),
+  'discard-pending-cleaners': CleanerIdsPayloadSchema,
   'window-minimize': z.undefined(),
   'window-close': z.undefined(),
   'export-data': z.undefined(),

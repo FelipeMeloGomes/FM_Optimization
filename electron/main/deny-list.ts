@@ -42,7 +42,3 @@ export function checkScriptContent(content: string): { allowed: boolean; violati
 export function isExtensionAllowed(ext: string): ext is AllowedExtension {
   return ALLOWED_EXTENSIONS.includes(ext.toLowerCase() as AllowedExtension);
 }
-
-export function sanitizeFileName(name: string): string {
-  return name.replace(/[/\\:*?"<>|]/g, '_');
-}

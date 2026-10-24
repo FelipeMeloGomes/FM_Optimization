@@ -157,6 +157,7 @@ export default function HistoryPage() {
               <TableHeader>
                 <TableRow className="bg-muted/30">
                   <TableHead>Script</TableHead>
+                  <TableHead>Origem</TableHead>
                   <TableHead>Data</TableHead>
                   <TableHead>Duração</TableHead>
                   <TableHead>Status</TableHead>
@@ -166,6 +167,15 @@ export default function HistoryPage() {
                 {history.map((entry) => (
                   <TableRow key={entry.id}>
                     <TableCell className="font-medium">{entry.scriptName}</TableCell>
+                    <TableCell>
+                      {entry.trigger === 'scheduled' ? (
+                        <Badge variant="secondary" className="gap-1 text-primary bg-primary/10">
+                          <Clock className="size-3" /> Automática
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Manual</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       <div className="flex items-center gap-1.5">
                         <Clock className="size-3" />

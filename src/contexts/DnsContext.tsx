@@ -86,9 +86,24 @@ export function DnsProvider({ children }: { children: ReactNode }) {
           setApplyStatus('elevating');
           try {
             const addresses = provider.isDhcp ? [] : [provider.primary, provider.secondary];
-            await window.electronAPI.elevateApp(undefined, networkInfo.interfaceIndex, addresses);
-            // Após elevar, a nova instância vai executar automaticamente
-            // O usuário vai ver o app reiniciar como admin
+            const result = await window.electronAPI.elevateApp(
+              undefined,
+              networkInfo.interfaceIndex,
+              addresses
+            );
+            if (!result.launched) {
+              // UAC cancelado (ou falha): o app atual continua vivo e o DNS
+              // segue como estava.
+              setApplyStatus('error');
+              setApplyError(
+                result.cancelled
+                  ? 'Elevação cancelada. O DNS não foi alterado.'
+                  : `Falha ao elevar privilégios: ${result.error ?? 'erro desconhecido'}`
+              );
+              setTimeout(() => setApplyStatus('idle'), 4000);
+            }
+            // A instância elevada aplica o DNS e substitui esta (o renderer
+            // desta janela encerra junto).
           } catch {
             // Se falhar ao elevar, mostra erro
             setApplyStatus('error');

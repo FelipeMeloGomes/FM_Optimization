@@ -80,7 +80,3 @@ export const THEMES: ThemeConfig[] = [
 export function getThemeById(id: AppSettings['theme']): ThemeConfig {
   return THEMES.find((t) => t.id === id) ?? THEMES[1];
 }
-
-export function getDarkThemes(): ThemeConfig[] {
-  return THEMES.filter((t) => t.isDark);
-}

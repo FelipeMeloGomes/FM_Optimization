@@ -9,7 +9,8 @@ import type { ExecutionHistoryEntry, ScriptEntry } from '../../electron/shared/i
  *   registro em várias faixas; cpu-11/cpu-12 são a mesma lista de serviços);
  * - ajustes que conflitam entre si (internet-5 anula internet-1).
  *
- * Regra única: o que o selo mostra é exatamente o que o contador soma.
+ * A lista vale para o selo "Aplicado"; o contador do Dashboard aplica ainda o
+ * filtro de categoria (`countsAsTweak`).
  */
 export const NON_COUNTABLE_SCRIPT_IDS: ReadonlySet<string> = new Set([
   'builtin-6', // AMD - Reverter 3 Frames
@@ -29,7 +30,10 @@ export const NON_COUNTABLE_SCRIPT_IDS: ReadonlySet<string> = new Set([
 interface CountableScriptLike {
   id: string;
   interactive?: boolean;
+  category?: string;
 }
+
+const TWEAK_EXCLUDED_CATEGORIES: ReadonlySet<string> = new Set(['Cleaner']);
 
 /**
  * Interativos ficam de fora: o histórico grava `exitCode 0` no instante em que a
@@ -38,6 +42,15 @@ interface CountableScriptLike {
  */
 export function isCountableScript(script: CountableScriptLike): boolean {
   return script.interactive !== true && !NON_COUNTABLE_SCRIPT_IDS.has(script.id);
+}
+
+/**
+ * Contador do Dashboard: limpeza não é ajuste aplicado. A página Limpeza tem
+ * selo próprio e continua usando `isCountableScript` — separar as duas regras
+ * evita que uma limpeza agendada infle o número de tweaks.
+ */
+function countsAsTweak(script: CountableScriptLike): boolean {
+  return isCountableScript(script) && !TWEAK_EXCLUDED_CATEGORIES.has(script.category ?? '');
 }
 
 /** Ids com pelo menos uma execução bem-sucedida no histórico (cancelado/erro não conta). */
@@ -53,7 +66,8 @@ export function collectAppliedScriptIds(history: ExecutionHistoryEntry[]): Set<s
 
 /**
  * Ajustes elegíveis (para o denominador) e aplicados (para o numerador), sempre
- * com o mesmo filtro — assim o numerador nunca passa o denominador.
+ * com o mesmo filtro — assim o numerador nunca passa o denominador. Limpeza
+ * fica fora dos dois lados: não é tweak, tem página e histórico próprios.
  */
 export function summarizeAppliedScripts(
   scripts: ScriptEntry[],
@@ -61,7 +75,7 @@ export function summarizeAppliedScripts(
 ): { applied: number; total: number } {
   const eligibleIds = new Set<string>();
   for (const script of scripts) {
-    if (isCountableScript(script)) eligibleIds.add(script.id);
+    if (countsAsTweak(script)) eligibleIds.add(script.id);
   }
 
   const appliedIds = new Set<string>();

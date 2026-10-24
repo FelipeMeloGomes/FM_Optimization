@@ -4,12 +4,15 @@ import type {
   AdbChoosePathResult,
   AdbDevice,
   AppSettings,
+  AutoCleanRunResult,
+  AutoCleanStatus,
   BenchmarkResult,
   CleanerStats,
   CpuInfo,
   DashboardData,
   DownloadProgress,
   ElectronAPI,
+  ElevatedLaunchResult,
   ExecutionHistoryEntry,
   ExportData,
   IpcResult,
@@ -46,6 +49,8 @@ const updateInfoCallbacks = new Set<(data: UpdateInfo) => void>();
 const downloadProgressCallbacks = new Set<(data: DownloadProgress) => void>();
 const benchmarkProgressCallbacks = new Set<(data: { current: number; total: number }) => void>();
 const benchmarkResultCallbacks = new Set<(data: BenchmarkResult) => void>();
+const autoCleanStatusCallbacks = new Set<(status: AutoCleanStatus) => void>();
+const autoCleanFinishedCallbacks = new Set<(result: AutoCleanRunResult) => void>();
 
 function setupListeners(): void {
   ipcRenderer.on('script-ended', (_e: IpcRendererEvent, raw: string) => {
@@ -88,6 +93,18 @@ function setupListeners(): void {
 
   ipcRenderer.on('benchmark-result', (_e: IpcRendererEvent, data: BenchmarkResult) => {
     benchmarkResultCallbacks.forEach((cb) => {
+      cb(data);
+    });
+  });
+
+  ipcRenderer.on('auto-clean-status', (_e: IpcRendererEvent, data: AutoCleanStatus) => {
+    autoCleanStatusCallbacks.forEach((cb) => {
+      cb(data);
+    });
+  });
+
+  ipcRenderer.on('auto-clean-finished', (_e: IpcRendererEvent, data: AutoCleanRunResult) => {
+    autoCleanFinishedCallbacks.forEach((cb) => {
       cb(data);
     });
   });
@@ -150,8 +167,32 @@ const electronAPI: ElectronAPI = {
     ipcVoid('apply-dns', { interfaceIndex, addresses }),
   minimizeWindow: () => ipcVoid('window-minimize'),
   closeWindow: () => ipcVoid('window-close'),
-  elevateApp: (scriptId?: string, dnsInterfaceIndex?: number, dnsAddresses?: string[]) =>
-    ipcVoid('elevate-app', { scriptId, dnsInterfaceIndex, dnsAddresses }),
+  elevateApp: (
+    scriptId?: string,
+    dnsInterfaceIndex?: number,
+    dnsAddresses?: string[],
+    relaunch?: boolean
+  ) =>
+    ipc<ElevatedLaunchResult>('elevate-app', {
+      scriptId,
+      dnsInterfaceIndex,
+      dnsAddresses,
+      relaunch,
+    }),
+  getAutoCleanStatus: () => ipc<AutoCleanStatus>('get-auto-clean-status'),
+  runCleanerNow: (cleanerIds: string[]) =>
+    ipc<AutoCleanRunResult>('run-cleaner-now', { cleanerIds }),
+  runAutoCleanPending: () => ipc<AutoCleanRunResult>('run-auto-clean-pending'),
+  discardPendingCleaners: (cleanerIds: string[]) =>
+    ipc<AutoCleanStatus>('discard-pending-cleaners', { cleanerIds }),
+  onAutoCleanStatus: (cb: (status: AutoCleanStatus) => void) => {
+    autoCleanStatusCallbacks.add(cb);
+    return () => autoCleanStatusCallbacks.delete(cb);
+  },
+  onAutoCleanFinished: (cb: (result: AutoCleanRunResult) => void) => {
+    autoCleanFinishedCallbacks.add(cb);
+    return () => autoCleanFinishedCallbacks.delete(cb);
+  },
   exportData: () => ipc<ExportData>('export-data'),
   importData: (jsonData: string) => ipc<{ success: boolean }>('import-data', jsonData),
   adbGetPath: () => ipc<string>('adb:get-path'),

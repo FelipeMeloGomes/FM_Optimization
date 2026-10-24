@@ -111,8 +111,8 @@ describe('summarizeAppliedScripts', () => {
       entry({ scriptId: 'tweaks-1' }),
       entry({ scriptId: 'cleaner-3' }),
     ]);
-    // elegíveis: tweaks-1, cleaner-3, util-1 (interativo e cpu-37 fora)
-    expect(summary).toEqual({ applied: 2, total: 3 });
+    // elegíveis: tweaks-1 e util-1 (limpeza, interativo e cpu-37 fora)
+    expect(summary).toEqual({ applied: 1, total: 2 });
   });
 
   it('aplicado fora do conjunto elegível não infla o numerador', () => {
