@@ -32,6 +32,12 @@ import { getAutoCleanScheduler } from './services/auto-clean';
 import { getCleanerStats } from './services/cleaner-stats';
 import { loadSettings, loadUserData, saveSettings, saveUserData } from './services/data-service';
 import { relaunchElevated } from './services/elevation';
+import {
+  cancelEssentialInstall,
+  installEssential,
+  listEssentials,
+  openEssentialPage,
+} from './services/essentials';
 import { generateSalt, hashPassword, verifyPassword } from './services/page-lock';
 import { execPowerShell, execPowerShellSafe } from './services/powershell';
 import { checkRateLimit } from './services/rate-limit';
@@ -516,6 +522,24 @@ export function registerIpcHandlers(): void {
       return getCleanerStats(validated as string);
     });
   });
+
+  ipcMain.handle('essentials:list', () =>
+    handleIpcNoInput('essentials:list', () => listEssentials())
+  );
+
+  ipcMain.handle('essentials:open-page', (_e, id: string) =>
+    handleIpc('essentials:open-page', id, (validated) => openEssentialPage(validated as string))
+  );
+
+  ipcMain.handle('essentials:install', (_e, id: string) =>
+    handleIpc('essentials:install', id, (validated) => installEssential(validated as string))
+  );
+
+  ipcMain.handle('essentials:cancel-install', (_e, id: string) =>
+    handleIpc('essentials:cancel-install', id, (validated) => {
+      cancelEssentialInstall(validated as string);
+    })
+  );
 
   ipcMain.handle('elevate-app', (_e, payload: unknown) =>
     handleIpc(

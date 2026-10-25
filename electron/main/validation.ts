@@ -193,6 +193,8 @@ export const adbListInstancesSchema = z.object({
 
 export const getCleanerStatsSchema = z.string().min(1, 'Cleaner ID is required');
 
+export const essentialIdSchema = z.string().min(1, 'Program ID is required').max(64);
+
 export const IpcSchemas: Record<string, z.ZodSchema> = {
   'get-system-info': z.undefined(),
   'get-cpu-info': z.undefined(),
@@ -244,6 +246,10 @@ export const IpcSchemas: Record<string, z.ZodSchema> = {
   'adb:clear-removed-history': z.undefined(),
   'adb:list-instances': adbListInstancesSchema,
   'get-cleaner-stats': getCleanerStatsSchema,
+  'essentials:list': z.undefined(),
+  'essentials:open-page': essentialIdSchema,
+  'essentials:install': essentialIdSchema,
+  'essentials:cancel-install': essentialIdSchema,
 };
 
 export function validateIpcInput<T>(

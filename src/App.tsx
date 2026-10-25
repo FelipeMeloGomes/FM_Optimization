@@ -24,6 +24,8 @@ const InputLagPage = lazy(() => import('./pages/InputLagPage'));
 const TweaksPage = lazy(() => import('./pages/TweaksPage'));
 const UtilitiesPage = lazy(() => import('./pages/UtilitiesPage'));
 const AppsPage = lazy(() => import('./pages/AppsPage'));
+const DebloatPage = lazy(() => import('./pages/DebloatPage'));
+const EssentialsPage = lazy(() => import('./pages/EssentialsPage'));
 const EmuladoresPage = lazy(() => import('./pages/EmuladoresPage'));
 
 function PageLoader() {
@@ -102,6 +104,22 @@ export default function App() {
                 element={
                   <ProtectedRoute path="/apps">
                     <AppsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/debloat"
+                element={
+                  <ProtectedRoute path="/debloat">
+                    <DebloatPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/essenciais"
+                element={
+                  <ProtectedRoute path="/essenciais">
+                    <EssentialsPage />
                   </ProtectedRoute>
                 }
               />

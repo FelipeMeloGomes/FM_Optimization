@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScriptContext } from '../contexts/ScriptContext';
 import { useMemoryContext } from '../contexts/SystemContext';
-import { getCategoryRoute } from '../lib/category-routes';
+import { getScriptRoute } from '../lib/category-routes';
 import { getRamScriptId } from '../lib/ram-script';
 import { cn } from '../lib/utils';
 import { ScriptBadge } from './ScriptBadge';
@@ -85,7 +85,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         e.preventDefault();
         setSelectedIndex((i) => Math.max(i - 1, 0));
       } else if (e.key === 'Enter' && filtered[selectedIndex]) {
-        navigate(getCategoryRoute(filtered[selectedIndex].category));
+        navigate(getScriptRoute(filtered[selectedIndex]));
         onClose();
       }
     }
@@ -130,7 +130,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     : 'text-foreground hover:bg-muted'
                 )}
                 onClick={() => {
-                  navigate(getCategoryRoute(script.category));
+                  navigate(getScriptRoute(script));
                   onClose();
                 }}
                 onMouseEnter={() => setSelectedIndex(index)}

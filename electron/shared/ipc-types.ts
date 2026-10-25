@@ -198,6 +198,28 @@ export interface DownloadProgress {
   transferred: number;
 }
 
+export interface EssentialListItem {
+  id: string;
+  name: string;
+  description: string;
+  pageUrl: string;
+  /** Id do pacote no winget, mostrado na UI para conferencia. */
+  packageId: string;
+  warning?: string;
+}
+
+export interface EssentialInstallProgress {
+  id: string;
+  status: 'downloading' | 'installing';
+  /** Progresso do download feito pelo winget, ou null quando ainda nao ha barra. */
+  percent: number | null;
+}
+
+export interface EssentialInstallResult {
+  id: string;
+  alreadyInstalled: boolean;
+}
+
 export interface NetworkInfo {
   interfaceName: string;
   interfaceIndex: number;
@@ -378,4 +400,9 @@ export interface ElectronAPI {
   adbClearRemovedHistory(): Promise<void>;
   adbListInstances(emulatorId: string): Promise<AdbInstance[]>;
   getCleanerStats(cleanerId: string): Promise<CleanerStats>;
+  getEssentials(): Promise<EssentialListItem[]>;
+  openEssentialPage(id: string): Promise<void>;
+  installEssential(id: string): Promise<EssentialInstallResult>;
+  cancelEssentialInstall(id: string): Promise<void>;
+  onEssentialInstallProgress(cb: (data: EssentialInstallProgress) => void): () => void;
 }

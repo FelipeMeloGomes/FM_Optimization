@@ -13,6 +13,9 @@ import type {
   DownloadProgress,
   ElectronAPI,
   ElevatedLaunchResult,
+  EssentialInstallProgress,
+  EssentialInstallResult,
+  EssentialListItem,
   ExecutionHistoryEntry,
   ExportData,
   IpcResult,
@@ -51,6 +54,7 @@ const benchmarkProgressCallbacks = new Set<(data: { current: number; total: numb
 const benchmarkResultCallbacks = new Set<(data: BenchmarkResult) => void>();
 const autoCleanStatusCallbacks = new Set<(status: AutoCleanStatus) => void>();
 const autoCleanFinishedCallbacks = new Set<(result: AutoCleanRunResult) => void>();
+const essentialInstallCallbacks = new Set<(data: EssentialInstallProgress) => void>();
 
 function setupListeners(): void {
   ipcRenderer.on('script-ended', (_e: IpcRendererEvent, raw: string) => {
@@ -108,6 +112,15 @@ function setupListeners(): void {
       cb(data);
     });
   });
+
+  ipcRenderer.on(
+    'essential-install-progress',
+    (_e: IpcRendererEvent, data: EssentialInstallProgress) => {
+      essentialInstallCallbacks.forEach((cb) => {
+        cb(data);
+      });
+    }
+  );
 }
 
 setupListeners();
@@ -227,6 +240,14 @@ const electronAPI: ElectronAPI = {
       emulatorId,
     }),
   getCleanerStats: (cleanerId: string) => ipc<CleanerStats>('get-cleaner-stats', cleanerId),
+  getEssentials: () => ipc<EssentialListItem[]>('essentials:list'),
+  openEssentialPage: (id) => ipcVoid('essentials:open-page', id),
+  installEssential: (id) => ipc<EssentialInstallResult>('essentials:install', id),
+  cancelEssentialInstall: (id) => ipcVoid('essentials:cancel-install', id),
+  onEssentialInstallProgress: (cb: (data: EssentialInstallProgress) => void) => {
+    essentialInstallCallbacks.add(cb);
+    return () => essentialInstallCallbacks.delete(cb);
+  },
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

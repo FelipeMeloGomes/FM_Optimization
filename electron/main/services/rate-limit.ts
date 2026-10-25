@@ -27,6 +27,7 @@ const CHANNEL_CONFIG: Record<string, RateLimitConfig> = {
   'adb:remove-app': { windowMs: 3000, maxRequests: 2 },
   'adb:backup-app': { windowMs: 5000, maxRequests: 3 },
   'adb:restore-app': { windowMs: 5000, maxRequests: 2 },
+  'essentials:install': { windowMs: 10_000, maxRequests: 2 },
 };
 
 interface Bucket {

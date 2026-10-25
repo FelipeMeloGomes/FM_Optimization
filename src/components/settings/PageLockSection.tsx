@@ -38,6 +38,8 @@ function PasswordField({
 const PAGES = [
   { to: '/emuladores', label: 'Emuladores' },
   { to: '/apps', label: 'Aplicativos' },
+  { to: '/debloat', label: 'Debloat' },
+  { to: '/essenciais', label: 'Essenciais PC' },
   { to: '/rede', label: 'Rede' },
   { to: '/cpu', label: 'Processador' },
   { to: '/input-lag', label: 'Input Lag' },
