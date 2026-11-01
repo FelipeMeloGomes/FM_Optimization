@@ -42,6 +42,12 @@ describe('secoes das paginas Aplicativos e Debloat', () => {
     expect(empty.map((section) => section.id)).toEqual([]);
   });
 
+  it('apps-2 fica no card de privacidade, sem card de seguranca vazio', () => {
+    const privacy = APPS_SECTIONS.find((section) => section.id === 'privacy');
+    expect(privacy?.scriptIds).toContain('apps-2');
+    expect(APPS_SECTIONS.map((section) => section.id)).toEqual(['privacy']);
+  });
+
   it('a busca manda script de debloat para /debloat e os demais para /apps', () => {
     for (const section of DEBLOAT_SECTIONS) {
       for (const id of section.scriptIds) {

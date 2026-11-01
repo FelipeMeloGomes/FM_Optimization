@@ -26,17 +26,7 @@ export const APPS_SECTIONS: AppSection[] = [
     color: 'text-blue-400',
     bgColor: 'bg-blue-500/10',
     borderColor: 'border-blue-500/20',
-    scriptIds: ['apps-1'],
-  },
-  {
-    id: 'security',
-    name: 'Segurança',
-    description: 'Configurações de segurança do Windows para proteger seu sistema.',
-    icon: 'shield',
-    color: 'text-emerald-400',
-    bgColor: 'bg-emerald-500/10',
-    borderColor: 'border-emerald-500/20',
-    scriptIds: ['apps-2'],
+    scriptIds: ['apps-1', 'apps-2'],
   },
 ];
 
