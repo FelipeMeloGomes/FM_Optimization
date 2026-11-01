@@ -12,14 +12,14 @@ npm run dev     # modo desenvolvimento (Electron + Vite HMR)
 
 ## Scripts
 
-| Script | Descrição |
-|--------|-----------|
-| `npm run dev` | Desenvolvimento |
-| `npm run build` | Build de produção (gera em `out/`) |
+| Script              | Descrição                                 |
+| ------------------- | ----------------------------------------- |
+| `npm run dev`       | Desenvolvimento                           |
+| `npm run build`     | Build de produção (gera em `out/`)        |
 | `npm run typecheck` | Typecheck do main (node) + renderer (web) |
-| `npm run lint` | Biome (check) |
-| `npm run lint:fix` | Biome (write) |
-| `npm run test` | Testes do main process (Vitest) |
+| `npm run lint`      | Biome (check)                             |
+| `npm run lint:fix`  | Biome (write)                             |
+| `npm run test`      | Testes do main process (Vitest)           |
 
 ## Convenções
 
@@ -31,12 +31,15 @@ npm run dev     # modo desenvolvimento (Electron + Vite HMR)
 ## Adicionando um novo handler IPC
 
 1. **Schema** em `electron/main/validation.ts` (ou `branded-types.ts`):
+
    ```ts
    export const mySchema = z.object({ id: ScriptIdSchema });
    ```
+
    Adicione ao `IpcSchemas` (se recebe input) ou use `handleIpcNoInput`.
 
 2. **Handler** em `electron/main/ipc-handlers.ts`:
+
    ```ts
    ipcMain.handle('meu-canal', (_e, input) =>
      handleIpc('meu-canal', input, (validated) => fazerAlgo(validated))
@@ -44,9 +47,11 @@ npm run dev     # modo desenvolvimento (Electron + Vite HMR)
    ```
 
 3. **Preload** em `electron/preload/index.ts`:
+
    ```ts
    meuCanal: (id) => ipc<Result>('meu-canal', id),
    ```
+
    E adicione ao tipo `ElectronAPI` em `electron/shared/ipc-types.ts`.
 
 4. **Renderer**: consuma via context/provider ou `window.electronAPI.meuCanal()`.

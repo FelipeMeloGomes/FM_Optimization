@@ -22,10 +22,11 @@ Visão geral da arquitetura do app desktop (Electron + React + TypeScript).
 ```
 
 ### Main (`electron/main/`)
+
 - `ipc-handlers.ts` — registra todos os `ipcMain.handle`. Todo handler passa por `handleIpc(channel, input, fn)` que aplica **rate-limit** e **validação Zod** antes de executar.
 - `services/powershell.ts` — `execPowerShellSafe` (comando + args parametrizados, escapados) e `execPowerShell` (scripts inline sanitizados).
 - `services/rate-limit.ts` — janela deslizante por canal (ex: `elevate-app` 2/10s, `benchmark-dns` 3/5s).
-- `validation.ts` + `branded-types.ts` — schemas Zod e tipos *branded* (`ScriptId`, `InterfaceIndex`, `RestorePointSeq`).
+- `validation.ts` + `branded-types.ts` — schemas Zod e tipos _branded_ (`ScriptId`, `InterfaceIndex`, `RestorePointSeq`).
 - `services/system-info.ts` — funções modulares (`getCpuInfo`, `getGpuInfo`, etc.) exportadas individualmente.
 - `services/cpu-vendor.ts` — `normalizeCpuVendor` (função pura, sem I/O) e `getCpuIdentityOnce` (memoizado por processo, com dedupe de promise concorrente). Lê `si.cpu()` **uma única vez** e cacheia inclusive a falha, para não re-consultar o WMI a cada consumidor. `normalizeCpuVendor` resolve por `manufacturer` → `vendor` → `model`, então funciona sem o main carregar a dependência.
 - `services/script-executor.ts` — núcleo único de execução. `executeScript()` (manual, com janela) e `runScriptSilently()` (agendada, sem janela e sem restore point) compartilham `startRun()`; o histórico grava `trigger: 'manual' | 'scheduled'`.
@@ -35,10 +36,12 @@ Visão geral da arquitetura do app desktop (Electron + React + TypeScript).
 - `tray.ts` — ícone/menu da bandeja, criado apenas com a limpeza automática ligada.
 
 ### Preload (`electron/preload/`)
+
 - `ipc<T>(channel, ...args)` invoca `ipcRenderer.invoke` e retorna `data` ou rejeita com `error`.
 - A API exposta está tipada em `ElectronAPI` (`electron/shared/ipc-types.ts`).
 
 ### Renderer (`src/`)
+
 - **Providers modulares** (`src/contexts/`): `SystemContext` exporta providers por seção (`CpuProvider`, `GpuProvider`, `MemoryProvider`, `OsProvider`, `StorageProvider`) que carregam sob demanda. `DnsProvider` está encapsulado dentro da `NetworkPage` (lazy) para não rodar benchmark no startup. `AutoCleanProvider` mantém o status do agendador (próxima execução, pendências, admin) e escuta `auto-clean-status`/`auto-clean-finished`; a engrenagem da `TitleBar` abre o `AutoCleanModal`, e a `CleanerPage` mostra o banner de pendências.
 - **Pages lazy**: todas as rotas em `App.tsx` usam `React.lazy()`.
 - **Code-splitting**: `electron.vite.config.ts` separa vendors (`react`, `radix`, `lucide`) em chunks próprios.
@@ -71,13 +74,13 @@ Visão geral da arquitetura do app desktop (Electron + React + TypeScript).
 
 ## Arquivos principais
 
-| Arquivo | Responsabilidade |
-|---------|------------------|
-| `electron/main/ipc-handlers.ts` | Registro e pipeline de handlers IPC |
-| `electron/main/validation.ts` | Schemas Zod de entrada IPC |
-| `electron/main/branded-types.ts` | Tipos branded de domínio |
-| `electron/main/services/powershell.ts` | Execução segura de PowerShell |
-| `electron/main/services/rate-limit.ts` | Rate-limit por canal |
-| `src/contexts/SystemContext.tsx` | Providers modulares de sistema |
-| `src/pages/NetworkPage.tsx` | DNS benchmark + apply (encapsula DnsProvider) |
-| `electron.vite.config.ts` | Build + manualChunks |
+| Arquivo                                | Responsabilidade                              |
+| -------------------------------------- | --------------------------------------------- |
+| `electron/main/ipc-handlers.ts`        | Registro e pipeline de handlers IPC           |
+| `electron/main/validation.ts`          | Schemas Zod de entrada IPC                    |
+| `electron/main/branded-types.ts`       | Tipos branded de domínio                      |
+| `electron/main/services/powershell.ts` | Execução segura de PowerShell                 |
+| `electron/main/services/rate-limit.ts` | Rate-limit por canal                          |
+| `src/contexts/SystemContext.tsx`       | Providers modulares de sistema                |
+| `src/pages/NetworkPage.tsx`            | DNS benchmark + apply (encapsula DnsProvider) |
+| `electron.vite.config.ts`              | Build + manualChunks                          |

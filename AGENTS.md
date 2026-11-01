@@ -12,11 +12,11 @@ FM-Optimize — toolkit de otimização Windows.
 
 # Build
 
-| Comando | O que gera |
-|---|---|
-| `npm run dev` | Dev server com hot reload |
-| `npm run build` | Compila TS → `out/` |
-| `npx electron-builder --win` | Instalável + `latest.yml` |
+| Comando                           | O que gera                                                   |
+| --------------------------------- | ------------------------------------------------------------ |
+| `npm run dev`                     | Dev server com hot reload                                    |
+| `npm run build`                   | Compila TS → `out/`                                          |
+| `npx electron-builder --win`      | Instalável + `latest.yml`                                    |
 | `npx electron-builder --win nsis` | Só o instalável (`dist/fm-optimize-setup.exe` + `.blockmap`) |
 
 # Quality
@@ -69,12 +69,15 @@ Template:
 ## vX.Y.Z - dd/MM/yyyy
 
 ### Novidades
+
 -
 
 ### Melhorias
+
 -
 
 ### Correções
+
 -
 ```
 
