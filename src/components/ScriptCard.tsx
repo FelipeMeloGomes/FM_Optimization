@@ -4,11 +4,12 @@ import {
   Eraser,
   Gauge,
   MousePointerClick,
+  PackageX,
   Play,
   RotateCcw,
   Shield,
   ShieldAlert,
-  Smartphone,
+  ShieldCheck,
   Square,
   Terminal,
   Wifi,
@@ -60,11 +61,17 @@ const CATEGORY_CONFIG: Record<
     bgColor: 'bg-green-500/10',
     borderColor: 'border-green-500/20',
   },
-  Apps: {
-    icon: Smartphone,
+  Debloat: {
+    icon: PackageX,
     color: 'text-pink-400',
     bgColor: 'bg-pink-500/10',
     borderColor: 'border-pink-500/20',
+  },
+  Segurança: {
+    icon: ShieldCheck,
+    color: 'text-emerald-400',
+    bgColor: 'bg-emerald-500/10',
+    borderColor: 'border-emerald-500/20',
   },
   Internet: {
     icon: Wifi,

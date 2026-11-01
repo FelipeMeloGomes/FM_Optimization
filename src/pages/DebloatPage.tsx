@@ -15,7 +15,7 @@ export default function DebloatPage() {
     confirmScript,
     setConfirmScript,
     handleConfirm,
-  } = useScriptPage('Apps');
+  } = useScriptPage('Debloat');
 
   if (state.status === 'loading') {
     return (

@@ -1,5 +1,4 @@
 import {
-  Archive,
   Clock,
   Cpu,
   Eraser,
@@ -13,6 +12,7 @@ import {
   Rocket,
   Settings,
   Shield,
+  ShieldCheck,
   Smartphone,
   Wifi,
   Wrench,
@@ -26,7 +26,7 @@ export type CategoryId =
   | 'programas'
   | 'rede'
   | 'ferramentas'
-  | 'backup'
+  | 'seguranca'
   | 'sistema';
 
 export interface Category {
@@ -52,7 +52,7 @@ export const CATEGORIES: Category[] = [
   { id: 'programas', label: 'Programas', icon: Smartphone },
   { id: 'rede', label: 'Rede', icon: Wifi },
   { id: 'ferramentas', label: 'Ferramentas', icon: Wrench },
-  { id: 'backup', label: 'Backup e Logs', icon: Archive },
+  { id: 'seguranca', label: 'Segurança', icon: ShieldCheck },
   { id: 'sistema', label: 'Sistema', icon: Settings },
 ];
 
@@ -63,14 +63,6 @@ export const ROUTES: AppRoute[] = [
     icon: Home,
     category: 'inicio',
     component: lazy(() => import('../pages/DashboardPage')),
-  },
-  {
-    path: '/tweaks',
-    label: 'Ajustes',
-    icon: Gauge,
-    category: 'desempenho',
-    protected: true,
-    component: lazy(() => import('../pages/TweaksPage')),
   },
   {
     path: '/input-lag',
@@ -113,14 +105,6 @@ export const ROUTES: AppRoute[] = [
     component: lazy(() => import('../pages/DebloatPage')),
   },
   {
-    path: '/apps',
-    label: 'Aplicativos',
-    icon: Smartphone,
-    category: 'programas',
-    protected: true,
-    component: lazy(() => import('../pages/AppsPage')),
-  },
-  {
     path: '/essenciais',
     label: 'Essenciais PC',
     icon: MonitorDown,
@@ -153,17 +137,25 @@ export const ROUTES: AppRoute[] = [
     component: lazy(() => import('../pages/UtilitiesPage')),
   },
   {
+    path: '/privacidade-seguranca',
+    label: 'Privacidade',
+    icon: ShieldCheck,
+    category: 'seguranca',
+    protected: true,
+    component: lazy(() => import('../pages/PrivacySecurityPage')),
+  },
+  {
     path: '/restore-points',
     label: 'Restauracao',
     icon: Shield,
-    category: 'backup',
+    category: 'seguranca',
     component: lazy(() => import('../pages/RestorePointsPage')),
   },
   {
     path: '/history',
     label: 'Historico',
     icon: Clock,
-    category: 'backup',
+    category: 'seguranca',
     component: lazy(() => import('../pages/HistoryPage')),
   },
   {

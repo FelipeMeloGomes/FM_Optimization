@@ -30,12 +30,31 @@ function decode(id: string): string {
   return Buffer.from(find(id).content, 'base64').toString('utf-8');
 }
 
-const cpu = scripts.filter((s) => s.category === 'CPU');
+/**
+ * A pagina Processador lista a categoria `CPU`, que desde a refatoracao tambem
+ * recebeu os tweaks de GPU da AMD e o card "Desempenho" da antiga pagina Ajustes
+ * (42 scripts). A familia `cpu-N` — o antigo par AMD/Intel fundido — continua com
+ * 34 ids e e ela que carrega a invariante de neutralidade de fabricante.
+ */
+const cpuPage = scripts.filter((s) => s.category === 'CPU');
+const cpuFamily = scripts.filter((s) => /^cpu-\d+$/.test(s.id));
 
 describe('merged processor catalog', () => {
-  it('has 100 entries with 34 processor scripts', () => {
+  it('has 100 entries with 42 scripts on the processor page and 34 cpu-N ids', () => {
     expect(scripts).toHaveLength(100);
-    expect(cpu).toHaveLength(34);
+    expect(cpuPage).toHaveLength(42);
+    expect(cpuFamily).toHaveLength(34);
+  });
+
+  it('files the AMD GPU tweaks under the processor page', () => {
+    // Eles escrevem na chave do adaptador de video da AMD, nao dependem do
+    // fabricante da CPU, mas sao ajustes de processamento grafico: a pagina
+    // Processador e onde o usuario os procura.
+    expect(
+      scripts
+        .filter((s) => ['builtin-4', 'builtin-5', 'builtin-6', 'builtin-7'].includes(s.id))
+        .map((s) => s.category)
+    ).toEqual(['CPU', 'CPU', 'CPU', 'CPU']);
   });
 
   it('retires every amd-* and intel-* id', () => {
@@ -46,7 +65,7 @@ describe('merged processor catalog', () => {
     // A dedup da beta aposentou cpu-12, cpu-24 e cpu-29. Os ids restantes
     // continuam com o mesmo número: renumerar quebraria histórico e aliases.
     const RETIRED = new Set(['cpu-12', 'cpu-24', 'cpu-29']);
-    expect(cpu.map((s) => s.id)).toEqual(
+    expect(cpuFamily.map((s) => s.id)).toEqual(
       Array.from({ length: 37 }, (_, i) => `cpu-${i + 1}`).filter((id) => !RETIRED.has(id))
     );
   });
@@ -55,7 +74,7 @@ describe('merged processor catalog', () => {
     // The split existed only to file scripts under two folders; every pair was
     // byte-identical or differed by banner/credit lines, so the vendor never
     // belonged in the copy.
-    for (const script of cpu) {
+    for (const script of cpuFamily) {
       const text = `${script.name} ${script.description} ${script.guide}`;
       expect(text, script.id).not.toMatch(/\b(AMD|Intel|Ryzen|Threadripper|EPYC)\b/i);
     }
@@ -63,7 +82,7 @@ describe('merged processor catalog', () => {
 
   it('carries no vendor tag', () => {
     expect(
-      cpu.filter((s) => s.tags.some((t) => t === 'amd' || t === 'intel')).map((s) => s.id)
+      cpuFamily.filter((s) => s.tags.some((t) => t === 'amd' || t === 'intel')).map((s) => s.id)
     ).toEqual([]);
   });
 
@@ -144,7 +163,7 @@ describe('merged script content selection', () => {
 
   it('ships no BOM in any merged script', () => {
     const bom = Buffer.from([0xef, 0xbb, 0xbf]);
-    const offenders = cpu
+    const offenders = cpuFamily
       .filter((s) => Buffer.from(s.content, 'base64').subarray(0, 3).equals(bom))
       .map((s) => s.id);
     expect(offenders).toEqual([]);

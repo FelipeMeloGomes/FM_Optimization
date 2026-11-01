@@ -1,70 +1,34 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import {
-  ALL_APP_SECTIONS,
-  APPS_SECTIONS,
-  DEBLOAT_SCRIPT_IDS,
-  DEBLOAT_SECTIONS,
-} from './app-sections';
-import { getScriptRoute } from './category-routes';
+import { DEBLOAT_SECTIONS } from './app-sections';
 
 /**
- * Aplicativos e Debloat dividem a mesma categoria "Apps" do catalogo, cada uma
- * mostrando um subconjunto fixo de ids. Este teste usa o scripts.json real para
- * garantir que os dois lados somados cobrem todos os scripts da categoria: um id
- * fora das secoes sumiria da interface sem ninguem notar.
+ * A cobertura da categoria "Debloat" pelos cards é verificada em
+ * script-pages.test.ts, contra o catalogo real. Aqui ficam só as invariantes
+ * internas dos cards: nenhum card vazio, nenhum script em dois cards.
  */
-const scripts = JSON.parse(
-  readFileSync(new URL('../../resources/scripts.json', import.meta.url), 'utf-8')
-) as ScriptEntry[];
-
-const appsScripts = scripts.filter((s) => s.category === 'Apps');
-const catalogIds = new Set(scripts.map((s) => s.id));
-const sectionedIds = ALL_APP_SECTIONS.flatMap((section) => section.scriptIds);
-
-describe('secoes das paginas Aplicativos e Debloat', () => {
-  it('cobre os 8 scripts de category "Apps" do catalogo', () => {
-    expect(appsScripts).toHaveLength(8);
-    expect([...sectionedIds].sort()).toEqual(appsScripts.map((s) => s.id).sort());
-  });
-
-  it('todo scriptId das secoes existe no catalogo', () => {
-    expect(sectionedIds.filter((id) => !catalogIds.has(id))).toEqual([]);
-  });
-
-  it('nenhum script aparece em duas secoes', () => {
-    expect(new Set(sectionedIds).size).toBe(sectionedIds.length);
-  });
-
-  it('toda secao tem ao menos um script', () => {
-    const empty = ALL_APP_SECTIONS.filter((section) => section.scriptIds.length === 0);
+describe('cards da pagina Debloat', () => {
+  it('todo card tem ao menos um script', () => {
+    const empty = DEBLOAT_SECTIONS.filter((section) => section.scriptIds.length === 0);
     expect(empty.map((section) => section.id)).toEqual([]);
   });
 
-  it('apps-2 fica no card de privacidade, sem card de seguranca vazio', () => {
-    const privacy = APPS_SECTIONS.find((section) => section.id === 'privacy');
-    expect(privacy?.scriptIds).toContain('apps-2');
-    expect(APPS_SECTIONS.map((section) => section.id)).toEqual(['privacy']);
+  it('nenhum script aparece em dois cards', () => {
+    const ids = DEBLOAT_SECTIONS.flatMap((section) => section.scriptIds);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('a busca manda script de debloat para /debloat e os demais para /apps', () => {
-    for (const section of DEBLOAT_SECTIONS) {
-      for (const id of section.scriptIds) {
-        expect(getScriptRoute({ id, category: 'Apps' })).toBe('/debloat');
-      }
-    }
-    for (const section of APPS_SECTIONS) {
-      for (const id of section.scriptIds) {
-        expect(getScriptRoute({ id, category: 'Apps' })).toBe('/apps');
-      }
-    }
+  it('mantem os cards de debloat que ja existiam', () => {
+    expect(DEBLOAT_SECTIONS.map((section) => section.id)).toEqual([
+      'debloat',
+      'discord',
+      'spotify',
+      'visual',
+    ]);
   });
 
-  it('DEBLOAT_SCRIPT_IDS cobre exatamente os scripts dos cards de debloat', () => {
-    expect([...DEBLOAT_SCRIPT_IDS].sort()).toEqual(
-      DEBLOAT_SECTIONS.flatMap((section) => section.scriptIds).sort()
-    );
-    expect(DEBLOAT_SCRIPT_IDS.size).toBe(6);
+  it('o card Otimização Visual traz os quatro scripts que sairam da pagina Ajustes', () => {
+    const visual = DEBLOAT_SECTIONS.find((section) => section.id === 'visual');
+    expect(visual?.name).toBe('Otimização Visual');
+    expect(visual?.scriptIds).toEqual(['tweaks-1', 'tweaks-2', 'builtin-32', 'builtin-86']);
   });
 });

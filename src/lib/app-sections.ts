@@ -1,4 +1,4 @@
-export type SectionIconName = 'shield' | 'trash' | 'discord' | 'music' | 'package';
+export type SectionIconName = 'shield' | 'trash' | 'discord' | 'music' | 'package' | 'monitor';
 
 export interface AppSection {
   id: string;
@@ -13,23 +13,11 @@ export interface AppSection {
 }
 
 /**
- * Cards da pagina Aplicativos. Junto com DEBLOAT_SECTIONS, cobre exatamente os
- * scripts de `category: "Apps"` do catalogo — o teste em app-sections.test.ts
- * garante que nenhum script fica sem card e nenhum id sobra.
+ * Cards da pagina Debloat. Cobre exatamente os scripts de `category: "Debloat"`
+ * do catalogo — o teste em script-pages.test.ts garante que nenhum script fica
+ * sem card e nenhum id sobra. O card "Otimização Visual" veio da antiga pagina
+ * Ajustes com os mesmos quatro scripts.
  */
-export const APPS_SECTIONS: AppSection[] = [
-  {
-    id: 'privacy',
-    name: 'Privacidade',
-    description: 'Maximize sua privacidade desativando telemetria e coleta de dados do Windows.',
-    icon: 'shield',
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20',
-    scriptIds: ['apps-1', 'apps-2'],
-  },
-];
-
 export const DEBLOAT_SECTIONS: AppSection[] = [
   {
     id: 'debloat',
@@ -65,9 +53,15 @@ export const DEBLOAT_SECTIONS: AppSection[] = [
     scriptIds: ['apps-6', 'apps-7'],
     warning: 'Não funciona com o Spotify da Microsoft Store. Instale a versão desktop.',
   },
+  {
+    id: 'visual',
+    name: 'Otimização Visual',
+    description:
+      'Ajuste efeitos visuais do Windows para melhor desempenho sem sacrificar a estética.',
+    icon: 'monitor',
+    color: 'text-cyan-400',
+    bgColor: 'bg-cyan-500/10',
+    borderColor: 'border-cyan-500/20',
+    scriptIds: ['tweaks-1', 'tweaks-2', 'builtin-32', 'builtin-86'],
+  },
 ];
-
-export const ALL_APP_SECTIONS: AppSection[] = [...APPS_SECTIONS, ...DEBLOAT_SECTIONS];
-
-/** Ids que moram na pagina Debloat. Usado pelo roteamento da busca (Ctrl+K). */
-export const DEBLOAT_SCRIPT_IDS = new Set(DEBLOAT_SECTIONS.flatMap((section) => section.scriptIds));

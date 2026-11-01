@@ -3,13 +3,12 @@ import { useNavigate } from 'react-router-dom';
 
 const PAGE_ROUTES = [
   '/',
-  '/tweaks',
   '/cpu',
   '/cleaner',
   '/rede',
   '/input-lag',
   '/utilities',
-  '/apps',
+  '/privacidade-seguranca',
   '/restore-points',
 ];
 

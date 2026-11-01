@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   MessageCircle,
+  Monitor,
   Music,
   PackageX,
   Play,
@@ -22,6 +23,7 @@ const SECTION_ICONS: Record<SectionIconName, ElementType> = {
   discord: MessageCircle,
   music: Music,
   package: PackageX,
+  monitor: Monitor,
 };
 
 export function ScriptSectionCard({

@@ -1,4 +1,4 @@
-import { Gauge, HardDrive, Play, Shield, Square, Wrench, Zap } from 'lucide-react';
+import { Play, Square, Wrench } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -7,72 +7,8 @@ import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Badge, Button } from '../components/ui';
 import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
+import { UTIL_SECTIONS, type UtilSection } from '../lib/util-sections';
 import { cn } from '../lib/utils';
-
-interface UtilSection {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ElementType;
-  color: string;
-  bgColor: string;
-  borderColor: string;
-  scriptIds: string[];
-}
-
-const UTIL_SECTIONS: UtilSection[] = [
-  {
-    id: 'maintenance',
-    name: 'Manutenção do Sistema',
-    description: 'Pacotes de manutenção e relatórios para manter o sistema saudável.',
-    icon: Wrench,
-    color: 'text-orange-400',
-    bgColor: 'bg-orange-500/10',
-    borderColor: 'border-orange-500/20',
-    scriptIds: ['util-1', 'util-3'],
-  },
-  {
-    id: 'storage',
-    name: 'Armazenamento',
-    description: 'Otimização de SSD, compactação de sistema e limpeza de componentes.',
-    icon: HardDrive,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20',
-    scriptIds: ['util-2', 'util-4', 'util-5', 'builtin-88', 'util-6'],
-  },
-  {
-    id: 'repair',
-    name: 'Reparo do Sistema',
-    description: 'Verificação e reparo de integridade do sistema de arquivos e componentes.',
-    icon: Shield,
-    color: 'text-emerald-400',
-    bgColor: 'bg-emerald-500/10',
-    borderColor: 'border-emerald-500/20',
-    scriptIds: ['builtin-87', 'builtin-40', 'builtin-64'],
-  },
-  {
-    id: 'memory',
-    name: 'Memória e Processos',
-    description: 'Libere RAM e encerre processos desnecessários para melhor performance.',
-    icon: Zap,
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'border-purple-500/20',
-    scriptIds: ['builtin-22', 'builtin-27'],
-  },
-  {
-    id: 'performance',
-    name: 'Performance',
-    description:
-      'Prioridade de CPU e GPU, escalonamento e responsividade para melhor desempenho em jogos.',
-    icon: Gauge,
-    color: 'text-cyan-400',
-    bgColor: 'bg-cyan-500/10',
-    borderColor: 'border-cyan-500/20',
-    scriptIds: ['builtin-15'],
-  },
-];
 
 const SSD_ONLY_IDS = ['util-4', 'builtin-88'];
 

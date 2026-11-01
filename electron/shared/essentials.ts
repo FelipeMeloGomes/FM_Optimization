@@ -59,6 +59,16 @@ export const ESSENTIAL_PROGRAMS: EssentialProgram[] = [
     packageId: 'RARLab.WinRAR',
   },
   {
+    id: 'directx',
+    name: 'DirectX',
+    description:
+      'Runtime do DirectX 9.0c, 10 e 11 usado por jogos antigos. Instale quando um jogo reclamar de d3dx9_*.dll ou xinput ausente.',
+    pageUrl: 'https://www.microsoft.com/download/details.aspx?id=35',
+    packageId: 'Microsoft.DirectX',
+    warning:
+      'O instalador da Microsoft é antigo e oferece softwares extras (como a Bing Bar) na última tela. Desmarque tudo antes de concluir.',
+  },
+  {
     id: 'bcuninstaller',
     name: 'BCUninstaller',
     description:

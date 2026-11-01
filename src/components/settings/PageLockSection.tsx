@@ -38,14 +38,13 @@ function PasswordField({
 const PAGES = [
   { to: '/emuladores', label: 'Emuladores' },
   { to: '/inicializacao', label: 'Inicialização' },
-  { to: '/apps', label: 'Aplicativos' },
+  { to: '/privacidade-seguranca', label: 'Privacidade' },
   { to: '/debloat', label: 'Debloat' },
   { to: '/essenciais', label: 'Essenciais PC' },
   { to: '/rede', label: 'Rede' },
   { to: '/cpu', label: 'Processador' },
   { to: '/input-lag', label: 'Input Lag' },
   { to: '/cleaner', label: 'Limpeza' },
-  { to: '/tweaks', label: 'Ajustes' },
   { to: '/utilities', label: 'Utilitarios' },
 ] as const;
 

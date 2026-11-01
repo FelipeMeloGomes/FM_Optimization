@@ -1,27 +1,27 @@
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import { DEBLOAT_SCRIPT_IDS } from './app-sections';
 
+/**
+ * Uma categoria do catalogo corresponde a uma unica pagina. A pagina Aplicativos
+ * e a pagina Ajustes foram removidas na refatoracao: seus scripts ganharam a
+ * categoria da pagina que os mostra (Debloat, CPU, Internet, Utilities e
+ * Segurança), entao a busca do Ctrl+K acha o destino so pela categoria.
+ */
 export const CATEGORY_ROUTES: Record<string, string> = {
-  Tweaks: '/tweaks',
-  CPU: '/cpu',
   Cleaner: '/cleaner',
+  CPU: '/cpu',
   Internet: '/rede',
   'DNS Manager': '/rede',
   'Input Lag': '/input-lag',
   Utilities: '/utilities',
-  Apps: '/apps',
+  Debloat: '/debloat',
+  Segurança: '/privacidade-seguranca',
 };
 
 export function getCategoryRoute(category: string): string {
   return CATEGORY_ROUTES[category] || '/';
 }
 
-/**
- * A pagina Aplicativos e a Debloat dividem a categoria "Apps" do catalogo, entao
- * a categoria sozinha nao diz onde o script aparece. A busca usa isto para nao
- * mandar um script de debloat para uma pagina que nao o mostra.
- */
+/** Rota da pagina do script. `id` fica no tipo porque os chamadores passam o script inteiro. */
 export function getScriptRoute(script: Pick<ScriptEntry, 'id' | 'category'>): string {
-  if (DEBLOAT_SCRIPT_IDS.has(script.id)) return '/debloat';
   return getCategoryRoute(script.category);
 }

@@ -4,6 +4,7 @@ import {
   ExternalLink,
   FileArchive,
   FolderArchive,
+  Gamepad2,
   Gauge,
   type LucideIcon,
   MonitorDown,
@@ -59,6 +60,12 @@ const PROGRAM_STYLES: Record<string, ProgramStyle> = {
     color: 'text-violet-400',
     bgColor: 'bg-violet-500/10',
     borderColor: 'border-violet-500/20',
+  },
+  directx: {
+    icon: Gamepad2,
+    color: 'text-indigo-400',
+    bgColor: 'bg-indigo-500/10',
+    borderColor: 'border-indigo-500/20',
   },
   bcuninstaller: {
     icon: PackageX,
@@ -255,8 +262,8 @@ export default function EssentialsPage() {
           <h2 className="text-lg font-bold text-foreground">App Essenciais PC</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-lg">
             Utilitários para diagnosticar, monitorar, ajustar, compactar e desinstalar programas no
-            PC. Todos são instalados pelo winget, que baixa do canal oficial do fornecedor e confere
-            o hash do manifesto antes de rodar.
+            PC, além do runtime do DirectX para jogos antigos. Todos são instalados pelo winget, que
+            baixa do canal oficial do fornecedor e confere o hash do manifesto antes de rodar.
           </p>
         </div>
       </div>
