@@ -15,6 +15,7 @@ interface SectionContextValue<T> {
 function createSectionProvider<T>(fetchData: () => Promise<T>, contextName: string) {
   const Context = createContext<SectionContextValue<T> | null>(null);
 
+  // biome-ignore lint/correctness/noComponentHookFactories: criado uma única vez por seção, então a identidade é estável
   function Provider({ children }: { children: ReactNode }) {
     const [state, setState] = useState<AsyncState<T>>({ status: 'loading' });
     const [refreshing, setRefreshing] = useState(false);
@@ -39,6 +40,7 @@ function createSectionProvider<T>(fetchData: () => Promise<T>, contextName: stri
     return <Context.Provider value={{ state, refreshing, refresh }}>{children}</Context.Provider>;
   }
 
+  // biome-ignore lint/correctness/noComponentHookFactories: idem, cada seção registra seu hook uma única vez
   function useSectionContext(): SectionContextValue<T> {
     const ctx = useContext(Context);
     if (!ctx) throw new Error(`${contextName} must be used within its Provider`);
