@@ -6,7 +6,7 @@ import type { ExecutionHistoryEntry, ScriptEntry } from '../../electron/shared/i
  *
  * - reverters (desfazem outros scripts do catálogo);
  * - variantes redundantes do mesmo ajuste (ex.: "Liberar RAM" escreve o mesmo
- *   registro em várias faixas; cpu-11/cpu-12 são a mesma lista de serviços);
+ *   registro em várias faixas);
  * - ajustes que conflitam entre si (internet-5 anula internet-1).
  *
  * A lista vale para o selo "Aplicado"; o contador do Dashboard aplica ainda o
@@ -23,7 +23,6 @@ export const NON_COUNTABLE_SCRIPT_IDS: ReadonlySet<string> = new Set([
   'cpu-34', // Liberar RAM 16GB
   'cpu-35', // Liberar RAM 32GB
   'cpu-36', // Liberar RAM 64GB
-  'cpu-12', // Desabilitar Servicos (Versao 2) — duplicata de cpu-11
   'internet-5', // Desabilitar Auto-Tuning — conflita com internet-1 (normal)
 ]);
 

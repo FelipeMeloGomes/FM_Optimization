@@ -33,17 +33,22 @@ function decode(id: string): string {
 const cpu = scripts.filter((s) => s.category === 'CPU');
 
 describe('merged processor catalog', () => {
-  it('has 104 entries with 37 processor scripts', () => {
-    expect(scripts).toHaveLength(104);
-    expect(cpu).toHaveLength(37);
+  it('has 100 entries with 34 processor scripts', () => {
+    expect(scripts).toHaveLength(100);
+    expect(cpu).toHaveLength(34);
   });
 
   it('retires every amd-* and intel-* id', () => {
     expect(scripts.filter((s) => /^(amd|intel)-\d+$/.test(s.id)).map((s) => s.id)).toEqual([]);
   });
 
-  it('numbers the processor scripts cpu-1 through cpu-37 with no gaps', () => {
-    expect(cpu.map((s) => s.id)).toEqual(Array.from({ length: 37 }, (_, i) => `cpu-${i + 1}`));
+  it('keeps the surviving processor ids without renumbering', () => {
+    // A dedup da beta aposentou cpu-12, cpu-24 e cpu-29. Os ids restantes
+    // continuam com o mesmo número: renumerar quebraria histórico e aliases.
+    const RETIRED = new Set(['cpu-12', 'cpu-24', 'cpu-29']);
+    expect(cpu.map((s) => s.id)).toEqual(
+      Array.from({ length: 37 }, (_, i) => `cpu-${i + 1}`).filter((id) => !RETIRED.has(id))
+    );
   });
 
   it('carries no vendor name in its text fields', () => {
@@ -69,42 +74,16 @@ describe('merged processor catalog', () => {
   });
 
   it('exposes no remaining byte-identical pair', () => {
-    // The only survivor is a pre-existing duplicate unrelated to the vendor
-    // split: amd-21 and amd-24 shipped the same .reg under two names. Tracked
-    // separately, see the duplicate-reg test below.
-    const KNOWN_DUPLICATES: Array<[string, string, string]> = [
-      [
-        'cpu-21',
-        'cpu-24',
-        'pre-existing: amd-21 and amd-24 were already byte-identical in the ' +
-          'published catalog and were never an AMD/Intel pair. Collapse is a ' +
-          'follow-up, not part of the vendor merge.',
-      ],
-    ];
-
+    // A duplicata histórica (amd-21/amd-24/amd-29, os mesmos .reg sob três
+    // nomes) foi colapsada em cpu-21 junto com cpu-12 e inputlag-12.
     const byBytes = new Map<string, string[]>();
-    for (const script of cpu) {
+    for (const script of scripts) {
       const key = Buffer.from(script.content, 'base64').toString('base64');
       byBytes.set(key, [...(byBytes.get(key) ?? []), script.id]);
     }
 
-    const exemptions = new Map(
-      KNOWN_DUPLICATES.map(([a, b, reason]) => [[a, b].sort().join('='), reason])
-    );
-
     const duplicates = [...byBytes.values()].filter((ids) => ids.length > 1);
-    expect(duplicates).toHaveLength(KNOWN_DUPLICATES.length);
-    for (const ids of duplicates) {
-      const key = [...ids].sort().join('=');
-      expect(exemptions.has(key), `unexpected duplicate: ${ids.join(' == ')}`).toBe(true);
-    }
-  });
-
-  it('pins the known duplicate so it stays visible until it is collapsed', () => {
-    expect(decode('cpu-21')).toBe(decode('cpu-24'));
-    // cpu-24 is labelled as a CPU tweak but the .reg only writes GPU and
-    // scheduling priority, which is what makes the duplicate confusing.
-    expect(find('cpu-24').description).not.toMatch(/CPU/i);
+    expect(duplicates).toEqual([]);
   });
 });
 
@@ -150,7 +129,6 @@ describe('merged script content selection', () => {
     'cpu-19',
     'cpu-21',
     'cpu-23',
-    'cpu-24',
     'cpu-28',
   ];
 

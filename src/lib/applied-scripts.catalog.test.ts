@@ -31,9 +31,9 @@ function entry(scriptId: string): ExecutionHistoryEntry {
 }
 
 describe('catálogo real (resources/scripts.json)', () => {
-  it('tem 82 ajustes contáveis num catálogo de 104 scripts', () => {
-    expect(scripts).toHaveLength(104);
-    expect(scripts.filter(isCountableScript)).toHaveLength(82);
+  it('tem 79 ajustes contáveis num catálogo de 100 scripts', () => {
+    expect(scripts).toHaveLength(100);
+    expect(scripts.filter(isCountableScript)).toHaveLength(79);
   });
 
   it('nenhum script interativo é contável', () => {
@@ -52,6 +52,6 @@ describe('catálogo real (resources/scripts.json)', () => {
     // builtin-15 (Prioridade CPU/GPU para Jogos) conta como ajuste; cleaner-3
     // (Limpeza de Navegadores) não: limpeza tem página própria e não é tweak.
     const summary = summarizeAppliedScripts(scripts, [entry('builtin-15'), entry('cleaner-3')]);
-    expect(summary).toEqual({ applied: 1, total: 78 });
+    expect(summary).toEqual({ applied: 1, total: 75 });
   });
 });

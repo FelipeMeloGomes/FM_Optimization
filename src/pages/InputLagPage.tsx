@@ -131,12 +131,6 @@ const REGISTRY_SCRIPTS: RegistryItem[] = [
     description: 'Remove o atraso de exibição de menus definindo MenuShowDelay como 0.',
     scriptId: 'inputlag-10',
   },
-  {
-    id: 'r7',
-    name: 'Taxa de Atualização',
-    description: 'Aumenta a taxa de atualização do Windows desabilitando limitação de frame.',
-    scriptId: 'inputlag-12',
-  },
 ];
 
 function DeviceSection({

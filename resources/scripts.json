@@ -937,20 +937,6 @@
     "riskLevel": "moderate"
   },
   {
-    "id": "inputlag-12",
-    "tags": [],
-    "category": "Input Lag",
-    "description": "Ajusta o registro para aumentar a taxa de atualizacao do Windows desabilitando o LUA (User Account Control) e reduzindo sobrecarga do sistema para jogos.",
-    "subcategory": "Regedit",
-    "name": "Aumentar Taxa de Atualização",
-    "extension": "reg",
-    "requiresAdmin": true,
-    "isBuiltIn": true,
-    "content": "V2luZG93cyBSZWdpc3RyeSBFZGl0b3IgVmVyc2lvbiA1LjAwCgpbSEtFWV9DVVJSRU5UX1VTRVJcU29mdHdhcmVcTWljcm9zb2Z0XFdpbmRvd3NcQ3VycmVudFZlcnNpb25cUG9saWNpZXNcU3lzdGVtXQoiRW5hYmxlTFVBIj1kd29yZDowMDAwMDAwMA==",
-    "guide": "Desativa o controle de conta de usuario (UAC) para reduzir a sobrecarga do sistema e melhorar o desempenho em jogos. Requer reinicializacao.",
-    "riskLevel": "moderate"
-  },
-  {
     "tags": ["boot", "bcdedit", "hpet", "otimizacao"],
     "requiresAdmin": true,
     "requiresRestart": true,
@@ -1104,20 +1090,6 @@
     "description": "Desabilita servicos desnecessarios: SysMain, wisvc, icssvc, Fax, SessionEnv, TermService, bthserv, TabletInputService, DiagTrack, DPS, DoSvc, WpnService.",
     "category": "CPU",
     "id": "cpu-11",
-    "isBuiltIn": true,
-    "riskLevel": "moderate"
-  },
-  {
-    "tags": ["servicos", "startup"],
-    "requiresAdmin": true,
-    "name": "Desabilitar Servicos (Versao 2)",
-    "extension": "cmd",
-    "subcategory": "Startup",
-    "content": "QGVjaG8gb2ZmDQp3bWljIHNlcnZpY2Ugd2hlcmUgbmFtZT0nU3lzTWFpbicgIGNhbGwgQ2hhbmdlU3RhcnRtb2RlIERpc2FibGVkDQpzYyBzdG9wICJTeXNNYWluIg0Kd21pYyBzZXJ2aWNlIHdoZXJlIG5hbWU9J3dpc3ZjJyAgY2FsbCBDaGFuZ2VTdGFydG1vZGUgRGlzYWJsZWQNCnNjIHN0b3AgIndpc3ZjIg0Kd21pYyBzZXJ2aWNlIHdoZXJlIG5hbWU9J2ljc3N2YycgIGNhbGwgQ2hhbmdlU3RhcnRtb2RlIERpc2FibGVkDQpzYyBzdG9wICJpY3NzdmMiDQp3bWljIHNlcnZpY2Ugd2hlcmUgbmFtZT0nRmF4JyAgY2FsbCBDaGFuZ2VTdGFydG1vZGUgRGlzYWJsZWQNCnNjIHN0b3AgIkZheCINCndtaWMgc2VydmljZSB3aGVyZSBuYW1lPSdTZXNzaW9uRW52JyAgY2FsbCBDaGFuZ2VTdGFydG1vZGUgRGlzYWJsZWQNCnNjIHN0b3AgIlNlc3Npb25FbnYiDQp3bWljIHNlcnZpY2Ugd2hlcmUgbmFtZT0nVGVybVNlcnZpY2UnICBjYWxsIENoYW5nZVN0YXJ0bW9kZSBEaXNhYmxlZA0Kc2Mgc3RvcCAiVGVybVNlcnZpY2UiDQp3bWljIHNlcnZpY2Ugd2hlcmUgbmFtZT0nYnRoc2VydicgIGNhbGwgQ2hhbmdlU3RhcnRtb2RlIERpc2FibGVkDQpzYyBzdG9wICJidGhzZXJ2Ig0Kd21pYyBzZXJ2aWNlIHdoZXJlIG5hbWU9J1RhYmxldElucHV0U2VydmljZScgIGNhbGwgQ2hhbmdlU3RhcnRtb2RlIERpc2FibGVkDQpzYyBzdG9wICJUYWJsZXRJbnB1dFNlcnZpY2UiDQp3bWljIHNlcnZpY2Ugd2hlcmUgbmFtZT0nRGlhZ1RyYWNrJyAgY2FsbCBDaGFuZ2VTdGFydG1vZGUgRGlzYWJsZWQNCnNjIHN0b3AgIkRpYWdUcmFjayINCndtaWMgc2VydmljZSB3aGVyZSBuYW1lPSdEUFMnICBjYWxsIENoYW5nZVN0YXJ0bW9kZSBEaXNhYmxlZA0Kc2Mgc3RvcCAiRFBTIg0Kd21pYyBzZXJ2aWNlIHdoZXJlIG5hbWU9J0RvU3ZjJyAgY2FsbCBDaGFuZ2VTdGFydG1vZGUgRGlzYWJsZWQNCnNjIHN0b3AgIkRvU3ZjIg0Kd21pYyBzZXJ2aWNlIHdoZXJlIG5hbWU9J1dwblNlcnZpY2UnICBjYWxsIENoYW5nZVN0YXJ0bW9kZSBEaXNhYmxlZA0Kc2Mgc3RvcCAiV3BuU2VydmljZSINCnBhdXNl",
-    "guide": "Mesma funcao do script anterior. Desliga servicos que rodam em segundo plano e consomem recursos.",
-    "description": "Desabilita servicos desnecessarios: SysMain, wisvc, icssvc, Fax, SessionEnv, TermService, bthserv, TabletInputService, DiagTrack, DPS, DoSvc, WpnService. Versao alternativa.",
-    "category": "CPU",
-    "id": "cpu-12",
     "isBuiltIn": true,
     "riskLevel": "moderate"
   },
@@ -1277,20 +1249,6 @@
     "riskLevel": "moderate"
   },
   {
-    "tags": ["cpu", "prioridade", "jogos"],
-    "requiresAdmin": true,
-    "name": "Prioridade CPU",
-    "extension": "reg",
-    "subcategory": "Otimizacao",
-    "content": "V2luZG93cyBSZWdpc3RyeSBFZGl0b3IgVmVyc2lvbiA1LjAwDQoNCltIS0VZX0xPQ0FMX01BQ0hJTkVcU09GVFdBUkVcTWljcm9zb2Z0XFdpbmRvd3MgTlRcQ3VycmVudFZlcnNpb25cTXVsdGltZWRpYVxTeXN0ZW1Qcm9maWxlXFRhc2tzXEdhbWVzXQ0KIkdQVSBQcmlvcml0eSI9ZHdvcmQ6MDAwMDAwMDgNCiJQcmlvcml0eSI9ZHdvcmQ6MDAwMDAwMDYNCiJTY2hlZHVsaW5nIENhdGVnb3J5Ij0iSGlnaCINCiJTRklPIFByaW9yaXR5Ij0iSGlnaCINCg0K",
-    "guide": "Ajusta prioridade de CPU e GPU para jogos via registro do Windows.",
-    "description": "Configura GPU Priority e Scheduling Category para priorizar processamento grafico em jogos.",
-    "category": "CPU",
-    "id": "cpu-24",
-    "isBuiltIn": true,
-    "riskLevel": "moderate"
-  },
-  {
     "tags": ["prefetch", "desempenho"],
     "requiresAdmin": true,
     "name": "Desativar Prefetcher",
@@ -1343,20 +1301,6 @@
     "description": "Otimiza mouse, AFD thresholds, Win32PrioritySeparation e desativa animacoes de login para priorizar FPS.",
     "category": "CPU",
     "id": "cpu-28",
-    "isBuiltIn": true,
-    "riskLevel": "moderate"
-  },
-  {
-    "tags": ["gpu", "video", "prioridade"],
-    "requiresAdmin": true,
-    "name": "Priorizar Placa de Video",
-    "extension": "reg",
-    "subcategory": "Otimizacao",
-    "content": "V2luZG93cyBSZWdpc3RyeSBFZGl0b3IgVmVyc2lvbiA1LjAwDQoNCltIS0VZX0xPQ0FMX01BQ0hJTkVcU09GVFdBUkVcTWljcm9zb2Z0XFdpbmRvd3MgTlRcQ3VycmVudFZlcnNpb25cTXVsdGltZWRpYVxTeXN0ZW1Qcm9maWxlXFRhc2tzXEdhbWVzXQ0KIkdQVSBQcmlvcml0eSI9ZHdvcmQ6MDAwMDAwMDgNCiJQcmlvcml0eSI9ZHdvcmQ6MDAwMDAwMDYNCiJTY2hlZHVsaW5nIENhdGVnb3J5Ij0iSGlnaCINCiJTRklPIFByaW9yaXR5Ij0iSGlnaCI=",
-    "guide": "Dá prioridade alta a GPU no agendamento de tarefas do Windows.",
-    "description": "Configura GPU Priority, Scheduling Category e SFIO Priority para dar prioridade a placa de video.",
-    "category": "CPU",
-    "id": "cpu-29",
     "isBuiltIn": true,
     "riskLevel": "moderate"
   },

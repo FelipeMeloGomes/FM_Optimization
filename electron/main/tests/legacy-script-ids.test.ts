@@ -34,8 +34,16 @@ describe('resolveScriptId', () => {
     expect(resolveScriptId('intel-37')).toBe('cpu-37');
   });
 
+  it('resolves the retired cpu ids to their surviving twin', () => {
+    // aposentados na dedup da beta; a equivalência foi conferida no conteúdo
+    expect(resolveScriptId('cpu-12')).toBe('cpu-11');
+    expect(resolveScriptId('cpu-24')).toBe('cpu-21');
+    expect(resolveScriptId('cpu-29')).toBe('cpu-21');
+  });
+
   it('passes current ids through untouched', () => {
     for (let n = 1; n <= 37; n++) {
+      if (n === 12 || n === 24 || n === 29) continue;
       expect(resolveScriptId(`cpu-${n}`)).toBe(`cpu-${n}`);
     }
     expect(resolveScriptId('builtin-13')).toBe('builtin-13');
@@ -44,49 +52,54 @@ describe('resolveScriptId', () => {
 
   it('leaves an unknown id alone instead of guessing', () => {
     expect(resolveScriptId('amd-999')).toBe('amd-999');
+    expect(resolveScriptId('inputlag-12')).toBe('inputlag-12');
     expect(resolveScriptId('')).toBe('');
   });
 
-  it('does not alias non-cpu categories', () => {
+  it('aliases only retired vendor ids and retired cpu ids', () => {
     for (const key of Object.keys(LEGACY_SCRIPT_ID_ALIASES)) {
-      expect(key).toMatch(/^(amd|intel)-\d+$/);
+      expect(key).toMatch(/^(amd|intel|cpu)-\d+$/);
     }
   });
 });
 
 describe('LEGACY_SCRIPT_ID_ALIASES', () => {
-  it('covers all 74 retired ids exactly once', () => {
-    const keys = Object.keys(LEGACY_SCRIPT_ID_ALIASES);
-    expect(keys).toHaveLength(74);
+  const keys = Object.keys(LEGACY_SCRIPT_ID_ALIASES);
+  const vendorKeys = keys.filter((k) => k.startsWith('amd-') || k.startsWith('intel-'));
 
-    const amd = keys.filter((k) => k.startsWith('amd-'));
-    const intel = keys.filter((k) => k.startsWith('intel-'));
-    expect(amd).toHaveLength(37);
-    expect(intel).toHaveLength(37);
-    expect(new Set(keys).size).toBe(74);
+  it('covers all 74 retired vendor ids exactly once', () => {
+    expect(vendorKeys).toHaveLength(74);
+    expect(vendorKeys.filter((k) => k.startsWith('amd-'))).toHaveLength(37);
+    expect(vendorKeys.filter((k) => k.startsWith('intel-'))).toHaveLength(37);
+    expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it('points every alias at a merged script, and merges both vendors in one', () => {
+  it('points every alias at a surviving cpu script', () => {
     for (const merged of Object.values(LEGACY_SCRIPT_ID_ALIASES)) {
       expect(merged).toMatch(/^cpu-\d+$/);
     }
+  });
 
-    // Each cpu-N absorbs exactly one AMD and one Intel entry.
+  it('keeps the vendor pairs together even after the dedup', () => {
     const byTarget = new Map<string, string[]>();
-    for (const [legacy, merged] of Object.entries(LEGACY_SCRIPT_ID_ALIASES)) {
-      byTarget.set(merged, [...(byTarget.get(merged) ?? []), legacy]);
+    for (const key of vendorKeys) {
+      const merged = LEGACY_SCRIPT_ID_ALIASES[key];
+      byTarget.set(merged, [...(byTarget.get(merged) ?? []), key]);
     }
-    expect(byTarget.size).toBe(37);
+
+    // 34 scripts de CPU sobreviveram; cpu-11 e cpu-21 absorveram os pares
+    // aposentados, então cada destino continua com amd e intel em igual número.
+    expect(byTarget.size).toBe(34);
     for (const [merged, sources] of byTarget) {
-      expect(sources, merged).toHaveLength(2);
-      expect(
-        sources.filter((s) => s.startsWith('amd-')),
-        merged
-      ).toHaveLength(1);
-      expect(
-        sources.filter((s) => s.startsWith('intel-')),
-        merged
-      ).toHaveLength(1);
+      const amd = sources.filter((s) => s.startsWith('amd-')).length;
+      const intel = sources.filter((s) => s.startsWith('intel-')).length;
+      expect(amd, merged).toBe(intel);
+    }
+  });
+
+  it('never points an alias at itself', () => {
+    for (const key of keys) {
+      expect(LEGACY_SCRIPT_ID_ALIASES[key]).not.toBe(key);
     }
   });
 });
@@ -101,7 +114,7 @@ describe('alias table agrees with the shipped catalog', () => {
   );
   const byId = new Map(catalog.map((s) => [s.id, s]));
 
-  it('resolves all 74 legacy ids to a catalog entry with content', () => {
+  it('resolves every alias to a catalog entry with content', () => {
     const broken: string[] = [];
     for (const [legacy, merged] of Object.entries(LEGACY_SCRIPT_ID_ALIASES)) {
       const target = byId.get(resolveScriptId(legacy));

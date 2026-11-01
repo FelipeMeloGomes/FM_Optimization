@@ -37,8 +37,8 @@ export const LEGACY_SCRIPT_ID_ALIASES: Record<string, string> = {
   'intel-3': 'cpu-10',
   'amd-11': 'cpu-11',
   'intel-4': 'cpu-11',
-  'amd-12': 'cpu-12',
-  'intel-5': 'cpu-12',
+  'amd-12': 'cpu-11',
+  'intel-5': 'cpu-11',
   'amd-13': 'cpu-13',
   'intel-7': 'cpu-13',
   'amd-14': 'cpu-14',
@@ -61,8 +61,8 @@ export const LEGACY_SCRIPT_ID_ALIASES: Record<string, string> = {
   'intel-18': 'cpu-22',
   'amd-23': 'cpu-23',
   'intel-17': 'cpu-23',
-  'amd-24': 'cpu-24',
-  'intel-16': 'cpu-24',
+  'amd-24': 'cpu-21',
+  'intel-16': 'cpu-21',
   'amd-25': 'cpu-25',
   'intel-29': 'cpu-25',
   'amd-26': 'cpu-26',
@@ -71,8 +71,8 @@ export const LEGACY_SCRIPT_ID_ALIASES: Record<string, string> = {
   'intel-27': 'cpu-27',
   'amd-28': 'cpu-28',
   'intel-26': 'cpu-28',
-  'amd-29': 'cpu-29',
-  'intel-25': 'cpu-29',
+  'amd-29': 'cpu-21',
+  'intel-25': 'cpu-21',
   'amd-30': 'cpu-30',
   'intel-30': 'cpu-30',
   'amd-31': 'cpu-31',
@@ -89,6 +89,11 @@ export const LEGACY_SCRIPT_ID_ALIASES: Record<string, string> = {
   'intel-36': 'cpu-36',
   'amd-37': 'cpu-37',
   'intel-37': 'cpu-37',
+  // Ids aposentados na dedup da beta. Não removidos do mapa: histórico e
+  // preferências antigas continuam resolvendo para o sobrevivente.
+  'cpu-12': 'cpu-11',
+  'cpu-24': 'cpu-21',
+  'cpu-29': 'cpu-21',
 };
 
 /** Identity for current and unknown ids; only retired ids are rewritten. */
