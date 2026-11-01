@@ -195,6 +195,20 @@ export const getCleanerStatsSchema = z.string().min(1, 'Cleaner ID is required')
 
 export const essentialIdSchema = z.string().min(1, 'Program ID is required').max(64);
 
+export const StartupSetEnabledSchema = z.object({
+  kind: z.enum(['app', 'task', 'service']),
+  id: z.string().min(1, 'Startup entry ID is required').max(2048),
+  enabled: z.boolean(),
+});
+
+export const StartupOpenLocationSchema = z.object({
+  id: z.string().min(1, 'Startup entry ID is required').max(2048),
+});
+
+export const StartupStopServiceSchema = z.object({
+  id: z.string().min(1, 'Service ID is required').max(2048),
+});
+
 export const IpcSchemas: Record<string, z.ZodSchema> = {
   'get-system-info': z.undefined(),
   'get-cpu-info': z.undefined(),
@@ -250,6 +264,10 @@ export const IpcSchemas: Record<string, z.ZodSchema> = {
   'essentials:open-page': essentialIdSchema,
   'essentials:install': essentialIdSchema,
   'essentials:cancel-install': essentialIdSchema,
+  'startup:list': z.undefined(),
+  'startup:set-enabled': StartupSetEnabledSchema,
+  'startup:open-location': StartupOpenLocationSchema,
+  'startup:stop-service': StartupStopServiceSchema,
 };
 
 export function validateIpcInput<T>(

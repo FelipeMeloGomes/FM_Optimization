@@ -28,6 +28,10 @@ const CHANNEL_CONFIG: Record<string, RateLimitConfig> = {
   'adb:backup-app': { windowMs: 5000, maxRequests: 3 },
   'adb:restore-app': { windowMs: 5000, maxRequests: 2 },
   'essentials:install': { windowMs: 10_000, maxRequests: 2 },
+  'startup:list': { windowMs: 5000, maxRequests: 4 },
+  'startup:set-enabled': { windowMs: 2000, maxRequests: 6 },
+  'startup:open-location': { windowMs: 1000, maxRequests: 10 },
+  'startup:stop-service': { windowMs: 3000, maxRequests: 3 },
 };
 
 interface Bucket {

@@ -27,6 +27,7 @@ import type {
   ScriptEnded,
   ScriptEntry,
   SetPageLockPasswordResult,
+  StartupSnapshot,
   UpdateInfo,
   UpdateStatus,
 } from '../shared/ipc-types';
@@ -248,6 +249,10 @@ const electronAPI: ElectronAPI = {
     essentialInstallCallbacks.add(cb);
     return () => essentialInstallCallbacks.delete(cb);
   },
+  startupList: () => ipc<StartupSnapshot>('startup:list'),
+  startupSetEnabled: (payload) => ipc<StartupSnapshot>('startup:set-enabled', payload),
+  startupOpenLocation: (payload) => ipcVoid('startup:open-location', payload),
+  startupStopService: (payload) => ipc<StartupSnapshot>('startup:stop-service', payload),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

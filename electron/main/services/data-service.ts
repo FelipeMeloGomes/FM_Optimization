@@ -59,7 +59,7 @@ function defaultSettings(): AppSettings {
   };
 }
 
-function getDataDir(): string {
+export function getDataDir(): string {
   return app.isPackaged
     ? resolve(app.getPath('appData'), 'fm-optimize')
     : resolve(__dirname, '../../data');

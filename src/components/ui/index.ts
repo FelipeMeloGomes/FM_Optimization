@@ -37,3 +37,4 @@ export {
   TableHeader,
   TableRow,
 } from './table';
+export { type TabItem, Tabs } from './tabs';

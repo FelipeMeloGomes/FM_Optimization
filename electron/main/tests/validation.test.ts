@@ -101,6 +101,31 @@ describe('SettingsSchema cpuVendorOverride', () => {
   });
 });
 
+describe('startup schemas', () => {
+  it('accepts a valid toggle payload', () => {
+    const result = IpcSchemas['startup:set-enabled'].safeParse({
+      kind: 'service',
+      id: 'service:Spooler',
+      enabled: false,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects an unknown kind', () => {
+    const result = IpcSchemas['startup:set-enabled'].safeParse({
+      kind: 'driver',
+      id: 'service:Spooler',
+      enabled: false,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects an empty id', () => {
+    expect(IpcSchemas['startup:open-location'].safeParse({ id: '' }).success).toBe(false);
+    expect(IpcSchemas['startup:stop-service'].safeParse({ id: '' }).success).toBe(false);
+  });
+});
+
 describe('verify-page-lock-password schema', () => {
   it('rejects empty password', () => {
     expect(IpcSchemas['verify-page-lock-password'].safeParse({ password: '' }).success).toBe(false);

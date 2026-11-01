@@ -286,6 +286,75 @@ export interface AdbInstance {
   displayName?: string;
 }
 
+export type StartupAppSource =
+  | 'registry-user'
+  | 'registry-machine'
+  | 'registry-user-32'
+  | 'registry-machine-32'
+  | 'folder-user'
+  | 'folder-machine';
+
+export interface StartupAppEntry {
+  /** `app:<source>:<nome>` — estável enquanto a entrada existir. */
+  id: string;
+  name: string;
+  command: string;
+  source: StartupAppSource;
+  enabled: boolean;
+  requiresAdmin: boolean;
+  /** Pasta ou executável usado pelo "Abrir local", quando dá para resolver. */
+  location: string | null;
+}
+
+export type ScheduledTaskTrigger = 'logon' | 'boot';
+
+export interface ScheduledTaskEntry {
+  id: string;
+  name: string;
+  path: string;
+  trigger: ScheduledTaskTrigger;
+  action: string;
+  enabled: boolean;
+  requiresAdmin: boolean;
+  isMicrosoft: boolean;
+}
+
+export type ServiceStartMode = 'Automatic' | 'AutomaticDelayed' | 'Manual' | 'Disabled' | 'Unknown';
+
+export interface StartupServiceEntry {
+  id: string;
+  name: string;
+  displayName: string;
+  startMode: ServiceStartMode;
+  state: 'Running' | 'Stopped' | 'Paused' | 'Unknown';
+  /** Serviço essencial: a UI não deixa desativar. */
+  protected: boolean;
+  requiresAdmin: boolean;
+}
+
+export interface StartupSnapshot {
+  apps: StartupAppEntry[];
+  tasks: ScheduledTaskEntry[];
+  services: StartupServiceEntry[];
+  isAdmin: boolean;
+}
+
+export type StartupEntryKind = 'app' | 'task' | 'service';
+
+export interface StartupSetEnabledPayload {
+  kind: StartupEntryKind;
+  id: string;
+  enabled: boolean;
+}
+
+export interface StartupOpenLocationPayload {
+  id: string;
+}
+
+export interface StartupStopServicePayload {
+  id: string;
+}
+
 export interface CleanerCategoryStats {
   label: string;
   fileCount: number;
@@ -405,4 +474,8 @@ export interface ElectronAPI {
   installEssential(id: string): Promise<EssentialInstallResult>;
   cancelEssentialInstall(id: string): Promise<void>;
   onEssentialInstallProgress(cb: (data: EssentialInstallProgress) => void): () => void;
+  startupList(): Promise<StartupSnapshot>;
+  startupSetEnabled(payload: StartupSetEnabledPayload): Promise<StartupSnapshot>;
+  startupOpenLocation(payload: StartupOpenLocationPayload): Promise<void>;
+  startupStopService(payload: StartupStopServicePayload): Promise<StartupSnapshot>;
 }

@@ -1,10 +1,15 @@
-import { app, BrowserWindow, dialog, ipcMain, type OpenDialogOptions } from 'electron';
+import { readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { app, BrowserWindow, dialog, ipcMain, type OpenDialogOptions, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import type {
   AppSettings,
   BenchmarkResult,
   IpcResult,
   SetPageLockPasswordResult,
+  StartupOpenLocationPayload,
+  StartupSetEnabledPayload,
+  StartupStopServicePayload,
 } from '../shared/ipc-types';
 import { appState } from './app-state';
 import { auditIpcValidation } from './audit-logger';
@@ -30,7 +35,13 @@ import {
 import { isAdmin } from './services/admin-check';
 import { getAutoCleanScheduler } from './services/auto-clean';
 import { getCleanerStats } from './services/cleaner-stats';
-import { loadSettings, loadUserData, saveSettings, saveUserData } from './services/data-service';
+import {
+  getDataDir,
+  loadSettings,
+  loadUserData,
+  saveSettings,
+  saveUserData,
+} from './services/data-service';
 import { relaunchElevated } from './services/elevation';
 import {
   cancelEssentialInstall,
@@ -49,6 +60,7 @@ import {
 } from './services/restore-points';
 import { cancelExecution, executeScript } from './services/script-executor';
 import { loadScripts } from './services/script-registry';
+import { createStartupManager } from './services/startup-manager';
 import {
   getCpuInfo,
   getMemoryInfo,
@@ -96,8 +108,35 @@ function handleIpc<T, V>(
   }
 }
 
-function handleIpcNoInput<T>(channel: string, fn: () => T): Promise<IpcResult<T>> {
+function handleIpcNoInput<T>(channel: string, fn: () => T | Promise<T>): Promise<IpcResult<T>> {
   return handleIpc(channel, undefined, () => fn());
+}
+
+let startupManager: ReturnType<typeof createStartupManager> | null = null;
+
+function getStartupManager(): ReturnType<typeof createStartupManager> {
+  if (!startupManager) {
+    const roaming = process.env.APPDATA ?? app.getPath('appData');
+    const programData = process.env.ProgramData ?? 'C:\\ProgramData';
+    startupManager = createStartupManager({
+      exec: (script) => execPowerShell(script, 60_000),
+      isAdmin,
+      readDir: (dir) => {
+        try {
+          return readdirSync(dir);
+        } catch {
+          return [];
+        }
+      },
+      revealItem: (path) => shell.showItemInFolder(path),
+      dataDir: getDataDir(),
+      startupDirs: {
+        user: resolve(roaming, 'Microsoft/Windows/Start Menu/Programs/Startup'),
+        machine: resolve(programData, 'Microsoft/Windows/Start Menu/Programs/Startup'),
+      },
+    });
+  }
+  return startupManager;
 }
 
 export function registerIpcHandlers(): void {
@@ -608,6 +647,28 @@ export function registerIpcHandlers(): void {
 
         return result;
       }
+    )
+  );
+
+  ipcMain.handle('startup:list', () =>
+    handleIpcNoInput('startup:list', () => getStartupManager().listStartup())
+  );
+
+  ipcMain.handle('startup:set-enabled', (_e, payload: unknown) =>
+    handleIpc('startup:set-enabled', payload, (validated) =>
+      getStartupManager().setStartupEnabled(validated as StartupSetEnabledPayload)
+    )
+  );
+
+  ipcMain.handle('startup:open-location', (_e, payload: unknown) =>
+    handleIpc('startup:open-location', payload, (validated) =>
+      getStartupManager().openStartupLocation((validated as StartupOpenLocationPayload).id)
+    )
+  );
+
+  ipcMain.handle('startup:stop-service', (_e, payload: unknown) =>
+    handleIpc('startup:stop-service', payload, (validated) =>
+      getStartupManager().stopStartupService((validated as StartupStopServicePayload).id)
     )
   );
 }

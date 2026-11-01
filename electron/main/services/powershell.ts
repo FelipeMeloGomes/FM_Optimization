@@ -71,7 +71,7 @@ export function buildPsCommand(command: string, ...args: string[]): string[] {
   return [command, ...args.map(psEscape)];
 }
 
-export async function execPowerShell(script: string): Promise<string> {
+export async function execPowerShell(script: string, timeout = 30000): Promise<string> {
   const { violations } = sanitizeScript(script);
 
   if (violations.length > 0) {
@@ -85,7 +85,7 @@ export async function execPowerShell(script: string): Promise<string> {
       'powershell.exe',
       ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', wrapped],
       {
-        timeout: 30000,
+        timeout,
       }
     );
 
