@@ -1,4 +1,4 @@
-import { lazy, type ReactNode, Suspense } from 'react';
+import { type ReactNode, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Skeleton } from './components/ui';
@@ -12,21 +12,7 @@ import { CpuProvider, MemoryProvider, SystemProvider } from './contexts/SystemCo
 import { AppLayout } from './layout/AppLayout';
 import { composeProviders } from './lib/compose-providers';
 import { isPageLocked } from './lib/page-lock';
-
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
-const RestorePointsPage = lazy(() => import('./pages/RestorePointsPage'));
-const HistoryPage = lazy(() => import('./pages/HistoryPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const CleanerPage = lazy(() => import('./pages/CleanerPage'));
-const CpuPage = lazy(() => import('./pages/CpuPage'));
-const NetworkPage = lazy(() => import('./pages/NetworkPage'));
-const InputLagPage = lazy(() => import('./pages/InputLagPage'));
-const TweaksPage = lazy(() => import('./pages/TweaksPage'));
-const UtilitiesPage = lazy(() => import('./pages/UtilitiesPage'));
-const AppsPage = lazy(() => import('./pages/AppsPage'));
-const DebloatPage = lazy(() => import('./pages/DebloatPage'));
-const EssentialsPage = lazy(() => import('./pages/EssentialsPage'));
-const EmuladoresPage = lazy(() => import('./pages/EmuladoresPage'));
+import { ROUTES } from './routes/config';
 
 function PageLoader() {
   return (
@@ -64,90 +50,21 @@ export default function App() {
         <ErrorBoundary>
           <Routes>
             <Route element={<AppLayout />}>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/restore-points" element={<RestorePointsPage />} />
-              <Route path="/history" element={<HistoryPage />} />
-              <Route
-                path="/tweaks"
-                element={
-                  <ProtectedRoute path="/tweaks">
-                    <TweaksPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/utilities"
-                element={
-                  <ProtectedRoute path="/utilities">
-                    <UtilitiesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/cleaner"
-                element={
-                  <ProtectedRoute path="/cleaner">
-                    <CleanerPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/rede"
-                element={
-                  <ProtectedRoute path="/rede">
-                    <NetworkPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/apps"
-                element={
-                  <ProtectedRoute path="/apps">
-                    <AppsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/debloat"
-                element={
-                  <ProtectedRoute path="/debloat">
-                    <DebloatPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/essenciais"
-                element={
-                  <ProtectedRoute path="/essenciais">
-                    <EssentialsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/emuladores"
-                element={
-                  <ProtectedRoute path="/emuladores">
-                    <EmuladoresPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/input-lag"
-                element={
-                  <ProtectedRoute path="/input-lag">
-                    <InputLagPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/cpu"
-                element={
-                  <ProtectedRoute path="/cpu">
-                    <CpuPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/settings" element={<SettingsPage />} />
+              {ROUTES.map(({ path, component: Page, protected: isProtected }) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    isProtected ? (
+                      <ProtectedRoute path={path}>
+                        <Page />
+                      </ProtectedRoute>
+                    ) : (
+                      <Page />
+                    )
+                  }
+                />
+              ))}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

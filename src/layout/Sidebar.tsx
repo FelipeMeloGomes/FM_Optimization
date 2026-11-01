@@ -1,23 +1,4 @@
-import {
-  Clock,
-  Cpu,
-  Eraser,
-  Gamepad2,
-  Gauge,
-  Home,
-  type LucideIcon,
-  MonitorDown,
-  MousePointerClick,
-  PackageX,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Search,
-  Settings,
-  Shield,
-  Smartphone,
-  Wifi,
-  Wrench,
-} from 'lucide-react';
+import { type LucideIcon, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import logoUrl from '../assets/logo.svg';
@@ -26,6 +7,7 @@ import { useSettingsContext } from '../contexts/SettingsContext';
 import { isPageLocked } from '../lib/page-lock';
 import { getThemeById } from '../lib/theme-config';
 import { cn } from '../lib/utils';
+import { CATEGORIES, routesByCategory } from '../routes/config';
 
 interface SidebarProps {
   openCommandPalette: () => void;
@@ -37,27 +19,6 @@ interface SidebarLinkProps {
   label: string;
   collapsed: boolean;
 }
-
-const navItems = [
-  { to: '/', icon: Home, label: 'Inicio' },
-  { to: '/tweaks', icon: Gauge, label: 'Ajustes' },
-  { to: '/utilities', icon: Wrench, label: 'Utilitarios' },
-  { to: '/cleaner', icon: Eraser, label: 'Limpeza' },
-  { to: '/rede', icon: Wifi, label: 'Rede' },
-  { to: '/input-lag', icon: MousePointerClick, label: 'Input Lag' },
-  { to: '/cpu', icon: Cpu, label: 'Processador' },
-  { to: '/apps', icon: Smartphone, label: 'Aplicativos' },
-  { to: '/debloat', icon: PackageX, label: 'Debloat' },
-  { to: '/essenciais', icon: MonitorDown, label: 'Essenciais PC' },
-  { to: '/emuladores', icon: Gamepad2, label: 'Emuladores' },
-] as const;
-
-const systemItems = [
-  { to: '/restore-points', icon: Shield, label: 'Restauracao' },
-  { to: '/history', icon: Clock, label: 'Historico' },
-] as const;
-
-const bottomItems = [{ to: '/settings', icon: Settings, label: 'Configuracoes' }] as const;
 
 function SidebarLink({ to, icon: Icon, label, collapsed }: SidebarLinkProps) {
   const link = (
@@ -96,7 +57,6 @@ function SidebarLink({ to, icon: Icon, label, collapsed }: SidebarLinkProps) {
     </NavLink>
   );
 
-  // Portal do Radix: o tooltip nao e cortado pelo scroll da navegacao.
   if (!collapsed) return link;
 
   return (
@@ -115,8 +75,14 @@ export function Sidebar({ openCommandPalette }: SidebarProps) {
   const theme = getThemeById(settings.theme);
   const glowColor = theme.signature?.glowColor;
 
-  const visibleNavItems = navItems.filter((item) => !isPageLocked(item.to, settings));
-  const visibleSystemItems = systemItems.filter((item) => !isPageLocked(item.to, settings));
+  const groups = CATEGORIES.filter((category) => category.id !== 'sistema')
+    .map((category) => ({
+      category,
+      items: routesByCategory(category.id).filter((route) => !isPageLocked(route.path, settings)),
+    }))
+    .filter((group) => group.items.length > 0);
+
+  const bottomItems = routesByCategory('sistema');
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -170,37 +136,40 @@ export function Sidebar({ openCommandPalette }: SidebarProps) {
         <nav
           className={cn(
             'flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-1',
-            // Sem scrollbar: numa sidebar estreita ela rouba a largura dos icones.
             collapsed && '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
           )}
         >
-          {visibleNavItems.map((item) => (
-            <SidebarLink
-              key={item.to}
-              to={item.to}
-              icon={item.icon}
-              label={item.label}
-              collapsed={collapsed}
-            />
-          ))}
-          <div className="my-2 border-t border-border" />
-          {visibleSystemItems.map((item) => (
-            <SidebarLink
-              key={item.to}
-              to={item.to}
-              icon={item.icon}
-              label={item.label}
-              collapsed={collapsed}
-            />
+          {groups.map(({ category, items }, index) => (
+            <div key={category.id} className="flex flex-col gap-1">
+              {index > 0 &&
+                (collapsed ? (
+                  <div className="my-2 border-t border-border" />
+                ) : (
+                  !category.hideLabel && (
+                    <h3 className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
+                      {category.label}
+                    </h3>
+                  )
+                ))}
+              {items.map((route) => (
+                <SidebarLink
+                  key={route.path}
+                  to={route.path}
+                  icon={route.icon}
+                  label={route.label}
+                  collapsed={collapsed}
+                />
+              ))}
+            </div>
           ))}
         </nav>
         <nav className="flex shrink-0 flex-col gap-1 border-t border-border pt-2">
-          {bottomItems.map((item) => (
+          {bottomItems.map((route) => (
             <SidebarLink
-              key={item.to}
-              to={item.to}
-              icon={item.icon}
-              label={item.label}
+              key={route.path}
+              to={route.path}
+              icon={route.icon}
+              label={route.label}
               collapsed={collapsed}
             />
           ))}
