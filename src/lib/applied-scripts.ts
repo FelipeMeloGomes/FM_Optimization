@@ -36,9 +36,9 @@ interface CountableScriptLike {
 const TWEAK_EXCLUDED_CATEGORIES: ReadonlySet<string> = new Set(['Cleaner']);
 
 /**
- * Interativos ficam de fora: o histórico grava `exitCode 0` no instante em que a
- * janela do CMD abre (script-executor.ts), sem saber o que foi feito lá dentro.
- * Marcar isso como "aplicado" seria afirmar algo que o histórico não sustenta.
+ * Interativos ficam de fora: a execução abre uma janela própria e o app deixa
+ * de observar o desfecho, então o histórico registra `exitCode: null`
+ * (script-outcome.ts). Não há como afirmar que o ajuste foi aplicado.
  */
 export function isCountableScript(script: CountableScriptLike): boolean {
   return script.interactive !== true && !NON_COUNTABLE_SCRIPT_IDS.has(script.id);

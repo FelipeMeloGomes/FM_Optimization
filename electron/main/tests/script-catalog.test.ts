@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { describe, expect, it } from 'vitest';
-import { checkScriptContent } from '../deny-list';
+import { checkScriptContent, shouldBlockScript } from '../deny-list';
 
 const SCRIPTS_PATH = resolve(cwd(), 'resources/scripts.json');
 
@@ -263,15 +263,14 @@ describe('catalog deny-list exposure', () => {
     ]);
   });
 
-  it('CHARACTERISATION: bcdedit content is reported as allowed', () => {
-    // deny-list.ts forbids bcdedit, but checkScriptContent returns
-    // `allowed: true` unconditionally, so script-registry.ts never throws.
-    // Fixing either that line or the enableDenyListBlock default (false in
-    // data-service.ts) would block all 9 scripts above at once. This test fails
-    // on purpose when the block goes live, so the behaviour is a decision
-    // rather than an accident.
+  it('CHARACTERISATION: bcdedit is a violation, but blocking stays opt-in', () => {
+    // O catálogo é conteúdo interno e versionado: 9 scripts usam bcdedit de
+    // propósito. A detecção agora reporta a violação de verdade, e o bloqueio
+    // só entra quando `enableDenyListBlock` está ligado (default false).
     const { allowed, violations } = checkScriptContent('@echo off\r\nbcdedit /set testsigning yes');
-    expect(allowed).toBe(true);
+    expect(allowed).toBe(false);
     expect(violations).toEqual(['\\bbcdedit\\b']);
+    expect(shouldBlockScript(violations, false)).toBe(false);
+    expect(shouldBlockScript(violations, true)).toBe(true);
   });
 });

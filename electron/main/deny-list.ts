@@ -36,7 +36,19 @@ export function checkScriptContent(content: string): { allowed: boolean; violati
       violations.push(pattern.source);
     }
   }
-  return { allowed: true, violations };
+  return { allowed: violations.length === 0, violations };
+}
+
+/**
+ * O catálogo é conteúdo interno e versionado — vários scripts legítimos usam
+ * `bcdedit` ou param serviços sensíveis de propósito. Bloquear por padrão
+ * quebraria o catálogo inteiro, então a decisão fica na flag de segurança.
+ */
+export function shouldBlockScript(
+  violations: readonly string[],
+  enableDenyListBlock: boolean
+): boolean {
+  return enableDenyListBlock && violations.length > 0;
 }
 
 export function isExtensionAllowed(ext: string): ext is AllowedExtension {

@@ -3,9 +3,10 @@ import { resolve } from 'node:path';
 import { app } from 'electron';
 import type { ScriptEntry } from '../../shared/ipc-types';
 import { auditDenyListCheck } from '../audit-logger';
-import { checkScriptContent } from '../deny-list';
+import { checkScriptContent, shouldBlockScript } from '../deny-list';
 import { resolveScriptId } from '../legacy-script-ids';
 import { getScriptTempDir, validateScriptPath } from '../path-validation';
+import { loadSettings } from './data-service';
 
 let scriptsCache: ScriptEntry[] | null = null;
 let scriptsCacheMtimeMs = 0;
@@ -54,9 +55,10 @@ export function getScriptContent(id: string): string {
 
   const content = Buffer.from(script.content, 'base64').toString('utf-8');
 
-  const { allowed, violations } = checkScriptContent(content);
-  auditDenyListCheck(id, allowed, violations);
-  if (!allowed) {
+  const { violations } = checkScriptContent(content);
+  const blocked = shouldBlockScript(violations, loadSettings().security.enableDenyListBlock);
+  auditDenyListCheck(id, !blocked, violations);
+  if (blocked) {
     throw new Error(`Script blocked by security policy: ${violations.join(', ')}`);
   }
 

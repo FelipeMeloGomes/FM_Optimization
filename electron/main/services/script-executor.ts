@@ -1,11 +1,12 @@
 import { type ChildProcess, execSync, spawn } from 'node:child_process';
 import { BrowserWindow } from 'electron';
-import type { ExecutionHistoryEntry, ScriptEnded, ScriptEntry } from '../../shared/ipc-types';
+import type { ScriptEnded, ScriptEntry } from '../../shared/ipc-types';
 import { auditAdminCheck, auditScriptExecution } from '../audit-logger';
 import { validateScriptPath } from '../path-validation';
 import { isAdmin } from './admin-check';
 import { addHistoryEntry, loadSettings } from './data-service';
 import { buildInteractiveWindowCommand } from './script-commands';
+import { createHistoryEntry, reportInteractiveOpen } from './script-outcome';
 import { extractScriptToTemp, getScriptById } from './script-registry';
 
 const activeProcesses = new Map<string, ChildProcess>();
@@ -32,28 +33,6 @@ function notifyEnded(data: ScriptEnded, win?: BrowserWindow | null): void {
   for (const window of BrowserWindow.getAllWindows()) {
     if (!window.isDestroyed()) window.webContents.send('script-ended', payload);
   }
-}
-
-function createHistoryEntry(
-  scriptId: string,
-  scriptName: string,
-  startTime: number,
-  endTime: number,
-  exitCode: number | null,
-  wasCancelled: boolean,
-  trigger: 'manual' | 'scheduled'
-): ExecutionHistoryEntry {
-  return {
-    id: `${scriptId}_${startTime}`,
-    scriptId,
-    scriptName,
-    startTime: new Date(startTime).toISOString(),
-    endTime: new Date(endTime).toISOString(),
-    durationMs: endTime - startTime,
-    exitCode,
-    wasCancelled,
-    trigger,
-  };
 }
 
 /**
@@ -112,13 +91,24 @@ function startRun(
       shell: true,
     });
     proc.unref();
-    notifyEnded({ id, code: 0, scriptName: script?.name, trigger: options.trigger }, options.win);
-    const now = Date.now();
-    addHistoryEntry(
-      createHistoryEntry(id, script?.name || id, now, now, 0, false, options.trigger)
+    reportInteractiveOpen(
+      { id, scriptName: script?.name, trigger: options.trigger },
+      {
+        notify: (data) => notifyEnded(data, options.win),
+        recordHistory: addHistoryEntry,
+        audit: (exitCode, success) =>
+          auditScriptExecution(
+            id,
+            script?.name || id,
+            script?.requiresAdmin ?? false,
+            script?.requiresAdmin ? isAdmin() : true,
+            exitCode,
+            success
+          ),
+        now: Date.now,
+      }
     );
-    auditScriptExecution(id, script?.name || id, false, true, 0, true);
-    return { status: 'opened', completion: Promise.resolve({ code: 0, cancelled: false }) };
+    return { status: 'opened', completion: Promise.resolve({ code: null, cancelled: false }) };
   }
 
   const { command, args } = getCommand(ext, filePath);

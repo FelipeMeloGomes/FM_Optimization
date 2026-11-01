@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { ALLOWED_EXTENSIONS, checkScriptContent, isExtensionAllowed } from '../deny-list';
+import {
+  ALLOWED_EXTENSIONS,
+  checkScriptContent,
+  isExtensionAllowed,
+  shouldBlockScript,
+} from '../deny-list';
 
 describe('isExtensionAllowed', () => {
   it('rejects .txt now that the guide feature is gone', () => {
@@ -32,16 +37,13 @@ describe('ALLOWED_EXTENSIONS', () => {
 });
 
 describe('checkScriptContent', () => {
-  it('collects violations but still reports the script as allowed', () => {
-    // Known debt: the function returns `allowed: true` unconditionally, so the
-    // `allowed` check in script-registry.ts never throws. Wiring it up needs a
-    // per-script allowlist first, because 16 catalog scripts (amd-1, intel-1,
-    // amd-15, intel-8, tweaks-4, builtin-13 and the cleanup sets) legitimately
-    // use bcdedit. See electron/main/tests/script-catalog.test.ts for the
-    // catalog-side characterisation.
+  it('reports a denied pattern as not allowed', () => {
+    // O catálogo é conteúdo interno e versionado, então vários scripts
+    // legítimos usam bcdedit. A detecção precisa ser honesta (allowed: false);
+    // quem decide bloquear é shouldBlockScript, com a flag de segurança.
     const result = checkScriptContent('@echo off\r\nbcdedit /set testsigning yes');
     expect(result.violations).toEqual(['\\bbcdedit\\b']);
-    expect(result.allowed).toBe(true);
+    expect(result.allowed).toBe(false);
   });
 
   it('reports no violations for clean content', () => {
@@ -49,5 +51,14 @@ describe('checkScriptContent', () => {
       allowed: true,
       violations: [],
     });
+  });
+});
+
+describe('shouldBlockScript', () => {
+  it('bloqueia apenas com a flag ligada e alguma violacao', () => {
+    expect(shouldBlockScript(['\\bbcdedit\\b'], true)).toBe(true);
+    expect(shouldBlockScript(['\\bbcdedit\\b'], false)).toBe(false);
+    expect(shouldBlockScript([], true)).toBe(false);
+    expect(shouldBlockScript([], false)).toBe(false);
   });
 });
