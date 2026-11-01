@@ -1,7 +1,12 @@
 /**
- * Picks the RAM script matching the installed capacity. The ladder is a single
- * `cpu-30`..`cpu-36` sequence now that the vendor duplicates are gone, so the
- * tier no longer depends on which CPU was detected.
+ * Picks the svchost split threshold that covers the installed capacity. The
+ * ladder is a single `cpu-30`..`cpu-36` sequence now that the vendor duplicates
+ * are gone, so the tier no longer depends on which CPU was detected.
+ *
+ * `SvcHostSplitThresholdInKB` is the RAM ceiling at which Windows starts
+ * splitting svchost services into individual processes, not a "free memory"
+ * switch: choosing the first tier above the installed RAM keeps the services
+ * shared, which trades isolation for fewer processes.
  */
 export function getRamScriptId(ramGb: number): string {
   if (ramGb <= 4) return 'cpu-30';

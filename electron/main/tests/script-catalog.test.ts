@@ -192,7 +192,7 @@ describe('cpu-1 general optimization', () => {
 
   it('keeps the description free of the removed TPM claim', () => {
     expect(find('cpu-1').description).not.toMatch(/TPM/i);
-    expect(find('cpu-1').description).toContain('hyper-v');
+    expect(find('cpu-1').description).toContain('Hyper-V');
   });
 
   it('still applies the latency tweaks', () => {

@@ -5,8 +5,8 @@ import type { ExecutionHistoryEntry, ScriptEntry } from '../../electron/shared/i
  * do sistema nem ganham o selo "Aplicado":
  *
  * - reverters (desfazem outros scripts do catálogo);
- * - variantes redundantes do mesmo ajuste (ex.: "Liberar RAM" escreve o mesmo
- *   registro em várias faixas);
+ * - variantes redundantes do mesmo ajuste (ex.: "Limite do svchost" escreve a
+ *   mesma chave de registro em várias faixas);
  * - ajustes que conflitam entre si (internet-5 anula internet-1).
  *
  * A lista vale para o selo "Aplicado"; o contador do Dashboard aplica ainda o
@@ -16,13 +16,13 @@ export const NON_COUNTABLE_SCRIPT_IDS: ReadonlySet<string> = new Set([
   'builtin-6', // AMD - Reverter 3 Frames
   'builtin-7', // AMD - Reverter Tweak Melody
   'internet-11', // Reverter Internet
-  'cpu-37', // Resetar RAM Padrao
-  'cpu-31', // Liberar RAM 6GB  (cpu-30 "4GB" fica como representante da família)
-  'cpu-32', // Liberar RAM 8GB
-  'cpu-33', // Liberar RAM 12GB
-  'cpu-34', // Liberar RAM 16GB
-  'cpu-35', // Liberar RAM 32GB
-  'cpu-36', // Liberar RAM 64GB
+  'cpu-37', // Restaurar Limite do svchost (380000 KB)
+  'cpu-31', // Limite do svchost (6 GB) — cpu-30 "4 GB" fica como representante
+  'cpu-32', // Limite do svchost (8 GB)
+  'cpu-33', // Limite do svchost (12 GB)
+  'cpu-34', // Limite do svchost (16 GB)
+  'cpu-35', // Limite do svchost (32 GB)
+  'cpu-36', // Limite do svchost (64 GB)
   'internet-5', // Desabilitar Auto-Tuning — conflita com internet-1 (normal)
 ]);
 

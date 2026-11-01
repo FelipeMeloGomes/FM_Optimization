@@ -15,6 +15,7 @@ interface ScriptEntry {
   name: string;
   description: string;
   guide: string;
+  extension: string;
   content: string;
 }
 
@@ -147,5 +148,52 @@ describe('limpezas nao apagam .log do disco inteiro', () => {
     const content = decode(id);
     expect(content).toContain('del /f /s /q "%temp%\\*.log" >nul 2>&1');
     expect(content).toContain('del /f /s /q "C:\\Windows\\Temp\\*.log" >nul 2>&1');
+  });
+});
+
+/**
+ * O .reg é importado pelo regedit, que aborta o arquivo inteiro na primeira
+ * linha inválida. Uma linha de texto solta (cpu-28), um comentário com `#`
+ * (builtin-4/6) ou um espaço antes da chave não são comentários tolerados:
+ * viram erro de importação. Este teste olha o catálogo real.
+ */
+const REG_HEADER = /^(?:Windows Registry Editor Version 5\.00|REGEDIT4)$/;
+const REG_COMMENT = /^;.*$/;
+const REG_KEY = /^\[-?[^\]]+\]$/;
+const REG_VALUE =
+  /^(?:"(?:[^"\\]|\\.)*"|@)=(?:"(?:[^"\\]|\\.)*"|-|dword:[0-9a-fA-F]{1,8}|hex(?:\([0-9a-fA-F]+\))?:.*)$/;
+const REG_HEX_CONTINUATION = /^ {2}[0-9a-fA-F]{2}(?:,[0-9a-fA-F]{2})*(?:,\\)?$/;
+
+describe('todo .reg do catalogo e importavel pelo regedit', () => {
+  const regScripts = scripts.filter((script) => script.extension === 'reg');
+
+  it('o catalogo tem scripts .reg para validar', () => {
+    expect(regScripts.length).toBeGreaterThan(0);
+  });
+
+  it('comeca com o cabecalho de versao', () => {
+    const wrong = regScripts.filter(
+      (script) =>
+        !REG_HEADER.test(Buffer.from(script.content, 'base64').toString('utf-8').split(/\r?\n/)[0])
+    );
+    expect(wrong.map((script) => script.id)).toEqual([]);
+  });
+
+  it('nao tem nenhuma linha fora da sintaxe .reg', () => {
+    const problems: string[] = [];
+    for (const script of regScripts) {
+      const lines = Buffer.from(script.content, 'base64').toString('utf-8').split(/\r?\n/);
+      lines.forEach((line, index) => {
+        const valid =
+          line.trim() === '' ||
+          REG_COMMENT.test(line) ||
+          REG_HEADER.test(line) ||
+          REG_KEY.test(line) ||
+          REG_VALUE.test(line) ||
+          REG_HEX_CONTINUATION.test(line);
+        if (!valid) problems.push(`${script.id}:${index + 1}: ${JSON.stringify(line)}`);
+      });
+    }
+    expect(problems).toEqual([]);
   });
 });
