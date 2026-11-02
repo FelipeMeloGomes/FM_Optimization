@@ -9,6 +9,9 @@ dist/
 # Skills
 superpowers/
 
+# refactor
+refactor/
+
 # Runtime data (dev)
 data/removed-apps.json
 data/backups/

@@ -1,0 +1,6 @@
+allowBuilds:
+  electron: false
+  esbuild: false
+
+strictDepBuilds: true
+dangerouslyAllowAllBuilds: false
