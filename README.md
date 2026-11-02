@@ -1,80 +1,158 @@
-# FM Optimize
+<p align="center">
+  <img src="resources/icon.svg" alt="FM Optimize" width="112" />
+</p>
 
-[![site](https://img.shields.io/badge/site-fmoptimize-0044ff?style=for-the-badge)](https://fmoptimize.vercel.app)
+<h1 align="center">FM Optimize</h1>
 
-100 scripts de otimização do Windows em um único app desktop. Tudo em um único instalador.
+<p align="center">
+  <strong>100 scripts de otimização do Windows em um único app desktop.</strong><br />
+  Desempenho, privacidade, limpeza e debloat em uma interface só.
+</p>
+
+<p align="center">
+  <a href="https://fmoptimize.vercel.app"><img src="https://img.shields.io/badge/site-fmoptimize-0044ff?style=for-the-badge" alt="Site" /></a>
+  <a href="https://github.com/FelipeMeloGomes/FM_Optimization/releases"><img src="https://img.shields.io/github/v/release/FelipeMeloGomes/FM_Optimization?style=for-the-badge&color=0044ff" alt="Última release" /></a>
+  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows 10 e 11" />
+  <img src="https://img.shields.io/badge/Electron-35-47848F?style=for-the-badge&logo=electron&logoColor=white" alt="Electron 35" />
+</p>
 
 ---
+
+**FM Optimize** reúne ajustes de desempenho, privacidade, limpeza e debloat do Windows em um app Electron para Windows 10/11. Cada script tem explicação, indicação de quando usar e registro do que já foi aplicado — sem caçar comando solto na internet.
+
+> [!IMPORTANT]
+> Algumas otimizações exigem privilégios de administrador. O app pede elevação quando necessário e mantém pendências da limpeza agendada para a próxima execução como admin. Crie um ponto de restauração antes de mexer no sistema — o app pode fazer isso automaticamente antes de cada tweak.
 
 ## Funcionalidades
 
-- **Dashboard** — CPU, GPU, memória, armazenamento com barra de uso e tempo de atividade. O rodapé mostra quantos ajustes estão aplicados (`N de 75`), contando todos os scripts não-interativos do catálogo exceto reverters, variantes redundantes e limpezas — limpeza tem página e histórico próprios, não é tweak
-- **Tweaks de otimização** — Desempenho, Input Lag, Limpeza, Debloat, Personalização, Rede e Utilitários, cada script em uma única página
-- **Privacidade** — página própria (`/privacidade-seguranca`) com telemetria, ID de anúncio, reconhecimento de fala, Timeline, bloqueio de domínios via Hosts e bloqueio da instalação forçada de apps sugeridos
-- **Debloat** — página própria com remoção de bloatware do Windows (Cortana, OneDrive, Xbox, Copilot, Widgets, além do Chris Titus Utility) e debloat de apps: Discord (Equicord + plugin FakeNitro) e Spotify (Spicetify com Marketplace e bloqueador de anúncios), ambos com opção de reverter. O debloat do Spotify funciona mesmo com o FM Optimize aberto como administrador: ele reabre sozinho em uma janela sem privilégios
-- **Personalização** — página própria (`/personalizacao`) para a aparência do Windows: limpar a barra de tarefas e o menu Iniciar, restaurar o menu de contexto clássico e desligar animações, transparência e efeitos visuais
-- **App Essenciais PC** — CPU-Z, HWMonitor, MSI Afterburner, DirectX (runtime legado), 7-Zip, WinRAR e BCUninstaller em cards com o id do pacote no winget e o caminho de instalação sempre igual: o botão "Instalar" chama o winget (`CPUID.CPU-Z`, `CPUID.HWMonitor`, `Guru3D.Afterburner`, `Microsoft.DirectX`, `7zip.7zip`, `RARLab.WinRAR`, `Klocman.BulkCrapUninstaller`), que baixa do canal oficial do fornecedor, confere o hash do manifesto antes de rodar o instalador e tem o progresso exibido na própria página. O card do DirectX deixa claro que o pacote instala as bibliotecas legadas do DirectX SDK (D3DX9/10/11, XAudio 2.7, XInput 1.3, XACT e Managed DirectX 1.1) e não atualiza o DirectX 12 do Windows. Nada é executado sozinho e nenhum instalador é salvo em Downloads
-- **Armazenamento** — Limpeza de Disco do Windows e otimizações de SSD que só aparecem quando há um SSD detectado no sistema
-- **Rede** — benchmark de DNS com ordenação por latência e aplicação automática + tweaks de otimização de internet
-- **Limpeza** — limpeza de arquivos temporários, cache de navegadores e atualizações do Windows, com contagem de arquivos, tamanho por categoria e atualização em tempo real
-- **Limpeza automática** — ícone de engrenagem na barra de título agenda as limpezas (diária, semanal ou mensal) e escolhe quais executar. Com a automação ligada, fechar a janela mantém o app na bandeja (com aviso único) e ele pode iniciar junto com o Windows, já escondido. Limpezas que exigem administrador ficam pendentes quando o app roda sem elevação, com botão para reiniciar como admin e executá-las; abrir o app elevado roda as pendências automaticamente. Se o PC estava desligado no horário, a limpeza atrasada roda na próxima abertura
-- **Desempenho** — 42 scripts em três seções: 34 de processador (categoria `CPU`), 4 de GPU AMD e 4 de Windows (energia, serviços, prioridade e modo de jogo). A GPU AMD fica em card próprio com aviso de hardware, para não parecer ajuste universal de CPU. A antiga divisão AMD/Intel da página Processador foi removida: os 37 pares eram byte a byte idênticos ou diferiam só em banner/crédito, então não havia conteúdo dependente de fabricante. A detecção via `systeminformation` continua rodando no processo principal e rotula a página, e a escolha manual de fabricante continua salva — ambas apenas informativas, sem filtrar a lista. A tier de RAM recomendada depende só da memória instalada, então funciona mesmo com CPU não identificada — na prática ela escolhe o limite do `svchost` (separação de processos de serviço), que não é um liberador de RAM. IDs antigos (`amd-*`, `intel-*`) continuam aceitos e são migrados para `cpu-*` no histórico. A dedup colapsou `cpu-12`, `cpu-24` e `cpu-29` em `cpu-11`/`cpu-21` e removeu `inputlag-12` (que só desligava o UAC e não mexia na taxa de atualização), levando o catálogo de 104 para 100 scripts; ids aposentados também são redirecionados no histórico
-- **Emuladores** — debloat de emuladores Android (BlueStacks 4/5) com seleção de instância, lista de apps com ícones e nomes, presets de bloatware (Leve, Recomendado e Máximo, alinhados ao que está instalado no emulador), backup e remoção via ADB. O caminho do ADB é detectado automaticamente e pode ser trocado manualmente pelo ícone no card "Caminho ADB" (a pasta escolhida é validada procurando `adb.exe`/`HD-Adb.exe` e a escolha fica salva). Permite desinstalar **qualquer** app, inclusive de sistema/críticos, com backup automático do APK (único ou multi-part) antes da remoção e histórico de apps removidos com restauração por instância. A restauração tenta `pm install-existing` e cai para o APK de backup quando necessário; dados preservados via `pm uninstall -k`; backups em `%APPDATA%\fm-optimize\backups\<instância>\`. Apps protegidos que não podem ser desinstalados são desabilitados via `pm disable-user` e reativados com `pm enable`
-- **Inicialização** — o que abre junto com o Windows em três abas: aplicativos (chaves `Run` do usuário e do sistema, incluindo a visão 32 bits, e as pastas Startup), tarefas agendadas com gatilho de logon/inicialização e serviços `Automático`/`Automático (atrasado)`. Cada item tem um interruptor reversível: desativar um app grava o blob em `Explorer\StartupApproved` (o mesmo que o Gerenciador de Tarefas usa), tarefas usam `Disable-ScheduledTask`/`Enable-ScheduledTask` e serviços usam `Set-Service`, com o tipo de início original guardado em `%APPDATA%\fm-optimize\startup-overrides.json` para a reativação ser fiel. Itens do sistema mostram o selo "Admin" e a página oferece reiniciar elevado; serviços essenciais (RPC, segurança, áudio, rede e afins) ficam somente leitura. Nada é desinstalado
-- **Restore Points** — crie, liste, gerencie e restaure backups do Windows (criação automática opcional antes de executar tweaks)
-- **Histórico de Execução** — registro de todos os tweaks executados com duração e status, incluindo a origem (manual ou automática). O histórico também marca os tweaks já aplicados: cards e linhas com execução bem-sucedida ganham o selo "Aplicado" e o botão vira "Executar novamente" (cancelados e com erro não contam). Interativos ficam fora — a execução abre uma janela própria e o app não observa o desfecho (o histórico grava `exitCode: null`), então marcá-los seria afirmar algo que o histórico não sustenta. O mesmo vale para o toast: janela aberta não é sucesso
-- **Notificações** — toast de confirmação ao finalizar a execução de um tweak (com som opcional)
-- **Mini-guia** — explicação simples do que cada tweak faz e quando usar
-- **Atualização integrada** — botão nas Configurações que baixa e instala novas versões do GitHub
-- **Bloqueio de Páginas** — nas Configurações, oculte páginas da barra lateral (Emuladores bloqueado por padrão) e proteja-as com senha mestra criptografada (DPAPI). Bloqueios gravados nas antigas páginas Ajustes (`/tweaks`) e Aplicativos (`/apps`) são migrados ao abrir para as páginas equivalentes, sem desbloquear nada
-- **Janela customizada** — controles de minimizar/fechar customizados, sem barra de título nativa do Windows
-- **Tema** — dark azul neon com fundo de circuito animado
+### Desempenho
 
----
+- **Dashboard** — uso de CPU, GPU, memória e armazenamento, tempo de atividade e quantos ajustes já estão aplicados (`N de 75`).
+- **42 tweaks de desempenho** — 34 de processador, 4 de GPU AMD e 4 de Windows (energia, serviços, prioridade e modo de jogo). A seção de GPU tem card próprio com aviso de hardware.
+- **Input Lag** — 11 ajustes de teclado, mouse, monitor, USB e resposta do sistema.
+- **Inicialização** — apps, tarefas agendadas e serviços que abrem com o Windows, com interruptor reversível. Serviços essenciais ficam somente leitura.
+- **Pontos de restauração** — criação, listagem e restauração de backups do Windows, com opção de criar automaticamente antes de executar tweaks.
+
+### Manutenção
+
+- **Limpeza** — arquivos temporários, cache de navegadores e atualizações do Windows, com contagem de arquivos e tamanho por categoria em tempo real.
+- **Limpeza automática** — agendamento diário, semanal ou mensal, com escolha das categorias. Com a automação ligada, o app vai para a bandeja ao fechar e pode iniciar com o Windows já escondido.
+- **Debloat** — remoção de bloatware do Windows (Cortana, OneDrive, Xbox, Copilot, Widgets) e dos apps Discord (Equicord + FakeNitro) e Spotify (Spicetify). O debloat de apps tem opção de reverter.
+- **Personalização** — barra de tarefas e menu Iniciar limpos, menu de contexto clássico, animações, transparência e efeitos visuais.
+- **Utilitários** — SFC, DISM, CHKDSK, TRIM de SSD, limpeza do WinSxS, compactação do sistema e outros comandos de manutenção.
+- **Armazenamento** — Limpeza de Disco do Windows e otimizações de SSD, exibidas apenas quando um SSD é detectado.
+
+### Programas
+
+- **Essenciais PC** — instalação via winget de CPU-Z, HWMonitor, MSI Afterburner, DirectX (runtime legado), 7-Zip, WinRAR e BCUninstaller, com progresso na própria página. O winget baixa do canal oficial e confere o hash do manifesto antes de rodar o instalador.
+- **Emuladores** — debloat de BlueStacks 4/5 via ADB: seleção de instância, presets de bloatware, backup automático do APK e restauração por instância. Permite remover qualquer app, inclusive de sistema.
+
+### Rede
+
+- **Benchmark de DNS** com ordenação por latência e aplicação do provedor escolhido.
+- **Tweaks de internet** para reduzir latência e melhorar a estabilidade da conexão.
+
+### Segurança e privacidade
+
+- Telemetria, ID de anúncio, reconhecimento de fala e Timeline.
+- Bloqueio de domínios via arquivo Hosts.
+- Bloqueio da instalação forçada de apps sugeridos pelo Windows.
+
+### Sistema
+
+- **Histórico de execução** — duração, status e origem (manual ou agendada) de cada tweak. Cards aplicados ganham o selo **Aplicado**; scripts interativos ficam de fora porque o app não observa o desfecho da janela.
+- **Bloqueio de páginas** — oculte páginas da barra lateral e proteja-as com senha mestra criptografada via DPAPI (Emuladores bloqueado por padrão).
+- **Atualização integrada** — download e instalação de novas versões direto do GitHub.
+- **Interface** — tema dark azul neon com fundo de circuito animado, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`).
+- **Atalhos** — `Ctrl+1`…`Ctrl+9` navegam entre páginas e `Ctrl+,` abre as Configurações.
 
 ## Tecnologias
 
-Electron 35 · React 19 · TypeScript · Vite · Tailwind CSS 4 · Framer Motion · systeminformation
+| Camada      | Stack                                                                  |
+| ----------- | ---------------------------------------------------------------------- |
+| Desktop     | Electron 35, electron-vite, electron-builder, electron-updater         |
+| Interface   | React 19, TypeScript, Tailwind CSS 4, Radix UI, Lucide, React Router 7 |
+| Dados e IPC | Zod, `systeminformation`, contextBridge com API tipada                 |
+| Qualidade   | Vitest, Biome                                                          |
 
-Tipografia **Inter Variable** (com eixo óptico `opsz` 14–32) e **JetBrains Mono Variable**, empacotadas no app via `@fontsource` — sem CDN e sem requisição externa em runtime.
+Tipografia **Inter Variable** e **JetBrains Mono Variable** empacotadas via `@fontsource` — sem CDN e sem requisição externa em runtime.
 
----
+## Como funciona
 
-## Segurança
+O renderer (React) é tratado como não confiável. Toda chamada passa pelo preload e chega ao processo principal por IPC, onde é validada com Zod e limitada por rate-limit antes de executar qualquer comando no sistema.
 
-O app executa comandos PowerShell no sistema. Todo dado que entra via IPC é validado (Zod) e passa por rate-limit antes de tocar o sistema. Comandos usam argumentos parametrizados e escapados (`psEscape`) para bloquear injeção. A elevação de privilégios usa allowlist de tweaks e revalidação de argumentos. Veja `docs/SECURITY.md`.
+```
+Renderer (React)  →  Preload (contextBridge)  →  Main (IPC + Zod + rate-limit)  →  PowerShell
+```
 
-Os tweaks de otimização de boot ficam restritos a ajustes de latência (HPET, timers, animação de boot, hyper-v). Os comandos que desligam a DEP (`bcdedit /set nx optout`) e a fonte de entropia do TPM (`bcdedit /set tpmbootentropy ForceDisable`) foram removidos: no Windows 10/11 o primeiro só desativa uma proteção — o pacote de mitigações `OptOut` que ele visava foi removido no Windows 8 — e o segundo regride o gerador de números aleatórios do sistema, o que pode afetar chaves do BitLocker.
+Os tweaks usam argumentos parametrizados e escapados (`psEscape`), e a elevação de privilégios passa por uma allowlist de scripts. Detalhes em [SECURITY.md](docs/SECURITY.md).
 
----
+> [!NOTE]
+> Ajustes que enfraquecem proteções do sistema ficaram de fora. Os comandos que desligavam a DEP (`bcdedit /set nx optout`) e a fonte de entropia do TPM (`bcdedit /set tpmbootentropy ForceDisable`) foram removidos do catálogo.
 
 ## Início rápido
 
+Requisitos: **Windows 10/11**, **Node.js 20+** e **npm**.
+
 ```bash
+git clone https://github.com/FelipeMeloGomes/FM_Optimization.git
+cd FM_Optimization
 npm install
-npm run dev     # desenvolvimento
-npm run build   # produção (gera em out/)
+npm run dev
 ```
 
----
+Para gerar a build de produção em `out/`:
+
+```bash
+npm run build
+```
+
+### Instalador
+
+```bash
+npx electron-builder --win          # instalador + latest.yml
+npx electron-builder --win nsis     # apenas o instalador
+```
+
+O instalador fica em `dist/fm-optimize-setup.exe`.
+
+## Scripts
+
+| Comando             | Descrição                                     |
+| ------------------- | --------------------------------------------- |
+| `npm run dev`       | Desenvolvimento com hot reload                |
+| `npm run build`     | Build de produção em `out/`                   |
+| `npm run typecheck` | Typecheck do main process e do renderer       |
+| `npm run lint`      | Biome (check)                                 |
+| `npm run lint:fix`  | Biome (correção automática)                   |
+| `npm run format`    | Formatação com Biome                          |
+| `npm run test`      | Testes do main process e do renderer (Vitest) |
+
+Antes de commitar: `npm run lint && npm run typecheck && npm run test`.
 
 ## Download
 
-[fmoptimize.vercel.app](https://fmoptimize.vercel.app) · [GitHub Releases](https://github.com/FelipeMeloGomes/FM_Optimization/releases)
+- [fmoptimize.vercel.app](https://fmoptimize.vercel.app)
+- [GitHub Releases](https://github.com/FelipeMeloGomes/FM_Optimization/releases)
 
----
+## Documentação
 
-## Para desenvolvedores
-
-Documentação técnica em `docs/`:
-
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md) — camadas, fluxo IPC, providers modulares
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) — camadas, fluxo IPC e providers modulares
 - [SECURITY.md](docs/SECURITY.md) — controles de segurança e modelo de ameaça
-- [DEVELOPMENT.md](docs/DEVELOPMENT.md) — setup, scripts, convenções, como adicionar handlers IPC
+- [DEVELOPMENT.md](docs/DEVELOPMENT.md) — setup, convenções e como adicionar handlers IPC
 
-```bash
-npm install
-npm run dev      # desenvolvimento
-npm run build    # produção (out/)
-npm test         # testes do main process e do renderer (Vitest)
+## Estrutura do projeto
+
+```
+electron/
+  main/        # handlers IPC, serviços PowerShell, execução e agendador
+  preload/     # contextBridge e API tipada
+  shared/      # contratos de IPC
+src/
+  pages/       # uma página por rota
+  contexts/    # estado de sistema, scripts, histórico e configurações
+  components/  # UI reutilizável
+resources/
+  scripts.json # catálogo dos 100 scripts
+  icon.svg
 ```
