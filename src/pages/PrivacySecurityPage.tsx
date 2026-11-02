@@ -56,10 +56,10 @@ export default function PrivacySecurityPage() {
               Privacidade
             </span>
           </div>
-          <h2 className="text-lg font-bold text-foreground">Privacidade e segurança do Windows</h2>
+          <h2 className="text-lg font-bold text-foreground">Privacidade do Windows</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Desative telemetria e coleta de dados para maximizar sua privacidade e bloqueie a
-            instalação forçada de apps sugeridos pelo sistema.
+            Desative telemetria e coleta de dados e bloqueie a instalação forçada de apps sugeridos
+            pelo sistema. Estes ajustes não alteram o Windows Defender nem o Windows Update.
           </p>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import type { CpuVendor } from '../../electron/shared/ipc-types';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { useCpuContext } from '../contexts/SystemContext';
-import { getCpuCategories } from '../lib/cpu-vendor';
+import { getPerformanceCategories } from '../lib/cpu-vendor';
 
 interface UseCpuVendor {
   detected: CpuVendor;
@@ -37,7 +37,7 @@ export function useCpuVendor(): UseCpuVendor {
   return {
     detected,
     effective,
-    categories: getCpuCategories(),
+    categories: getPerformanceCategories(),
     isManual: override !== null && detected === 'unknown',
     setOverride,
     clearOverride,

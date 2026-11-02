@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { DEBLOAT_SECTIONS } from './app-sections';
 import { CATEGORY_ROUTES, getScriptRoute } from './category-routes';
+import { PERFORMANCE_SECTIONS } from './performance-sections';
+import { PERSONALIZATION_SECTIONS } from './personalization-sections';
 import { PRIVACY_SECTIONS } from './privacy-sections';
 import { UTIL_SECTIONS } from './util-sections';
 
@@ -52,6 +54,7 @@ describe('cada script mora em uma unica pagina', () => {
     const sectioned = [
       ...idsOf(DEBLOAT_SECTIONS),
       ...idsOf(PRIVACY_SECTIONS),
+      ...idsOf(PERSONALIZATION_SECTIONS),
       ...idsOf(UTIL_SECTIONS),
     ];
     expect(new Set(sectioned).size).toBe(sectioned.length);
@@ -62,6 +65,7 @@ describe('cada script mora em uma unica pagina', () => {
     const missing = [
       ...idsOf(DEBLOAT_SECTIONS),
       ...idsOf(PRIVACY_SECTIONS),
+      ...idsOf(PERSONALIZATION_SECTIONS),
       ...idsOf(UTIL_SECTIONS),
     ].filter((id) => !known.has(id));
     expect(missing).toEqual([]);
@@ -69,6 +73,10 @@ describe('cada script mora em uma unica pagina', () => {
 
   it('os cards da pagina Debloat cobrem exatamente a categoria Debloat', () => {
     expect(idsOf(DEBLOAT_SECTIONS)).toEqual(idsInCategory('Debloat'));
+  });
+
+  it('os cards da pagina Personalizacao cobrem exatamente a categoria Personalizacao', () => {
+    expect(idsOf(PERSONALIZATION_SECTIONS)).toEqual(idsInCategory('Personalização'));
   });
 
   it('os cards da pagina Privacidade cobrem exatamente a categoria Seguranca', () => {
@@ -79,8 +87,23 @@ describe('cada script mora em uma unica pagina', () => {
     expect(idsOf(UTIL_SECTIONS)).toEqual(idsInCategory('Utilities'));
   });
 
-  it('a pagina Processador e a categoria CPU: 42 scripts, incluindo os movidos', () => {
-    expect(idsInCategory('CPU')).toHaveLength(42);
+  it('as secoes da pagina Desempenho cobrem CPU, GPU e Windows, sem sobra', () => {
+    const sections = PERFORMANCE_SECTIONS.map((section) => section.category).sort();
+    expect(sections).toEqual(['CPU', 'GPU', 'Windows']);
+
+    // Tudo que a busca manda para /cpu precisa cair em uma secao. Se uma
+    // categoria nova for roteada para a pagina sem secao, o script ficaria
+    // invisivel mesmo com rota valida.
+    const onPage = ['CPU', 'GPU', 'Windows'].flatMap((category) => idsInCategory(category)).sort();
+    const routedToCpu = scripts
+      .filter((script) => getScriptRoute(script) === '/cpu')
+      .map((script) => script.id)
+      .sort();
+    expect(onPage).toEqual(routedToCpu);
+
+    expect(idsInCategory('CPU')).toHaveLength(34);
+    expect(idsInCategory('GPU')).toHaveLength(4);
+    expect(idsInCategory('Windows')).toHaveLength(4);
   });
 
   it('a busca manda cada script para a pagina onde ele aparece', () => {
@@ -88,7 +111,9 @@ describe('cada script mora em uma unica pagina', () => {
     expect(getScriptRoute({ id: 'apps-3', category: 'Debloat' })).toBe('/debloat');
     expect(getScriptRoute({ id: 'builtin-18', category: 'Internet' })).toBe('/rede');
     expect(getScriptRoute({ id: 'builtin-13', category: 'Utilities' })).toBe('/utilities');
-    expect(getScriptRoute({ id: 'tweaks-4', category: 'CPU' })).toBe('/cpu');
+    expect(getScriptRoute({ id: 'tweaks-4', category: 'Windows' })).toBe('/cpu');
+    expect(getScriptRoute({ id: 'builtin-4', category: 'GPU' })).toBe('/cpu');
+    expect(getScriptRoute({ id: 'tweaks-1', category: 'Personalização' })).toBe('/personalizacao');
   });
 });
 
@@ -96,20 +121,21 @@ describe('destino dos scripts movidos pela refatoracao', () => {
   const DESTINATIONS: Array<[string, string]> = [
     // Rede
     ['builtin-18', 'Internet'],
-    // Processador: AMD/GPU + card Desempenho da antiga pagina Ajustes
-    ['builtin-4', 'CPU'],
-    ['builtin-5', 'CPU'],
-    ['builtin-6', 'CPU'],
-    ['builtin-7', 'CPU'],
-    ['tweaks-3', 'CPU'],
-    ['tweaks-4', 'CPU'],
-    ['tweaks-5', 'CPU'],
-    ['tweaks-6', 'CPU'],
-    // Debloat: card Otimizacao Visual inteiro
-    ['tweaks-1', 'Debloat'],
-    ['tweaks-2', 'Debloat'],
-    ['builtin-32', 'Debloat'],
-    ['builtin-86', 'Debloat'],
+    // Desempenho: GPU AMD em categoria propria
+    ['builtin-4', 'GPU'],
+    ['builtin-5', 'GPU'],
+    ['builtin-6', 'GPU'],
+    ['builtin-7', 'GPU'],
+    // Desempenho: ajustes do Windows, nao do processador
+    ['tweaks-3', 'Windows'],
+    ['tweaks-4', 'Windows'],
+    ['tweaks-5', 'Windows'],
+    ['tweaks-6', 'Windows'],
+    // Personalizacao: aparencia, nao remocao de software
+    ['tweaks-1', 'Personalização'],
+    ['tweaks-2', 'Personalização'],
+    ['builtin-32', 'Personalização'],
+    ['builtin-86', 'Personalização'],
     // Utilitarios
     ['builtin-13', 'Utilities'],
     // Pagina nova de Privacidade
@@ -119,6 +145,13 @@ describe('destino dos scripts movidos pela refatoracao', () => {
 
   it.each(DESTINATIONS)('%s mora na categoria %s', (id, category) => {
     expect(find(id).category).toBe(category);
+  });
+
+  it('nao ha ajuste de GPU AMD apresentado como ajuste universal de CPU', () => {
+    const gpuInCpu = scripts
+      .filter((script) => script.tags.includes('gpu-amd') && script.category === 'CPU')
+      .map((script) => script.id);
+    expect(gpuInCpu).toEqual([]);
   });
 
   it('mantem todos os 100 scripts no catalogo', () => {

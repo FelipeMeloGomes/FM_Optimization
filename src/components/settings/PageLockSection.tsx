@@ -2,6 +2,7 @@ import { Eye, EyeOff, KeyRound, Lock, Unlock } from 'lucide-react';
 import { useState } from 'react';
 import { useSettingsContext } from '../../contexts/SettingsContext';
 import { ALWAYS_VISIBLE_ROUTES } from '../../lib/page-lock';
+import { ROUTES } from '../../routes/config';
 import { Input, Toggle } from '../ui';
 
 function PasswordField({
@@ -35,18 +36,13 @@ function PasswordField({
   );
 }
 
-const PAGES = [
-  { to: '/emuladores', label: 'Emuladores' },
-  { to: '/inicializacao', label: 'Inicialização' },
-  { to: '/privacidade-seguranca', label: 'Privacidade' },
-  { to: '/debloat', label: 'Debloat' },
-  { to: '/essenciais', label: 'Essenciais PC' },
-  { to: '/rede', label: 'Rede' },
-  { to: '/cpu', label: 'Processador' },
-  { to: '/input-lag', label: 'Input Lag' },
-  { to: '/cleaner', label: 'Limpeza' },
-  { to: '/utilities', label: 'Utilitarios' },
-] as const;
+// Lista derivada das rotas reais: uma pagina nova aparece para bloqueio sem
+// precisar de uma segunda lista mantida a mao, e uma rota removida nao fica
+// presa aqui sem destino. So entram rotas protegidas: bloquear /history ou
+// /restore-points nao teria efeito, porque elas nao passam pelo guard.
+const PAGES = ROUTES.filter(
+  (route) => route.protected && !ALWAYS_VISIBLE_ROUTES.includes(route.path)
+).map((route) => ({ to: route.path, label: route.label }));
 
 export function PageLockSection() {
   const { settings, update } = useSettingsContext();

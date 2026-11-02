@@ -1,6 +1,5 @@
 import {
   Clock,
-  Cpu,
   Eraser,
   Gamepad2,
   Gauge,
@@ -9,6 +8,7 @@ import {
   MonitorDown,
   MousePointerClick,
   PackageX,
+  Palette,
   Rocket,
   Settings,
   Shield,
@@ -73,9 +73,12 @@ export const ROUTES: AppRoute[] = [
     component: lazy(() => import('../pages/InputLagPage')),
   },
   {
+    // A rota continua /cpu para nao quebrar Page Lock nem links antigos, mas a
+    // pagina cobre processador, GPU AMD e ajustes do Windows: o rotulo segue o
+    // conteudo real, nao a rota.
     path: '/cpu',
-    label: 'Processador',
-    icon: Cpu,
+    label: 'Desempenho',
+    icon: Gauge,
     category: 'desempenho',
     protected: true,
     component: lazy(() => import('../pages/CpuPage')),
@@ -145,18 +148,28 @@ export const ROUTES: AppRoute[] = [
     component: lazy(() => import('../pages/PrivacySecurityPage')),
   },
   {
+    // Restauracao e historico sao sistema, nao seguranca: nao protegem nada,
+    // apenas registram/recuperam o estado anterior.
     path: '/restore-points',
     label: 'Restauracao',
     icon: Shield,
-    category: 'seguranca',
+    category: 'sistema',
     component: lazy(() => import('../pages/RestorePointsPage')),
   },
   {
     path: '/history',
     label: 'Historico',
     icon: Clock,
-    category: 'seguranca',
+    category: 'sistema',
     component: lazy(() => import('../pages/HistoryPage')),
+  },
+  {
+    path: '/personalizacao',
+    label: 'Personalização',
+    icon: Palette,
+    category: 'manutencao',
+    protected: true,
+    component: lazy(() => import('../pages/PersonalizationPage')),
   },
   {
     path: '/settings',

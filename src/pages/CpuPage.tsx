@@ -1,13 +1,14 @@
-import { AlertTriangle, Cpu, Play, Square, Terminal } from 'lucide-react';
+import { AlertTriangle, Cpu } from 'lucide-react';
 import { useMemo } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
+import { ScriptSectionCard } from '../components/ScriptSectionCard';
 import { Badge, Button, Card, CardContent } from '../components/ui';
 import { useCpuContext, useMemoryContext } from '../contexts/SystemContext';
 import { useCpuVendor } from '../hooks/use-cpu-vendor';
-import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
+import { CPU_CATEGORY } from '../lib/cpu-vendor';
+import { PERFORMANCE_SECTIONS } from '../lib/performance-sections';
 import { getRamScriptId } from '../lib/ram-script';
 import { cn } from '../lib/utils';
 
@@ -41,7 +42,6 @@ export default function CpuPage() {
   const { effective: cpuVendor, categories, isManual, setOverride, clearOverride } = useCpuVendor();
 
   const isUnidentified = cpuVendor === 'unknown';
-  const isScriptApplied = useIsScriptApplied();
   const cpuModel = cpuState.status === 'success' ? cpuState.data.model : null;
   const tone = cpuVendor === 'amd' ? 'red' : cpuVendor === 'intel' ? 'blue' : 'amber';
   const vendorLabel = cpuVendor === 'amd' ? 'AMD' : cpuVendor === 'intel' ? 'Intel' : 'AMD / Intel';
@@ -68,6 +68,9 @@ export default function CpuPage() {
     handleConfirm,
   } = useScriptPage(categories);
 
+  // The RAM ladder is one script per capacity; only the tier that matches the
+  // installed memory is listed, as before. RAM scripts only exist in the CPU
+  // category, so this filter cannot touch the GPU/Windows sections.
   const cpuScripts = useMemo(() => {
     return categoryScripts.filter((s) => {
       if (s.subcategory === 'RAM') {
@@ -77,6 +80,24 @@ export default function CpuPage() {
     });
   }, [categoryScripts, recommendedRamScriptId]);
 
+  // Each section is fed by a catalog category, so a script can never be filed
+  // under a section about different hardware (an AMD GPU tweak can't show up as
+  // a universal CPU tweak).
+  const sections = useMemo(
+    () =>
+      PERFORMANCE_SECTIONS.map((section) => {
+        const scripts =
+          section.category === CPU_CATEGORY
+            ? cpuScripts
+            : categoryScripts.filter((s) => s.category === section.category);
+        return {
+          section: { ...section, scriptIds: scripts.map((s) => s.id) },
+          scripts,
+        };
+      }),
+    [categoryScripts, cpuScripts]
+  );
+
   // Gate on both: until the CPU read settles the vendor is `unknown`, and
   // rendering then would flash the combined AMD+Intel list at the user.
   if (cpuState.status === 'loading' || state.status === 'loading') {
@@ -84,7 +105,7 @@ export default function CpuPage() {
       <div className="space-y-4">
         <div className="h-32 rounded-xl bg-muted animate-pulse" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: PERFORMANCE_SECTIONS.length }).map((_, i) => (
             <ScriptCardSkeleton
               // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
               key={`skeleton-${i}`}
@@ -125,18 +146,14 @@ export default function CpuPage() {
                 <span
                   className={cn('text-xs font-semibold uppercase tracking-wider', TONE_TEXT[tone])}
                 >
-                  {vendorLabel}
+                  Desempenho · {vendorLabel}
                 </span>
               </div>
-              <h2 className="text-lg font-bold text-foreground">
-                {isUnidentified
-                  ? 'Otimizações para o seu processador'
-                  : `Otimizações para ${vendorLabel}`}
-              </h2>
+              <h2 className="text-lg font-bold text-foreground">Desempenho do PC</h2>
               <p className="text-sm text-muted-foreground mt-1">{cpuModel ?? '—'}</p>
             </div>
             <Badge variant="secondary" className={cn('text-xs px-3 py-1', TONE_BADGE[tone])}>
-              {cpuScripts.length} tweaks
+              {categoryScripts.length} tweaks
             </Badge>
           </div>
         </div>
@@ -209,8 +226,8 @@ export default function CpuPage() {
                 {cpuModel
                   ? `Nenhum fabricante Intel ou AMD reconhecido em "${cpuModel}". `
                   : 'Nenhum fabricante Intel ou AMD reconhecido. '}
-                Os ajustes abaixo são os mesmos para qualquer processador — a escolha muda apenas o
-                rótulo desta página.
+                A identificação só define o rótulo desta página: os ajustes de processador valem
+                para os dois fabricantes e os cards de GPU e Windows não dependem dela.
               </p>
             </div>
             <div className="flex gap-2">
@@ -248,78 +265,25 @@ export default function CpuPage() {
           <h3 className="text-sm font-semibold text-foreground">Scripts Disponíveis</h3>
         </div>
 
-        {cpuScripts.length === 0 ? (
+        {categoryScripts.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
             <p className="text-sm">Nenhum script encontrado</p>
             <p className="text-xs text-muted-foreground">Tente ajustar sua busca ou filtro</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {cpuScripts.map((script) => {
-              const isExecuting = activeExecution === script.id;
-              return (
-                <div
-                  key={script.id}
-                  className={cn(
-                    'rounded-xl border bg-card p-4 transition-all duration-300 hover:shadow-lg',
-                    script.requiresAdmin ? 'border-yellow-500/20' : 'border-border',
-                    isExecuting && 'ring-2 ring-primary/50'
-                  )}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          'flex size-8 items-center justify-center rounded-lg',
-                          script.requiresAdmin ? 'bg-yellow-500/10' : 'bg-muted'
-                        )}
-                      >
-                        <Terminal
-                          className={cn(
-                            'size-4',
-                            script.requiresAdmin ? 'text-yellow-400' : 'text-muted-foreground'
-                          )}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-semibold text-foreground truncate">
-                            {script.name}
-                          </h4>
-                          <ScriptBadge script={script} />
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                          {script.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    {isExecuting ? (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleCancel(script.id)}
-                        className="flex-1 gap-2"
-                      >
-                        <Square className="size-3.5" />
-                        Cancelar
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleConfirmExecute(script)}
-                        className="flex-1 gap-2"
-                      >
-                        <Play className="size-3.5" />
-                        {isScriptApplied(script) ? 'Executar novamente' : 'Executar'}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="space-y-4">
+            {sections
+              .filter(({ scripts }) => scripts.length > 0)
+              .map(({ section, scripts }) => (
+                <ScriptSectionCard
+                  key={section.id}
+                  section={section}
+                  scripts={scripts}
+                  activeExecution={activeExecution}
+                  onCancel={handleCancel}
+                  onConfirmExecute={handleConfirmExecute}
+                />
+              ))}
           </div>
         )}
       </div>

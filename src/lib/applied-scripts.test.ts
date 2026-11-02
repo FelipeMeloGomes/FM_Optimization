@@ -26,7 +26,7 @@ function script(id: string, overrides: Partial<ScriptEntry> = {}): ScriptEntry {
     id,
     name: id,
     description: '',
-    category: 'Tweaks',
+    category: 'CPU',
     extension: 'bat',
     ...overrides,
   } as ScriptEntry;

@@ -31,30 +31,45 @@ function decode(id: string): string {
 }
 
 /**
- * A pagina Processador lista a categoria `CPU`, que desde a refatoracao tambem
- * recebeu os tweaks de GPU da AMD e o card "Desempenho" da antiga pagina Ajustes
- * (42 scripts). A familia `cpu-N` — o antigo par AMD/Intel fundido — continua com
- * 34 ids e e ela que carrega a invariante de neutralidade de fabricante.
+ * A pagina Desempenho (rota `/cpu`) lista tres categorias: `CPU` (34 scripts),
+ * `GPU` (4 tweaks de placa AMD) e `Windows` (4 ajustes de energia/servicos). A
+ * antiga pagina Ajustes foi dissolvida e nada mais usa a categoria `Tweaks`. A
+ * familia `cpu-N` — o antigo par AMD/Intel fundido — continua com 34 ids e e ela
+ * que carrega a invariante de neutralidade de fabricante.
  */
 const cpuPage = scripts.filter((s) => s.category === 'CPU');
+const gpuPage = scripts.filter((s) => s.category === 'GPU');
+const windowsPage = scripts.filter((s) => s.category === 'Windows');
 const cpuFamily = scripts.filter((s) => /^cpu-\d+$/.test(s.id));
 
 describe('merged processor catalog', () => {
-  it('has 100 entries with 42 scripts on the processor page and 34 cpu-N ids', () => {
+  it('has 100 entries with 34 scripts on the CPU category and 34 cpu-N ids', () => {
     expect(scripts).toHaveLength(100);
-    expect(cpuPage).toHaveLength(42);
+    expect(cpuPage).toHaveLength(34);
     expect(cpuFamily).toHaveLength(34);
   });
 
-  it('files the AMD GPU tweaks under the processor page', () => {
-    // Eles escrevem na chave do adaptador de video da AMD, nao dependem do
-    // fabricante da CPU, mas sao ajustes de processamento grafico: a pagina
-    // Processador e onde o usuario os procura.
-    expect(
-      scripts
-        .filter((s) => ['builtin-4', 'builtin-5', 'builtin-6', 'builtin-7'].includes(s.id))
-        .map((s) => s.category)
-    ).toEqual(['CPU', 'CPU', 'CPU', 'CPU']);
+  it('files the AMD GPU tweaks under their own GPU category', () => {
+    // Eles escrevem na chave do adaptador de video da AMD e nao funcionam em
+    // NVIDIA/Intel. Categoria propria mantem o card da pagina Desempenho
+    // separado dos ajustes universais de processador.
+    expect(gpuPage.map((s) => s.id).sort()).toEqual([
+      'builtin-4',
+      'builtin-5',
+      'builtin-6',
+      'builtin-7',
+    ]);
+  });
+
+  it('files the Windows-level tweaks outside the CPU category', () => {
+    // Energia, servicos e prioridade valem em qualquer processador: sao do
+    // Windows, nao do hardware.
+    expect(windowsPage.map((s) => s.id).sort()).toEqual([
+      'tweaks-3',
+      'tweaks-4',
+      'tweaks-5',
+      'tweaks-6',
+    ]);
   });
 
   it('retires every amd-* and intel-* id', () => {
@@ -231,12 +246,12 @@ describe('GPU-specific tweaks are not gated on the CPU vendor', () => {
     expect(script.tags).not.toContain('amd');
   });
 
-  it('leaves no non-AMD script tagged as CPU-vendor amd', () => {
+  it('leaves no script tagged as CPU-vendor amd', () => {
     // The CommandPalette used to hide anything tagged `amd` on an Intel CPU.
     // These four write to the AMD display-adapter registry key, which can exist
     // alongside an Intel CPU, so they must not be hidden.
     const mislabelled = scripts.filter(
-      (s) => s.category !== 'CPU' && s.tags.includes('amd') && !s.tags.includes('gpu-amd')
+      (s) => s.tags.includes('amd') && !s.tags.includes('gpu-amd')
     );
     expect(mislabelled.map((s) => s.id)).toEqual([]);
   });

@@ -2,14 +2,16 @@ import {
   CheckCircle2,
   Cpu,
   Eraser,
-  Gauge,
+  Monitor,
   MousePointerClick,
   PackageX,
+  Palette,
   Play,
   RotateCcw,
   Shield,
   ShieldAlert,
   ShieldCheck,
+  SlidersHorizontal,
   Square,
   Terminal,
   Wifi,
@@ -43,12 +45,6 @@ const CATEGORY_CONFIG: Record<
   string,
   { icon: React.ElementType; color: string; bgColor: string; borderColor: string }
 > = {
-  Tweaks: {
-    icon: Gauge,
-    color: 'text-cyan-400',
-    bgColor: 'bg-cyan-500/10',
-    borderColor: 'border-cyan-500/20',
-  },
   Utilities: {
     icon: Wrench,
     color: 'text-orange-400',
@@ -90,6 +86,24 @@ const CATEGORY_CONFIG: Record<
     color: 'text-cyan-400',
     bgColor: 'bg-cyan-500/10',
     borderColor: 'border-cyan-500/20',
+  },
+  GPU: {
+    icon: Monitor,
+    color: 'text-rose-400',
+    bgColor: 'bg-rose-500/10',
+    borderColor: 'border-rose-500/20',
+  },
+  Windows: {
+    icon: SlidersHorizontal,
+    color: 'text-amber-400',
+    bgColor: 'bg-amber-500/10',
+    borderColor: 'border-amber-500/20',
+  },
+  Personalização: {
+    icon: Palette,
+    color: 'text-violet-400',
+    bgColor: 'bg-violet-500/10',
+    borderColor: 'border-violet-500/20',
   },
 };
 

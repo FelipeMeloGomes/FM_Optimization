@@ -1,4 +1,13 @@
-export type SectionIconName = 'shield' | 'trash' | 'discord' | 'music' | 'package' | 'monitor';
+export type SectionIconName =
+  | 'shield'
+  | 'trash'
+  | 'discord'
+  | 'music'
+  | 'package'
+  | 'monitor'
+  | 'cpu'
+  | 'sliders'
+  | 'palette';
 
 export interface AppSection {
   id: string;
@@ -15,8 +24,10 @@ export interface AppSection {
 /**
  * Cards da pagina Debloat. Cobre exatamente os scripts de `category: "Debloat"`
  * do catalogo — o teste em script-pages.test.ts garante que nenhum script fica
- * sem card e nenhum id sobra. O card "Otimização Visual" veio da antiga pagina
- * Ajustes com os mesmos quatro scripts.
+ * sem card e nenhum id sobra.
+ *
+ * Os ajustes de aparencia que dividiam esta pagina foram para Personalizacao:
+ * Debloat remove software (bloatware, Discord, Spotify), nao mexe na interface.
  */
 export const DEBLOAT_SECTIONS: AppSection[] = [
   {
@@ -52,16 +63,5 @@ export const DEBLOAT_SECTIONS: AppSection[] = [
     borderColor: 'border-green-500/20',
     scriptIds: ['apps-6', 'apps-7'],
     warning: 'Não funciona com o Spotify da Microsoft Store. Instale a versão desktop.',
-  },
-  {
-    id: 'visual',
-    name: 'Otimização Visual',
-    description:
-      'Ajuste efeitos visuais do Windows para melhor desempenho sem sacrificar a estética.',
-    icon: 'monitor',
-    color: 'text-cyan-400',
-    bgColor: 'bg-cyan-500/10',
-    borderColor: 'border-cyan-500/20',
-    scriptIds: ['tweaks-1', 'tweaks-2', 'builtin-32', 'builtin-86'],
   },
 ];

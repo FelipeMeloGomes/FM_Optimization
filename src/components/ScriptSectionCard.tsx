@@ -1,11 +1,14 @@
 import {
   AlertTriangle,
+  Cpu,
   MessageCircle,
   Monitor,
   Music,
   PackageX,
+  Palette,
   Play,
   Shield,
+  SlidersHorizontal,
   Square,
   Trash2,
 } from 'lucide-react';
@@ -24,6 +27,9 @@ const SECTION_ICONS: Record<SectionIconName, ElementType> = {
   music: Music,
   package: PackageX,
   monitor: Monitor,
+  cpu: Cpu,
+  sliders: SlidersHorizontal,
+  palette: Palette,
 };
 
 export function ScriptSectionCard({
