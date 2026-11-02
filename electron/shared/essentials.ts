@@ -60,13 +60,13 @@ export const ESSENTIAL_PROGRAMS: EssentialProgram[] = [
   },
   {
     id: 'directx',
-    name: 'DirectX',
+    name: 'DirectX (runtime legado)',
     description:
-      'Runtime do DirectX 9.0c, 10 e 11 usado por jogos antigos. Instale quando um jogo reclamar de d3dx9_*.dll ou xinput ausente.',
+      'Instala bibliotecas de runtime do DirectX SDK legado (D3DX9/10/11, XAudio 2.7, XInput 1.3, XACT e Managed DirectX 1.1) usadas por jogos antigos. Não atualiza o DirectX 12 já incluído no Windows.',
     pageUrl: 'https://www.microsoft.com/download/details.aspx?id=35',
     packageId: 'Microsoft.DirectX',
     warning:
-      'O instalador da Microsoft é antigo e oferece softwares extras (como a Bing Bar) na última tela. Desmarque tudo antes de concluir.',
+      'Instale quando um jogo antigo reclamar de d3dx9_*.dll, xinput1_3.dll ou bibliotecas parecidas. Para jogos atuais, mantenha o DirectX 12 do próprio Windows.',
   },
   {
     id: 'bcuninstaller',
