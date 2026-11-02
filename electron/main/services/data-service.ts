@@ -10,6 +10,7 @@ import { resolve } from 'node:path';
 import { app, safeStorage } from 'electron';
 import type { AppSettings, ExecutionHistoryEntry, PageLockSettings } from '../../shared/ipc-types';
 import { rewriteHistoryScriptIds } from '../legacy-script-ids';
+import { migrateLockedPages } from '../page-lock-routes';
 import { DEFAULT_AUTO_CLEAN, parseAutoClean } from './auto-clean-settings';
 
 interface UserData {
@@ -117,11 +118,12 @@ export function loadSettings(): AppSettings {
   const filePath = getSettingsFilePath();
   if (!existsSync(filePath)) return defaultSettings();
 
+  let settings: AppSettings;
   try {
     const raw = readFileSync(filePath, 'utf-8');
     const parsed = JSON.parse(raw);
     if (typeof parsed !== 'object' || parsed === null) return defaultSettings();
-    return {
+    settings = {
       theme: ['light', 'dark', 'midnight', 'amber', 'emerald', 'batman'].includes(parsed.theme)
         ? parsed.theme
         : DEFAULT_SETTINGS.theme,
@@ -200,6 +202,32 @@ export function loadSettings(): AppSettings {
   } catch {
     return defaultSettings();
   }
+
+  return applyPageLockRouteMigration(settings);
+}
+
+/**
+ * Converte rotas de Page Lock que nao existem mais (`/tweaks`, `/apps`) para as
+ * paginas que herdaram os scripts, gravando o resultado para a migracao rodar
+ * uma vez so. Se a gravacao falhar, a lista migrada continua valendo nesta
+ * sessao e a proxima leitura tenta de novo — o bloqueio nunca e afrouxado.
+ */
+function applyPageLockRouteMigration(settings: AppSettings): AppSettings {
+  const migration = migrateLockedPages(settings.pageLock.lockedPages);
+  if (!migration.changed) return settings;
+
+  const migrated: AppSettings = {
+    ...settings,
+    pageLock: { ...settings.pageLock, lockedPages: migration.lockedPages },
+  };
+
+  try {
+    saveSettings(migrated);
+  } catch {
+    // Sem persistencia, mas com o bloqueio correto em memoria.
+  }
+
+  return migrated;
 }
 
 function encryptSecret(plain: string): string {

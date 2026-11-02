@@ -82,7 +82,9 @@ export function Sidebar({ openCommandPalette }: SidebarProps) {
     }))
     .filter((group) => group.items.length > 0);
 
-  const bottomItems = routesByCategory('sistema');
+  const bottomItems = routesByCategory('sistema').filter(
+    (route) => !isPageLocked(route.path, settings)
+  );
 
   return (
     <TooltipProvider delayDuration={200}>

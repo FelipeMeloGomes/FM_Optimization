@@ -70,10 +70,12 @@ describe('SettingsSchema pageLock', () => {
   });
 
   it('accepts custom lockedPages', () => {
+    // O schema so exige strings: a validacao de rota e feita pela migracao em
+    // page-lock-routes.ts, que tambem cobre valores legados como /tweaks.
     const r = SettingsSchema.parse({
-      pageLock: { lockedPages: ['/emuladores', '/apps'] },
+      pageLock: { lockedPages: ['/emuladores', '/personalizacao'] },
     });
-    expect(r.pageLock.lockedPages).toEqual(['/emuladores', '/apps']);
+    expect(r.pageLock.lockedPages).toEqual(['/emuladores', '/personalizacao']);
   });
 });
 
