@@ -4,12 +4,14 @@ import type { ScriptEnded, ScriptEntry } from '../../shared/ipc-types';
 import { auditAdminCheck, auditScriptExecution } from '../audit-logger';
 import { validateScriptPath } from '../path-validation';
 import { isAdmin } from './admin-check';
-import { addHistoryEntry, loadSettings } from './data-service';
-import { buildInteractiveWindowCommand } from './script-commands';
-import { createHistoryEntry, reportInteractiveOpen } from './script-outcome';
+import { addHistoryEntry, loadSettings, updateHistoryEntry } from './data-service';
+import { buildInteractiveLaunch, type InteractiveExtension } from './script-commands';
+import { createHistoryEntry, normalizeInteractiveExitCode } from './script-outcome';
 import { extractScriptToTemp, getScriptById } from './script-registry';
 
 const activeProcesses = new Map<string, ChildProcess>();
+/** Execuções canceladas pelo usuário; o `close` usa isso para marcar a entrada. */
+const cancelledRuns = new Set<string>();
 
 interface ScriptRunCompletion {
   code: number | null;
@@ -35,9 +37,18 @@ function notifyEnded(data: ScriptEnded, win?: BrowserWindow | null): void {
   }
 }
 
+function isInteractiveExtension(ext: ScriptExtension | undefined): ext is InteractiveExtension {
+  return ext === 'bat' || ext === 'cmd' || ext === 'ps1';
+}
+
 /**
  * Núcleo compartilhado entre a execução manual (com janela) e a agendada
  * (silenciosa). A validação de admin e de caminho vale para as duas.
+ *
+ * Interativos deixaram de ser "abriu e esqueceu": a janela roda dentro de um
+ * wrapper oculto que espera o script terminar e devolve o exit code real. A
+ * entrada do histórico é gravada na abertura (`exitCode: null`) e atualizada no
+ * fechamento, então o botão só é liberado quando o desfecho é conhecido.
  */
 function startRun(
   id: string,
@@ -83,90 +94,94 @@ function startRun(
     }
   }
 
-  if (script?.interactive && (ext === 'bat' || ext === 'cmd' || ext === 'ps1')) {
-    const command = buildInteractiveWindowCommand(ext, filePath);
-    const proc = spawn(command, {
-      detached: true,
-      stdio: 'ignore',
-      shell: true,
-    });
-    proc.unref();
-    reportInteractiveOpen(
-      { id, scriptName: script?.name, trigger: options.trigger },
-      {
-        notify: (data) => notifyEnded(data, options.win),
-        recordHistory: addHistoryEntry,
-        audit: (exitCode, success) =>
-          auditScriptExecution(
-            id,
-            script?.name || id,
-            script?.requiresAdmin ?? false,
-            script?.requiresAdmin ? isAdmin() : true,
-            exitCode,
-            success
-          ),
-        now: Date.now,
-      }
-    );
-    return { status: 'opened', completion: Promise.resolve({ code: null, cancelled: false }) };
-  }
+  const interactive = script?.interactive === true && isInteractiveExtension(ext);
+  const startTime = Date.now();
+  const scriptName = script?.name || id;
+  const historyId = `${id}_${startTime}`;
 
-  const { command, args } = getCommand(ext, filePath);
-  const proc = spawn(command, args, {
-    windowsHide: true,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
+  let proc: ChildProcess;
+  if (interactive) {
+    const launch = buildInteractiveLaunch(ext, filePath);
+    proc = spawn(launch.command, launch.args, {
+      windowsHide: true,
+      // O wrapper fica oculto; o `Start-Process` lá dentro abre a janela visível
+      // do script. Sem detached: com ele a janela do filho não aparece.
+      stdio: 'ignore',
+      env: { ...process.env, ...launch.env },
+    });
+  } else {
+    const { command, args } = getCommand(ext, filePath);
+    proc = spawn(command, args, {
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    // Sem isso os pipes enchem e o processo filho trava esperando alguém ler.
+    proc.stdout?.on('data', () => {});
+    proc.stderr?.on('data', () => {});
+  }
 
   activeProcesses.set(id, proc);
 
-  // Sem isso os pipes enchem e o processo filho trava esperando alguém ler.
-  proc.stdout?.on('data', () => {});
-  proc.stderr?.on('data', () => {});
-
-  const startTime = Date.now();
+  if (interactive) {
+    addHistoryEntry(
+      createHistoryEntry(id, scriptName, startTime, startTime, null, false, options.trigger)
+    );
+  }
 
   const completion = new Promise<ScriptRunCompletion>((resolve) => {
-    proc.on('close', (code) => {
+    let settled = false;
+
+    const finish = (code: number | null, cancelled: boolean) => {
+      if (settled) return;
+      settled = true;
+
       activeProcesses.delete(id);
-      notifyEnded({ id, code, scriptName: script?.name, trigger: options.trigger }, options.win);
+      notifyEnded({ id, code, scriptName, trigger: options.trigger }, options.win);
+
       const endTime = Date.now();
-      addHistoryEntry(
-        createHistoryEntry(id, script?.name || id, startTime, endTime, code, false, options.trigger)
-      );
+      if (interactive) {
+        updateHistoryEntry(historyId, {
+          endTime: new Date(endTime).toISOString(),
+          durationMs: endTime - startTime,
+          exitCode: code,
+          wasCancelled: cancelled,
+        });
+      } else {
+        addHistoryEntry(
+          createHistoryEntry(id, scriptName, startTime, endTime, code, cancelled, options.trigger)
+        );
+      }
+
       auditScriptExecution(
         id,
-        script?.name || id,
+        scriptName,
         script?.requiresAdmin ?? false,
         script?.requiresAdmin ? isAdmin() : true,
         code,
         code === 0
       );
-      resolve({ code, cancelled: false });
+
+      resolve({ code, cancelled });
+    };
+
+    proc.on('close', (rawCode) => {
+      const cancelled = cancelledRuns.delete(id);
+      const code = cancelled
+        ? null
+        : interactive
+          ? normalizeInteractiveExitCode(id, rawCode)
+          : rawCode;
+      finish(code, cancelled);
     });
 
-    proc.on('error', (_err) => {
-      activeProcesses.delete(id);
-      notifyEnded(
-        { id, code: -1, scriptName: script?.name, trigger: options.trigger },
-        options.win
-      );
-      const endTime = Date.now();
-      addHistoryEntry(
-        createHistoryEntry(id, script?.name || id, startTime, endTime, -1, false, options.trigger)
-      );
-      auditScriptExecution(
-        id,
-        script?.name || id,
-        script?.requiresAdmin ?? false,
-        script?.requiresAdmin ? isAdmin() : true,
-        -1,
-        false
-      );
-      resolve({ code: -1, cancelled: false });
+    proc.on('error', () => {
+      cancelledRuns.delete(id);
+      finish(-1, false);
     });
   });
 
-  return { status: 'started', completion };
+  return { status: interactive ? 'opened' : 'started', completion };
 }
 
 export function executeScript(id: string): string {
@@ -190,21 +205,14 @@ export function runScriptSilently(id: string): Promise<ScriptRunCompletion> {
 
 export function cancelExecution(id: string): void {
   const proc = activeProcesses.get(id);
-  if (proc?.pid) {
-    try {
-      proc.kill('SIGTERM');
-    } catch {
-      try {
-        execSync(`taskkill /F /T /PID ${proc.pid}`, { timeout: 5000 });
-      } catch {
-        /* already dead */
-      }
-    }
-    const script = getScriptById(id);
-    const now = Date.now();
-    addHistoryEntry(createHistoryEntry(id, script?.name || id, now, now, null, true, 'manual'));
-    auditScriptExecution(id, script?.name || id, script?.requiresAdmin ?? false, true, null, false);
-    activeProcesses.delete(id);
+  if (!proc?.pid) return;
+
+  cancelledRuns.add(id);
+  try {
+    // `/T` mata a árvore: o wrapper oculto e o script que ele abriu.
+    execSync(`taskkill /F /T /PID ${proc.pid}`, { timeout: 5000, stdio: 'ignore' });
+  } catch {
+    /* já morreu */
   }
 }
 

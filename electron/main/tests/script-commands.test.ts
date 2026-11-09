@@ -1,28 +1,37 @@
 import { describe, expect, it } from 'vitest';
-import { buildInteractiveWindowCommand } from '../services/script-commands';
+import { buildInteractiveLaunch, INTERACTIVE_WRAPPER_COMMAND } from '../services/script-commands';
 
-describe('buildInteractiveWindowCommand', () => {
-  it('opens bat scripts in a persistent cmd window', () => {
-    const cmd = buildInteractiveWindowCommand('bat', 'C:\\Temp\\script.bat');
-    expect(cmd).toBe('cmd /c start cmd /k "C:\\Temp\\script.bat"');
+describe('buildInteractiveLaunch', () => {
+  it('usa um wrapper oculto do PowerShell que espera o filho e propaga o exit code', () => {
+    const launch = buildInteractiveLaunch('bat', 'C:\\Temp\\script.bat');
+
+    expect(launch.command).toBe('powershell.exe');
+    expect(launch.args).toEqual(['-NoProfile', '-Command', INTERACTIVE_WRAPPER_COMMAND]);
+    expect(INTERACTIVE_WRAPPER_COMMAND).toContain('-Wait');
+    expect(INTERACTIVE_WRAPPER_COMMAND).toContain('-PassThru');
+    expect(INTERACTIVE_WRAPPER_COMMAND).toContain('exit $p.ExitCode');
   });
 
-  it('opens cmd scripts in a persistent cmd window', () => {
-    const cmd = buildInteractiveWindowCommand('cmd', 'C:\\Temp\\script.cmd');
-    expect(cmd).toBe('cmd /c start cmd /k "C:\\Temp\\script.cmd"');
-  });
-
-  it('opens ps1 scripts in a visible powershell window', () => {
-    const cmd = buildInteractiveWindowCommand('ps1', 'C:\\Temp\\script.ps1');
-    expect(cmd).toBe(
-      'cmd /c start powershell -NoProfile -ExecutionPolicy Bypass -File "C:\\Temp\\script.ps1"'
+  it('abre bat/cmd com /c para preservar o codigo de saida do script', () => {
+    expect(buildInteractiveLaunch('bat', 'C:\\Temp\\script.bat').env).toEqual({
+      FMOPT_CHILD_EXE: 'cmd.exe',
+      FMOPT_CHILD_ARGS: '/c "C:\\Temp\\script.bat"',
+    });
+    expect(buildInteractiveLaunch('cmd', 'C:\\Temp\\script.cmd').env.FMOPT_CHILD_ARGS).toBe(
+      '/c "C:\\Temp\\script.cmd"'
     );
   });
 
-  it('handles paths with spaces', () => {
-    const cmd = buildInteractiveWindowCommand('ps1', 'C:\\My Temp\\my script.ps1');
-    expect(cmd).toBe(
-      'cmd /c start powershell -NoProfile -ExecutionPolicy Bypass -File "C:\\My Temp\\my script.ps1"'
-    );
+  it('abre ps1 num powershell visivel com o caminho entre aspas', () => {
+    expect(buildInteractiveLaunch('ps1', 'C:\\My Temp\\my script.ps1').env).toEqual({
+      FMOPT_CHILD_EXE: 'powershell.exe',
+      FMOPT_CHILD_ARGS: '-NoProfile -ExecutionPolicy Bypass -File "C:\\My Temp\\my script.ps1"',
+    });
+  });
+
+  it('nunca usa /k: o cmd devolveria o proprio codigo, nao o do script', () => {
+    expect(
+      buildInteractiveLaunch('bat', 'C:\\Temp\\script.bat').env.FMOPT_CHILD_ARGS
+    ).not.toContain('/k');
   });
 });

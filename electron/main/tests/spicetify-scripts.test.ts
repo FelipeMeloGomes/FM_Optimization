@@ -61,4 +61,18 @@ describe('spicetify scripts', () => {
       expect(decodeScript(id)).not.toContain('--bypass-admin');
     }
   );
+
+  it.each(SPICETIFY_IDS)('%s devolve o LastTaskResult do handoff como exit code', (id) => {
+    const content = decodeScript(id);
+    expect(content).toContain('Get-ScheduledTaskInfo');
+    expect(content).toContain('LastTaskResult');
+    expect(content).toContain('$handoffCode = Restart-WithoutAdmin');
+    expect(content).toContain('Wait-KeyExit $handoffCode');
+  });
+
+  it.each(SPICETIFY_IDS)('%s usa o sentinela 2 quando o handoff e desconhecido', (id) => {
+    const content = decodeScript(id);
+    expect(content).toContain('$handoffCode = 2');
+    expect(content).toContain("Start-Process 'explorer.exe'");
+  });
 });

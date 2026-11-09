@@ -39,7 +39,9 @@ export default function HistoryPage() {
     if (state.status !== 'success') return null;
     const history = state.data;
     const success = history.filter((h) => h.exitCode === 0).length;
-    const failed = history.filter((h) => h.exitCode != null && h.exitCode > 0).length;
+    const failed = history.filter(
+      (h) => h.exitCode != null && h.exitCode !== 0 && !h.wasCancelled
+    ).length;
     const cancelled = history.filter((h) => h.wasCancelled).length;
     return { total: history.length, success, failed, cancelled };
   }, [state]);

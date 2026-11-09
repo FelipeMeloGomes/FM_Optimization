@@ -61,7 +61,7 @@ describe('apps-2 — menu de seguranca nao desliga protecoes', () => {
   it('reduz o menu para a unica opcao que sobrou', () => {
     const content = decode('apps-2');
     expect(content).toContain('choice /c 12 /n');
-    expect(content).toContain('if errorlevel 2 exit /b');
+    expect(content).toContain('if errorlevel 2 exit /b 3');
     expect(content).toContain('if errorlevel 1 goto blockapps');
     expect(content).not.toMatch(/errorlevel [34]/i);
   });
@@ -148,6 +148,35 @@ describe('limpezas nao apagam .log do disco inteiro', () => {
     const content = decode(id);
     expect(content).toContain('del /f /s /q "%temp%\\*.log" >nul 2>&1');
     expect(content).toContain('del /f /s /q "C:\\Windows\\Temp\\*.log" >nul 2>&1');
+  });
+});
+
+/**
+ * Scripts interativos agora sao observados ate o fim: cada um precisa sair com
+ * um codigo que diga a verdade (aplicou, saiu sem aplicar, ou desfecho
+ * desconhecido) para o historico nao inventar sucesso.
+ */
+describe('scripts interativos devolvem um codigo de saida honesto', () => {
+  it('util-6 espera o cleanmgr terminar antes de sair', () => {
+    expect(decode('util-6')).toContain('start /wait "" cleanmgr');
+  });
+
+  it('cpu-2 pausa antes de fechar em todos os modos', () => {
+    const pauses = decode('cpu-2').match(/pause\r?\nEXIT/gi) ?? [];
+    expect(pauses).toHaveLength(3);
+  });
+
+  it('tweaks-5 sai com 3 quando apenas mostra o plano atual', () => {
+    const content = decode('tweaks-5');
+    expect(content).toMatch(/powercfg \/getactivescheme[\s\S]*?pause\s*\r?\n\s*exit \/b 3/i);
+  });
+
+  it('builtin-13 sai com 3 quando fecha sem ter aplicado', () => {
+    const content = decode('builtin-13');
+    expect(content).toContain('set "APPLIED=0"');
+    expect(content).toContain('set "APPLIED=1"');
+    expect(content).toContain('if /i "!choice!"=="E" goto finish');
+    expect(content).toMatch(/:finish\s*\r?\nif "!APPLIED!"=="1" exit \/b 0\s*\r?\nexit \/b 3/i);
   });
 });
 

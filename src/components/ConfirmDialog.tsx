@@ -53,8 +53,7 @@ export function ConfirmDialog({
   const startTime = useRef<number>(0);
   const [elapsed, setElapsed] = useState(0);
   const isScriptApplied = useIsScriptApplied();
-  const isApplied =
-    !!script?.id && isScriptApplied({ id: script.id, interactive: script.interactive });
+  const isApplied = !!script?.id && isScriptApplied({ id: script.id });
 
   useEffect(() => {
     if (wasExecuting.current && !isExecuting) {

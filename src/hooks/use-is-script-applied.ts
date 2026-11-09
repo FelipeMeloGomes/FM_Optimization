@@ -3,7 +3,7 @@ import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { useHistoryContext } from '../contexts/HistoryContext';
 import { collectAppliedScriptIds, isCountableScript } from '../lib/applied-scripts';
 
-type ScriptLike = Pick<ScriptEntry, 'id'> & { interactive?: boolean };
+type ScriptLike = Pick<ScriptEntry, 'id'>;
 
 /**
  * "Já aplicado?": selo e contador usam exatamente a mesma regra

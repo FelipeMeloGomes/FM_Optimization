@@ -107,6 +107,26 @@ export function addHistoryEntry(entry: ExecutionHistoryEntry): void {
   saveUserData(data);
 }
 
+/**
+ * Fecha uma entrada aberta no histórico (scripts interativos são gravados na
+ * abertura com `exitCode: null` e atualizados quando a janela fecha). Se o app
+ * morrer no meio, a entrada continua `null` — honesto, em vez de desaparecer.
+ */
+export function updateHistoryEntry(
+  id: string,
+  patch: Partial<
+    Pick<ExecutionHistoryEntry, 'endTime' | 'durationMs' | 'exitCode' | 'wasCancelled'>
+  >
+): boolean {
+  const data = loadUserData();
+  const index = data.executionHistory.findIndex((entry) => entry.id === id);
+  if (index === -1) return false;
+
+  data.executionHistory[index] = { ...data.executionHistory[index], ...patch };
+  saveUserData(data);
+  return true;
+}
+
 export function saveUserData(data: UserData): void {
   const filePath = getDataFilePath();
   const tmpPath = `${filePath}.tmp`;

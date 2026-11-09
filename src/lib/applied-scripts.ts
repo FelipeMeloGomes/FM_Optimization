@@ -24,23 +24,27 @@ export const NON_COUNTABLE_SCRIPT_IDS: ReadonlySet<string> = new Set([
   'cpu-35', // Limite do svchost (32 GB)
   'cpu-36', // Limite do svchost (64 GB)
   'internet-5', // Desabilitar Auto-Tuning — conflita com internet-1 (normal)
+  'apps-5', // Reverter Discord — desfaz o apps-4
+  'apps-7', // Reverter Spotify — desfaz o apps-6
+  'util-3', // Relatorios do Sistema — utilitario, nao aplica ajuste
+  'cpu-2', // Super Limpeza — limpeza profunda, nao e tweak
 ]);
 
 interface CountableScriptLike {
   id: string;
-  interactive?: boolean;
   category?: string;
 }
 
 const TWEAK_EXCLUDED_CATEGORIES: ReadonlySet<string> = new Set(['Cleaner']);
 
 /**
- * Interativos ficam de fora: a execução abre uma janela própria e o app deixa
- * de observar o desfecho, então o histórico registra `exitCode: null`
- * (script-outcome.ts). Não há como afirmar que o ajuste foi aplicado.
+ * Interativos contam como qualquer outro ajuste: o app agora observa a janela
+ * até o fim e registra o exit code real. A lista de exclusões cobre os que,
+ * mesmo interativos, não representam um ajuste ativo (reverters, utilitários e
+ * limpeza).
  */
 export function isCountableScript(script: CountableScriptLike): boolean {
-  return script.interactive !== true && !NON_COUNTABLE_SCRIPT_IDS.has(script.id);
+  return !NON_COUNTABLE_SCRIPT_IDS.has(script.id);
 }
 
 /**
