@@ -59,6 +59,22 @@ export const ESSENTIAL_PROGRAMS: EssentialProgram[] = [
     packageId: 'RARLab.WinRAR',
   },
   {
+    id: 'brave',
+    name: 'Brave',
+    description:
+      'Navegador que bloqueia anúncios e rastreadores por padrão, com foco em privacidade e velocidade.',
+    pageUrl: 'https://brave.com/',
+    packageId: 'Brave.Brave',
+  },
+  {
+    id: 'qbittorrent',
+    name: 'qBittorrent',
+    description:
+      'Cliente de torrent de código aberto e sem anúncios, com fila de downloads, busca integrada e suporte a magnet links.',
+    pageUrl: 'https://www.qbittorrent.org/',
+    packageId: 'qBittorrent.qBittorrent',
+  },
+  {
     id: 'directx',
     name: 'DirectX (runtime legado)',
     description:
