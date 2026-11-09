@@ -18,7 +18,7 @@ vi.mock('electron', () => ({
 
 vi.mock('node:child_process', () => ({ spawn: mocks.spawn }));
 
-const { installEssential, cancelEssentialInstall } = await import('./essentials');
+const { installEssential, cancelEssentialInstall } = await import('../services/essentials');
 
 const ID = 'msi-afterburner';
 

@@ -8,7 +8,7 @@ import {
   parseWingetProgress,
   stripAnsi,
   wingetErrorMessage,
-} from './essentials-winget';
+} from '../services/essentials-winget';
 
 const ESC = '\u001b';
 const PROGRESS_LINE = '  ██████████████  10.5 MB / 45.8 MB';
