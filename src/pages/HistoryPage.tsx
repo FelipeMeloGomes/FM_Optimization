@@ -4,6 +4,7 @@ import {
   CheckCircle,
   Clock,
   History,
+  MousePointerClick,
   XCircle,
   Zap,
 } from 'lucide-react';
@@ -175,7 +176,12 @@ export default function HistoryPage() {
                           <Clock className="size-3" /> Automática
                         </Badge>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Manual</span>
+                        <Badge
+                          variant="secondary"
+                          className="gap-1 text-violet-400 bg-violet-500/10"
+                        >
+                          <MousePointerClick className="size-3" /> Manual
+                        </Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
