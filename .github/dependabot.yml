@@ -1,11 +1,10 @@
 version: 2
 updates:
-  # Atualizações de dependências do pacote (pnpm)
+  # Atualizações de dependências do pacote (pnpm) — todos os dias
   - package-ecosystem: "pnpm"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "daily"
     open-pull-requests-limit: 10
     groups:
       dev-dependencies:
@@ -13,10 +12,9 @@ updates:
       runtime-dependencies:
         dependency-type: "production"
 
-  # Atualizações de workflows do GitHub Actions
+  # Atualizações de workflows do GitHub Actions — todos os dias
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "daily"
     open-pull-requests-limit: 10
