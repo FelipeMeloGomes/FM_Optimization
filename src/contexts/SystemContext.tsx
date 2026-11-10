@@ -21,7 +21,7 @@ function createSectionProvider<T>(fetchData: () => Promise<T>, contextName: stri
     const [refreshing, setRefreshing] = useState(false);
 
     const refresh = useCallback(() => {
-      if (state.status !== 'loading') setRefreshing(true);
+      setRefreshing(true);
       fetchData()
         .then((data) => setState({ status: 'success', data }))
         .catch((e: unknown) =>
@@ -31,7 +31,7 @@ function createSectionProvider<T>(fetchData: () => Promise<T>, contextName: stri
           })
         )
         .finally(() => setRefreshing(false));
-    }, [state.status]);
+    }, []);
 
     useEffect(() => {
       refresh();
