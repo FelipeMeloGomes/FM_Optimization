@@ -325,23 +325,24 @@ Siga o ciclo para cada pacote:
 
 ## ✅ Já corrigido nesta sessão
 
-| Pacote                   | Versão antes | Versão depois | Alertas fechados                       |
-| ------------------------ | ------------ | ------------- | -------------------------------------- |
-| systeminformation        | ^5.33.13     | ^5.33.16      | #123, #122                             |
-| zod                      | ^4.4.3       | ^4.6.6        | #120                                   |
-| vite                     | ^6.0.0       | ^6.4.4        | #110, #109, #108, #107, #106           |
-| vitest                   | ^4.1.10      | ^4.1.11       | #76                                    |
-| source-map-js            | 1.2.1        | 1.2.2         | #105                                   |
-| js-yaml                  | 4.2.0        | 4.3.2         | #86                                    |
-| ip-address               | 10.2.0       | 10.7.1        | #104, #88, #87                         |
-| brace-expansion          | 1.1.15       | 1.1.21        | #102                                   |
-| brace-expansion          | 5.0.6        | 5.0.12        | #100                                   |
-| @vitest/mocker           | 4.1.10       | 4.1.12        | #112                                   |
-| baseline-browser-mapping | 2.10.38      | 2.11.0        | #73                                    |
-| @xmldom/xmldom           | 0.9.10       | 0.9.12        | #85, #84, #83, #82, #81, #80, #78, #71 |
-| builder-util-runtime     | 9.2.10       | 9.7.0         | #155                                   |
-| minimatch                | 10.2.6       | 11.0.1        | #188                                   |
-| minimatch                | 9.0.9        | 11.0.1        | #125                                   |
+| Pacote                   | Versão antes | Versão depois | Alertas fechados                               |
+| ------------------------ | ------------ | ------------- | ---------------------------------------------- |
+| systeminformation        | ^5.33.13     | ^5.33.16      | #123, #122                                     |
+| zod                      | ^4.4.3       | ^4.6.6        | #120                                           |
+| vite                     | ^6.0.0       | ^6.4.4        | #110, #109, #108, #107, #106                   |
+| vitest                   | ^4.1.10      | ^4.1.11       | #76                                            |
+| source-map-js            | 1.2.1        | 1.2.2         | #105                                           |
+| js-yaml                  | 4.2.0        | 4.3.2         | #86                                            |
+| ip-address               | 10.2.0       | 10.7.1        | #104, #88, #87                                 |
+| brace-expansion          | 1.1.15       | 1.1.21        | #102                                           |
+| brace-expansion          | 5.0.6        | 5.0.12        | #100                                           |
+| @vitest/mocker           | 4.1.10       | 4.1.12        | #112                                           |
+| baseline-browser-mapping | 2.10.38      | 2.11.0        | #73                                            |
+| @xmldom/xmldom           | 0.9.10       | 0.9.12        | #85, #84, #83, #82, #81, #80, #78, #71         |
+| builder-util-runtime     | 9.2.10       | 9.7.0         | #155                                           |
+| minimatch                | 10.2.6       | 11.0.1        | #188                                           |
+| minimatch                | 9.0.9        | 11.0.1        | #125                                           |
 | tar                      | 6.2.1        | 7.5.18        | #153, #149, #131, #130, #129, #128, #127, #126 |
+| app-builder-lib          | 25.1.8       | 26.15.0       | #154                                         |
 
 Gate verde: `bun run lint && bun run typecheck && bun run test` ✅
