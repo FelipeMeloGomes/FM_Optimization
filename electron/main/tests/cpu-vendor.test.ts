@@ -87,12 +87,15 @@ describe('getCpuIdentityOnce', () => {
     expect(b).toBe(identity);
   });
 
-  it('caches a failed read as an unknown identity instead of retrying', async () => {
-    const read = vi.fn().mockRejectedValue(new Error('WMI unavailable'));
+  it('does not cache a failed read, so a transient WMI failure can recover', async () => {
+    const read = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('WMI unavailable'))
+      .mockResolvedValueOnce(identity);
+
     await expect(getCpuIdentityOnce(read)).resolves.toEqual({});
-    await expect(getCpuIdentityOnce(read)).resolves.toEqual({});
-    expect(read).toHaveBeenCalledTimes(1);
-    expect(normalizeCpuVendor({})).toBe('unknown');
+    await expect(getCpuIdentityOnce(read)).resolves.toEqual(identity);
+    expect(read).toHaveBeenCalledTimes(2);
   });
 
   it('reads again after the cache is reset', async () => {

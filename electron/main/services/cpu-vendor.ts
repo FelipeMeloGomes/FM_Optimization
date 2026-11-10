@@ -5,6 +5,10 @@ export interface CpuIdentity {
   manufacturer?: string;
   vendor?: string;
   model?: string;
+  /** Nome comercial sem o fabricante, como o `systeminformation` devolve. */
+  brand?: string;
+  /** Núcleos físicos; usado quando o WMI não responde. */
+  physicalCores?: number;
 }
 
 export type CpuIdentityReader = () => Promise<CpuIdentity>;
@@ -46,7 +50,13 @@ export function normalizeCpuVendor(identity: CpuIdentity): CpuVendor {
 
 const readSiCpu: CpuIdentityReader = async () => {
   const cpu = await si.cpu();
-  return { manufacturer: cpu.manufacturer, vendor: cpu.vendor, model: cpu.model };
+  return {
+    manufacturer: cpu.manufacturer,
+    vendor: cpu.vendor,
+    model: cpu.model,
+    brand: cpu.brand,
+    physicalCores: cpu.physicalCores,
+  };
 };
 
 let cached: CpuIdentity | null = null;
@@ -55,8 +65,8 @@ let inflight: Promise<CpuIdentity> | null = null;
 /**
  * Reads the CPU identity at most once per process. Concurrent callers share the
  * in-flight promise so the React StrictMode double-mount cannot issue two reads.
- * A failed read is cached as an empty identity: retrying on every call would
- * re-query WMI on every consumer, and `unknown` is the correct outcome anyway.
+ * Only successful reads are cached: a transient WMI/PowerShell failure must not
+ * leave the vendor `unknown` until the app restarts.
  */
 export async function getCpuIdentityOnce(
   read: CpuIdentityReader = readSiCpu
@@ -68,10 +78,7 @@ export async function getCpuIdentityOnce(
       cached = identity;
       return identity;
     })
-    .catch(() => {
-      cached = {};
-      return {};
-    })
+    .catch(() => ({}))
     .finally(() => {
       inflight = null;
     });

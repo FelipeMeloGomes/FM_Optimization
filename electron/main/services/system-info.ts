@@ -7,7 +7,9 @@ import type {
   OsInfo,
   StorageDrive,
 } from '../../shared/ipc-types';
-import { getCpuIdentityOnce, normalizeCpuVendor } from './cpu-vendor';
+import { resolveCpuName } from './cpu-identity';
+import { type CpuIdentity, getCpuIdentityOnce, normalizeCpuVendor } from './cpu-vendor';
+import { formatGpuName } from './gpu-identity';
 import {
   formatVramGb,
   matchRegistryVram,
@@ -21,45 +23,130 @@ function formatBytes(bytes: number): string {
   return `${gb.toFixed(1)} GB`;
 }
 
+const WMI_CPU_QUERY =
+  'Get-CimInstance Win32_Processor | Select-Object -First 1 Name, Manufacturer, Description, NumberOfCores, NumberOfLogicalProcessors, MaxClockSpeed | ConvertTo-Json';
+
+interface WmiProcessor {
+  name?: string;
+  manufacturer?: string;
+  description?: string;
+  numberOfCores?: number;
+  numberOfLogicalProcessors?: number;
+  maxClockSpeed?: number;
+}
+
+function asFiniteNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+export function parseWmiProcessor(raw?: string): WmiProcessor {
+  if (!raw) return {};
+
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    const item = Array.isArray(parsed) ? parsed[0] : parsed;
+    if (!item || typeof item !== 'object') return {};
+
+    const record = item as Record<string, unknown>;
+    return {
+      name: typeof record.Name === 'string' ? record.Name : undefined,
+      manufacturer: typeof record.Manufacturer === 'string' ? record.Manufacturer : undefined,
+      description: typeof record.Description === 'string' ? record.Description : undefined,
+      numberOfCores: asFiniteNumber(record.NumberOfCores),
+      numberOfLogicalProcessors: asFiniteNumber(record.NumberOfLogicalProcessors),
+      maxClockSpeed: asFiniteNumber(record.MaxClockSpeed),
+    };
+  } catch {
+    return {};
+  }
+}
+
+export interface CpuInfoSources {
+  osModel?: string;
+  logicalCount: number;
+  wmiRaw?: string;
+  identity?: CpuIdentity;
+  architecture: string;
+  usage: number;
+}
+
+/**
+ * Monta o `CpuInfo` a partir das três fontes possíveis. O WMI é a fonte
+ * primária; `os.cpus()` e o `systeminformation` cobrem falhas do WMI.
+ *
+ * O modelo nunca é usado como fallback do fabricante sem passar por aqui: era
+ * esse caminho que deixava um Ryzen com `vendor: unknown` quando o WMI falhava.
+ */
+export function buildCpuInfo(sources: CpuInfoSources): CpuInfo {
+  const wmi = parseWmiProcessor(sources.wmiRaw);
+  const identity = sources.identity ?? {};
+
+  const vendor = normalizeCpuVendor({
+    manufacturer: wmi.manufacturer ?? identity.manufacturer,
+    vendor: identity.vendor,
+    model: wmi.name ?? sources.osModel ?? identity.brand,
+  });
+
+  // O `si.cpu().brand` vem sem o fabricante ("Ryzen 7 5700X 8-Core Processor"),
+  // então prefixamos para manter o padrão "AMD Ryzen 7 5700X".
+  const siBrand = identity.brand
+    ? [identity.manufacturer, identity.brand].filter(Boolean).join(' ')
+    : undefined;
+
+  const resolved = resolveCpuName({
+    wmiName: wmi.name,
+    osModel: sources.osModel,
+    siBrand,
+    description: wmi.description,
+    vendor,
+  });
+
+  const logicalProcessors = wmi.numberOfLogicalProcessors ?? sources.logicalCount;
+  const coresFromWmi = wmi.numberOfCores;
+  const coresFromSi = identity.physicalCores;
+  const cores = coresFromWmi ?? coresFromSi ?? logicalProcessors;
+
+  return {
+    model: resolved.name,
+    rawModel: resolved.raw || undefined,
+    manufacturer: wmi.manufacturer ?? identity.manufacturer ?? '',
+    vendor,
+    cores,
+    logicalProcessors,
+    architecture: sources.architecture,
+    usage: sources.usage,
+    family: resolved.family,
+    modelNumber: resolved.modelNumber,
+    stepping: resolved.stepping,
+    maxClockMhz: wmi.maxClockSpeed,
+    nameSource: resolved.source,
+    nameIsGeneric: resolved.generic,
+    coresEstimated: coresFromWmi == null && coresFromSi == null,
+  };
+}
+
 export async function getCpuInfo(): Promise<CpuInfo> {
   const cpu = cpus()[0];
-  const model = cpu?.model || 'Unknown';
-  const fallbackCores = cpus().length;
+  const logicalCount = cpus().length;
 
   const [identity, cpuDetail, usageOutput] = await Promise.all([
     getCpuIdentityOnce(),
-    execPowerShell(
-      'Get-CimInstance Win32_Processor | Select-Object -First 1 NumberOfCores,NumberOfLogicalProcessors | ConvertTo-Json'
-    ).catch(() => ''),
+    execPowerShell(WMI_CPU_QUERY).catch(() => ''),
     execPowerShell(
       '$cpu = Get-Counter "\\Processor(_Total)\\% Processor Time"; [math]::Round($cpu.CounterSamples.CookedValue)'
     ).catch(() => ''),
   ]);
 
-  let cores = fallbackCores;
-  let logicalProcessors = fallbackCores;
-
-  if (cpuDetail) {
-    try {
-      const parsed = JSON.parse(cpuDetail);
-      if (parsed.NumberOfCores) cores = parsed.NumberOfCores;
-      if (parsed.NumberOfLogicalProcessors) logicalProcessors = parsed.NumberOfLogicalProcessors;
-    } catch {
-      /* fallback */
-    }
-  }
-
   const usage = usageOutput ? parseInt(usageOutput.trim(), 10) || 0 : 0;
 
-  return {
-    model,
-    manufacturer: identity.manufacturer ?? '',
-    vendor: normalizeCpuVendor(identity),
-    cores,
-    logicalProcessors,
+  return buildCpuInfo({
+    osModel: cpu?.model,
+    logicalCount,
+    wmiRaw: cpuDetail,
+    identity,
     architecture: arch(),
     usage,
-  };
+  });
 }
 
 const REGISTRY_VRAM_CMD =
@@ -82,7 +169,7 @@ export async function getGpuInfo(): Promise<GpuInfo> {
   if (!output) return { name: 'N/A', vram: 'N/A', driverVersion: 'N/A', usage: 0 };
 
   const gpu = pickDedicatedGpu(parseVideoControllers(output));
-  const name = gpu?.name ?? 'N/A';
+  const name = formatGpuName(gpu?.name);
   const driverVersion = gpu?.driverVersion || 'N/A';
 
   let vram = 'N/A';
@@ -119,7 +206,7 @@ export async function getGpuInfo(): Promise<GpuInfo> {
     }
   }
 
-  return { name, vram, driverVersion, usage };
+  return { name, rawName: gpu?.name, vram, driverVersion, usage };
 }
 
 export async function getMemoryInfo(): Promise<MemoryInfo> {

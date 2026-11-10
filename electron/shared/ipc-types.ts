@@ -1,17 +1,32 @@
 export type CpuVendor = 'intel' | 'amd' | 'unknown';
 
 export interface CpuInfo {
+  /** Nome padronizado para exibição (ex.: "AMD Ryzen 7 5700X"). */
   model: string;
+  /** Nome original informado pelo sistema, mantido para diagnóstico. */
+  rawModel?: string;
   manufacturer: string;
   vendor: CpuVendor;
   cores: number;
   logicalProcessors: number;
   architecture: string;
   usage: number;
+  /** Família/modelo/stepping quando o sistema informa o identificador genérico. */
+  family?: string;
+  modelNumber?: string;
+  stepping?: string;
+  maxClockMhz?: number;
+  nameSource?: 'wmi' | 'os' | 'systeminformation' | 'generic' | 'unknown';
+  nameIsGeneric?: boolean;
+  /** true quando a contagem de núcleos físicos não pôde ser lida. */
+  coresEstimated?: boolean;
 }
 
 export interface GpuInfo {
+  /** Nome padronizado para exibição (ex.: "AMD Radeon RX 7600"). */
   name: string;
+  /** Nome original informado pelo WMI, mantido para diagnóstico. */
+  rawName?: string;
   vram: string;
   driverVersion: string;
   usage: number;

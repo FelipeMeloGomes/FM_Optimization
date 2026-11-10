@@ -11,6 +11,8 @@ import { CATEGORIES, routesByCategory } from '../routes/config';
 
 interface SidebarProps {
   openCommandPalette: () => void;
+  /** Estado inicial da sidebar; permite abrir já recolhida. */
+  defaultCollapsed?: boolean;
 }
 
 interface SidebarLinkProps {
@@ -20,7 +22,7 @@ interface SidebarLinkProps {
   collapsed: boolean;
 }
 
-function SidebarLink({ to, icon: Icon, label, collapsed }: SidebarLinkProps) {
+export function SidebarLink({ to, icon: Icon, label, collapsed }: SidebarLinkProps) {
   const link = (
     <NavLink
       to={to}
@@ -61,7 +63,16 @@ function SidebarLink({ to, icon: Icon, label, collapsed }: SidebarLinkProps) {
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>{link}</TooltipTrigger>
+      {/*
+        O Radix Slot concatena o className do filho em uma string. Como o NavLink
+        recebe uma função de className, ela seria convertida no próprio
+        código-fonte e as classes reais se perderiam (gap-3 venceria gap-0,
+        px-3 venceria px-0), desalinhando o ícone. O span preserva a função
+        dentro do trigger.
+      */}
+      <TooltipTrigger asChild>
+        <span className="flex w-full justify-center">{link}</span>
+      </TooltipTrigger>
       <TooltipContent side="right" sideOffset={8}>
         {label}
       </TooltipContent>
@@ -69,8 +80,8 @@ function SidebarLink({ to, icon: Icon, label, collapsed }: SidebarLinkProps) {
   );
 }
 
-export function Sidebar({ openCommandPalette }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+export function Sidebar({ openCommandPalette, defaultCollapsed = false }: SidebarProps) {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const { settings } = useSettingsContext();
   const theme = getThemeById(settings.theme);
   const glowColor = theme.signature?.glowColor;
@@ -117,7 +128,7 @@ export function Sidebar({ openCommandPalette }: SidebarProps) {
           onClick={openCommandPalette}
           className={cn(
             'flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground',
-            collapsed && 'size-9 justify-center px-0 gap-0'
+            collapsed && 'mx-auto size-9 justify-center px-0 gap-0'
           )}
         >
           <Search className="size-4 shrink-0" />
@@ -137,15 +148,17 @@ export function Sidebar({ openCommandPalette }: SidebarProps) {
         </button>
         <nav
           className={cn(
-            'flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-1',
-            collapsed && '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+            'flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto',
+            collapsed
+              ? 'items-center pr-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+              : 'pr-1'
           )}
         >
           {groups.map(({ category, items }, index) => (
             <div key={category.id} className="flex flex-col gap-1">
               {index > 0 &&
                 (collapsed ? (
-                  <div className="my-2 border-t border-border" />
+                  <div className="my-2 w-full border-t border-border" />
                 ) : (
                   !category.hideLabel && (
                     <h3 className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
@@ -165,7 +178,12 @@ export function Sidebar({ openCommandPalette }: SidebarProps) {
             </div>
           ))}
         </nav>
-        <nav className="flex shrink-0 flex-col gap-1 border-t border-border pt-2">
+        <nav
+          className={cn(
+            'flex shrink-0 flex-col gap-1 border-t border-border pt-2',
+            collapsed && 'items-center'
+          )}
+        >
           {bottomItems.map((route) => (
             <SidebarLink
               key={route.path}
@@ -181,7 +199,7 @@ export function Sidebar({ openCommandPalette }: SidebarProps) {
           onClick={() => setCollapsed((v) => !v)}
           className={cn(
             'flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground',
-            collapsed && 'size-9 justify-center px-0 gap-0'
+            collapsed && 'mx-auto size-9 justify-center px-0 gap-0'
           )}
           aria-label={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
         >
