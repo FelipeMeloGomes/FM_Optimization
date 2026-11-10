@@ -7,7 +7,7 @@ interface ProviderProps {
 export function composeProviders(
   ...providers: Array<ElementType<ProviderProps>>
 ): React.FC<{ children: ReactNode }> {
-  // biome-ignore lint/correctness/noComponentHookFactories: composição fixa, avaliada uma vez na inicialização do app
+  // biome-ignore lint: composição fixa, avaliada uma vez na inicialização do app
   return function ComposedProviders({ children }) {
     return providers.reduceRight(
       (content, Provider, index) => (
