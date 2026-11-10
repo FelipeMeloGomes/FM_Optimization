@@ -5,7 +5,7 @@ FM-Optimize — toolkit de otimização Windows.
 - **Stack:** Electron + TypeScript, React 19, Tailwind CSS 4, electron-vite
 - **Linter/Formatter:** Biome (`npm run lint`, `npm run lint:fix`, `npm run format`)
 - **Testes:** Vitest (`npm run test`)
-- **Package manager:** npm
+- **Package manager:** bun
 - **Dados do usuário:** `%APPDATA%\fm-optimize\`
 - **`.env.local` na raiz contém `GITHUB_TOKEN` — NUNCA commitar (já está no `.gitignore`)**
   - Token fine-grained (`github_pat_...`) ou classic PAT (`ghp_...`) — ambos funcionam via `Authorization: Bearer`
