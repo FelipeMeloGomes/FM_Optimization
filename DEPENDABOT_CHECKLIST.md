@@ -340,5 +340,7 @@ Siga o ciclo para cada pacote:
 | baseline-browser-mapping | 2.10.38      | 2.11.0        | #73                                    |
 | @xmldom/xmldom           | 0.9.10       | 0.9.12        | #85, #84, #83, #82, #81, #80, #78, #71 |
 | builder-util-runtime     | 9.2.10       | 9.7.0         | #155                                   |
+| minimatch                | 10.2.6       | 11.0.1        | #188                                   |
+| minimatch                | 9.0.9        | 11.0.1        | #125                                   |
 
 Gate verde: `bun run lint && bun run typecheck && bun run test` ✅
