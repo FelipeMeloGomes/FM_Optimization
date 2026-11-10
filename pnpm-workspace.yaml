@@ -1,6 +1,9 @@
 allowBuilds:
   electron: false
+  electron-winstaller: true
   esbuild: false
 
 strictDepBuilds: true
 dangerouslyAllowAllBuilds: false
+minimumReleaseAgeExclude:
+  - electron@45.3.0

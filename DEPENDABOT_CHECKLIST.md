@@ -350,25 +350,25 @@ Gate verde: `bun run lint && bun run typecheck && bun run test` ✅
 
 ## 🎉 Resumo final - Todas as dependências diretas corrigidas
 
-| Pacote | Antes | Depois | Status |
-|--------|-------|--------|--------|
-| electron | 35.0.0 | 35.7.5 | ✅ |
-| systeminformation | ^5.33.13 | ^5.33.16 | ✅ |
-| zod | ^4.4.3 | ^4.6.6 | ✅ |
-| vite | ^6.0.0 | ^6.4.4 | ✅ |
-| vitest | ^4.1.10 | ^4.1.11 | ✅ |
-| tar | 6.2.1 | 7.5.22 | ✅ |
-| app-builder-lib | 25.1.8 | 26.18.0 | ✅ |
-| builder-util-runtime | 9.2.10 | 9.7.0 | ✅ |
-| minimatch | 10.2.6/9.0.9 | 11.0.1 | ✅ |
-| source-map-js | 1.2.1 | 1.2.2 | ✅ |
-| js-yaml | 4.2.0 | 4.3.2 | ✅ |
-| ip-address | 10.2.0 | 10.7.6 | ✅ |
-| brace-expansion | 1.1.15/5.0.6 | 5.0.12 | ✅ |
-| @vitest/mocker | 4.1.10 | 4.1.12 | ✅ |
-| baseline-browser-mapping | 2.10.38 | 2.11.0 | ✅ |
-| @xmldom/xmldom | 0.9.10 | 0.9.12 | ✅ |
-| electron-updater | ^6.3.0 | ^6.3.0 (6.8.11) | ✅ |
+| Pacote                   | Antes        | Depois          | Status |
+| ------------------------ | ------------ | --------------- | ------ |
+| electron                 | 35.0.0       | 35.7.5          | ✅     |
+| systeminformation        | ^5.33.13     | ^5.33.16        | ✅     |
+| zod                      | ^4.4.3       | ^4.6.6          | ✅     |
+| vite                     | ^6.0.0       | ^6.4.4          | ✅     |
+| vitest                   | ^4.1.10      | ^4.1.11         | ✅     |
+| tar                      | 6.2.1        | 7.5.22          | ✅     |
+| app-builder-lib          | 25.1.8       | 26.18.0         | ✅     |
+| builder-util-runtime     | 9.2.10       | 9.7.0           | ✅     |
+| minimatch                | 10.2.6/9.0.9 | 11.0.1          | ✅     |
+| source-map-js            | 1.2.1        | 1.2.2           | ✅     |
+| js-yaml                  | 4.2.0        | 4.3.2           | ✅     |
+| ip-address               | 10.2.0       | 10.7.6          | ✅     |
+| brace-expansion          | 1.1.15/5.0.6 | 5.0.12          | ✅     |
+| @vitest/mocker           | 4.1.10       | 4.1.12          | ✅     |
+| baseline-browser-mapping | 2.10.38      | 2.11.0          | ✅     |
+| @xmldom/xmldom           | 0.9.10       | 0.9.12          | ✅     |
+| electron-updater         | ^6.3.0       | ^6.3.0 (6.8.11) | ✅     |
 
 **🎉 Todas as dependências diretas corrigidas. 0 vulnerabilidades no `npm audit`.**
 
