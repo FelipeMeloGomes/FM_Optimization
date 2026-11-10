@@ -1,6 +1,8 @@
 import {
   AlertTriangle,
+  Compass,
   Cpu,
+  Download,
   ExternalLink,
   FileArchive,
   FolderArchive,
@@ -60,6 +62,18 @@ const PROGRAM_STYLES: Record<string, ProgramStyle> = {
     color: 'text-violet-400',
     bgColor: 'bg-violet-500/10',
     borderColor: 'border-violet-500/20',
+  },
+  brave: {
+    icon: Compass,
+    color: 'text-orange-400',
+    bgColor: 'bg-orange-500/10',
+    borderColor: 'border-orange-500/20',
+  },
+  qbittorrent: {
+    icon: Download,
+    color: 'text-sky-400',
+    bgColor: 'bg-sky-500/10',
+    borderColor: 'border-sky-500/20',
   },
   directx: {
     icon: Gamepad2,
@@ -261,9 +275,10 @@ export default function EssentialsPage() {
           </div>
           <h2 className="text-lg font-bold text-foreground">App Essenciais PC</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Utilitários para diagnosticar, monitorar, ajustar, compactar e desinstalar programas no
-            PC, além do runtime do DirectX para jogos antigos. Todos são instalados pelo winget, que
-            baixa do canal oficial do fornecedor e confere o hash do manifesto antes de rodar.
+            Utilitários para diagnosticar, monitorar, ajustar, compactar, navegar, baixar e
+            desinstalar programas no PC, além do runtime do DirectX para jogos antigos. Todos são
+            instalados pelo winget, que baixa do canal oficial do fornecedor e confere o hash do
+            manifesto antes de rodar.
           </p>
         </div>
       </div>

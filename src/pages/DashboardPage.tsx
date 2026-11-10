@@ -125,6 +125,9 @@ export default function DashboardPage() {
 
   const { data } = state;
   const memPercent = systemHealth?.memPercent ?? 0;
+  const coresLabel = data.cpu.coresEstimated
+    ? 'núcleos não detectados'
+    : `${data.cpu.cores} núcleos`;
 
   const tweakRatio =
     tweakStatus && tweakStatus.total > 0 ? tweakStatus.applied / tweakStatus.total : 0;
@@ -218,7 +221,7 @@ export default function DashboardPage() {
             icon={Cpu}
             label="CPU"
             value={data.cpu.model}
-            detail={`${data.cpu.cores} núcleos · ${data.cpu.logicalProcessors} threads · ${data.cpu.usage}% uso`}
+            detail={`${coresLabel} · ${data.cpu.logicalProcessors} threads · ${data.cpu.usage}% uso`}
             progress={data.cpu.usage}
             status={getCpuStatus(data.cpu.usage)}
           />

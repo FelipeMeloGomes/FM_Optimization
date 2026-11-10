@@ -24,6 +24,17 @@ describe('catalogo de programas essenciais', () => {
     }
   });
 
+  it('inclui Brave e qBittorrent com os ids oficiais do winget', () => {
+    expect(getEssentialProgram('brave')?.packageId).toBe('Brave.Brave');
+    expect(getEssentialProgram('brave')?.pageUrl).toBe('https://brave.com/');
+    expect(getEssentialProgram('qbittorrent')?.packageId).toBe('qBittorrent.qBittorrent');
+    expect(getEssentialProgram('qbittorrent')?.pageUrl).toBe('https://www.qbittorrent.org/');
+  });
+
+  it('mantem o 7-Zip no catalogo', () => {
+    expect(getEssentialProgram('7-zip')?.packageId).toBe('7zip.7zip');
+  });
+
   it('o DirectX usa o pacote oficial Microsoft.DirectX e abre a pagina da Microsoft', () => {
     const directx = getEssentialProgram('directx');
     expect(directx?.packageId).toBe('Microsoft.DirectX');

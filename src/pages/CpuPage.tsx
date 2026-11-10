@@ -171,11 +171,18 @@ export default function CpuPage() {
             <div className="flex-1">
               <p className="text-xs text-muted-foreground">Processador</p>
               <p className="text-sm font-medium">{cpuModel ?? '—'}</p>
+              {cpuState.status === 'success' && cpuState.data.nameIsGeneric && (
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  O BIOS informou apenas o identificador genérico.
+                </p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Núcleos</p>
               <p className="text-sm font-medium">
-                {cpuState.status === 'success' ? cpuState.data.cores : '—'}
+                {cpuState.status === 'success' && !cpuState.data.coresEstimated
+                  ? cpuState.data.cores
+                  : '—'}
               </p>
             </div>
             <div className="text-right">

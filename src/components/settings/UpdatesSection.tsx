@@ -15,7 +15,7 @@ import type {
 } from '../../../electron/shared/ipc-types';
 import { Button, Progress } from '../ui';
 
-const GITHUB_RELEASES = 'https://github.com/FelipeMeloGomes/FM_Optimization/releases/latest';
+const DOWNLOAD_PAGE_URL = 'https://fmoptimize.vercel.app';
 
 interface UpdatesSectionProps {
   appVersion: string;
@@ -69,8 +69,8 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
     window.electronAPI.installUpdate();
   }
 
-  function handleOpenRelease() {
-    window.open(GITHUB_RELEASES, '_blank');
+  function handleOpenDownloadPage() {
+    window.open(DOWNLOAD_PAGE_URL, '_blank');
   }
 
   return (
@@ -191,7 +191,12 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
               Verificar atualizacoes
             </Button>
             {!packaged && (
-              <Button onClick={handleOpenRelease} variant="outline" size="sm" className="gap-1.5">
+              <Button
+                onClick={handleOpenDownloadPage}
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+              >
                 <ExternalLink className="size-3.5" />
                 Pagina de download
               </Button>
@@ -206,7 +211,12 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
               Verificar novamente
             </Button>
             {!packaged && (
-              <Button onClick={handleOpenRelease} variant="ghost" size="sm" className="gap-1.5">
+              <Button
+                onClick={handleOpenDownloadPage}
+                variant="ghost"
+                size="sm"
+                className="gap-1.5"
+              >
                 <ExternalLink className="size-3.5" />
                 Pagina de download
               </Button>

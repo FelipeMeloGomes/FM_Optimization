@@ -3,9 +3,9 @@
 FM-Optimize — toolkit de otimização Windows.
 
 - **Stack:** Electron + TypeScript, React 19, Tailwind CSS 4, electron-vite
-- **Linter/Formatter:** Biome (`npm run lint`, `npm run lint:fix`, `npm run format`)
-- **Testes:** Vitest (`npm run test`)
-- **Package manager:** npm
+- **Linter/Formatter:** Biome (`bun run lint`, `bun run lint:fix`, `bun run format`)
+- **Testes:** Vitest (`bun run test`)
+- **Package manager:** bun
 - **Dados do usuário:** `%APPDATA%\fm-optimize\`
 - **`.env.local` na raiz contém `GITHUB_TOKEN` — NUNCA commitar (já está no `.gitignore`)**
   - Token fine-grained (`github_pat_...`) ou classic PAT (`ghp_...`) — ambos funcionam via `Authorization: Bearer`
@@ -14,8 +14,8 @@ FM-Optimize — toolkit de otimização Windows.
 
 | Comando                           | O que gera                                                   |
 | --------------------------------- | ------------------------------------------------------------ |
-| `npm run dev`                     | Dev server com hot reload                                    |
-| `npm run build`                   | Compila TS → `out/`                                          |
+| `bun run dev`                     | Dev server com hot reload                                    |
+| `bun run build`                   | Compila TS → `out/`                                          |
 | `npx electron-builder --win`      | Instalável + `latest.yml`                                    |
 | `npx electron-builder --win nsis` | Só o instalável (`dist/fm-optimize-setup.exe` + `.blockmap`) |
 
@@ -24,12 +24,19 @@ FM-Optimize — toolkit de otimização Windows.
 Antes de qualquer commit, rodar na raiz do repo:
 
 ```powershell
-npm run lint && npm run typecheck && npm run test
+bun run lint && bun run typecheck && bun run test
 ```
 
 Se houver erros, corrigir antes de commitar.
 
 A suíte do Vitest cobre `electron/main/**/*.test.ts` **e** `src/**/*.test.ts` (main process + renderer). Vale ler o que foi realmente coberto: um teste com catálogo transcrito à mão prova a aritmética, não a fiação com o `scripts.json` real.
+
+## Testes e regressão
+
+- **Sempre que criar algo novo** (função, componente, hook, contexto, lib ou página), adicione um teste que cobre o comportamento real do código, não uma reimplementação dele. Não existe código novo sem teste.
+- **Sempre que corrigir um bug**, adicione um teste de regressão que falhe sem a correção e passe com ela (ciclo vermelho-verde). Antes de considerar o bug corrigido, rode o teste, reverta a correção, confirme que ele falha, e restaure a correção.
+- Prefira testar o comportamento visível ao usuário/consome: texto renderizado, chamadas de API com os argumentos certos, estados de carregamento/erro/vazio, filtros e contadores. Evite asserções em mocks ou em estruturas internas.
+- Mantenha o gate verde antes de commitar: `bun run lint && bun run typecheck && bun run test`.
 
 # Commit
 
@@ -41,7 +48,7 @@ A suíte do Vitest cobre `electron/main/**/*.test.ts` **e** `src/**/*.test.ts` (
 ## Regras rígidas
 
 - NUNCA rode `electron-builder` antes de `npm version`
-- NUNCA faça commit sem antes rodar `npm run typecheck`
+- NUNCA faça commit sem antes rodar `bun run typecheck`
 - NUNCA crie release com working tree sujo
 - NUNCA esqueça de verificar que `dist/latest.yml` contém a versão correta após o build
 - NUNCA commite `.env.local`
@@ -84,7 +91,7 @@ Template:
 ## Ordem das operações
 
 1. `npm version <tipo>` — bump no `package.json`, commit + tag local
-2. `npm run build` — compila TypeScript
+2. `bun run build` — compila TypeScript
 3. `npx electron-builder --win` — gera builds + `latest.yml`
 4. Verificar que `dist/latest.yml` contém a versão correta
 5. Perguntar/preencher corpo da release
