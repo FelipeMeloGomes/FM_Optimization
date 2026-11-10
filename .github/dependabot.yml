@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # Atualizações de dependências do pacote (pnpm)
+  - package-ecosystem: "pnpm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+      runtime-dependencies:
+        dependency-type: "production"
+
+  # Atualizações de workflows do GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
