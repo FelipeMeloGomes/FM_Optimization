@@ -344,5 +344,6 @@ Siga o ciclo para cada pacote:
 | minimatch                | 9.0.9        | 11.0.1        | #125                                           |
 | tar                      | 6.2.1        | 7.5.18        | #153, #149, #131, #130, #129, #128, #127, #126 |
 | app-builder-lib          | 25.1.8       | 26.15.0       | #154                                         |
+| extract-zip              | 2.0.1        | 2.0.1         | #173, #172, #74 (sem versão corrigida)       |
 
 Gate verde: `bun run lint && bun run typecheck && bun run test` ✅
