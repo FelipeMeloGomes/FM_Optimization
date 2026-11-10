@@ -31,6 +31,13 @@ Se houver erros, corrigir antes de commitar.
 
 A suíte do Vitest cobre `electron/main/**/*.test.ts` **e** `src/**/*.test.ts` (main process + renderer). Vale ler o que foi realmente coberto: um teste com catálogo transcrito à mão prova a aritmética, não a fiação com o `scripts.json` real.
 
+## Testes e regressão
+
+- **Sempre que criar algo novo** (função, componente, hook, contexto, lib ou página), adicione um teste que cobre o comportamento real do código, não uma reimplementação dele. Não existe código novo sem teste.
+- **Sempre que corrigir um bug**, adicione um teste de regressão que falhe sem a correção e passe com ela (ciclo vermelho-verde). Antes de considerar o bug corrigido, rode o teste, reverta a correção, confirme que ele falha, e restaure a correção.
+- Prefira testar o comportamento visível ao usuário/consome: texto renderizado, chamadas de API com os argumentos certos, estados de carregamento/erro/vazio, filtros e contadores. Evite asserções em mocks ou em estruturas internas.
+- Mantenha o gate verde antes de commitar: `npm run lint && npm run typecheck && npm run test`.
+
 # Commit
 
 - Verificar se `README.md` foi atualizado com as últimas mudanças.
