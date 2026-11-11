@@ -18,6 +18,13 @@ files:
   - '!**/*.tsbuildinfo'
   - '!**/*.map'
   - '!**/.env*'
+  # Alguns pacotes publicam o código-fonte TS junto (o zod traz 3 MB em
+  # `src/v4/**/*.ts`, testes inclusive). Nada disso é executado: a entrada do
+  # zod é `index.cjs`. O filtro NÃO pode ser genérico — o pacote `debug` usa
+  # `src/index.js` como `main` e quebraria o boot do main process.
+  - '!**/node_modules/zod/src/**'
+# Remove dxcompiler.dll (24,6 MB) depois de copiar o runtime do Electron.
+afterPack: scripts/after-pack.cjs
 # Mantém apenas os locales que o app usa (padrão copiava os 48 = ~49 MB).
 electronLanguages:
   - pt-BR

@@ -116,7 +116,7 @@ npx electron-builder --win nsis     # apenas o instalador
 
 O instalador fica em `dist/fm-optimize-setup.exe`.
 
-O `electron-builder.yml` usa uma **whitelist** de `files` (`out/`, `package.json` e `node_modules/`), então nada além do app compilado entra no `app.asar` — nem `data/`, nem `.env*`, nem artefatos de build. As únicas dependências de produção são as que o main process realmente carrega (`electron-updater`, `systeminformation`, `zod`); o renderer é empacotado pelo Vite.
+O `electron-builder.yml` usa uma **whitelist** de `files` (`out/`, `package.json` e `node_modules/`), então nada além do app compilado entra no `app.asar` — nem `data/`, nem `.env*`, nem artefatos de build. As únicas dependências de produção são as que o main process realmente carrega (`electron-updater`, `systeminformation`, `zod`); o renderer é empacotado pelo Vite. O hook `scripts/after-pack.cjs` remove do pacote o `dxcompiler.dll` (24,6 MB), que só é usado pelo caminho WebGPU/D3D12 — o app renderiza via D3D11.
 
 ## Scripts
 
