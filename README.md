@@ -132,6 +132,8 @@ O `electron-builder.yml` usa uma **whitelist** de `files` (`out/`, `package.json
 
 Antes de commitar: `bun run lint && bun run typecheck && bun run test`.
 
+O Biome cobre TypeScript, JSON, CSS e **Markdown**: os `.md` do repositório entram no `lint`/`format`, com tabelas alinhadas e blocos de código embutidos formatados.
+
 ## Download
 
 - [fmoptimize.vercel.app](https://fmoptimize.vercel.app)

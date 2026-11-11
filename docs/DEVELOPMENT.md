@@ -26,6 +26,7 @@ npm run dev     # modo desenvolvimento (Electron + Vite HMR)
 - **Commits**: Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `a11y:`, `docs:`).
 - **Branches**: `feat/sprint-X-descricao`, `fix/descricao`.
 - **Lint/typecheck** devem passar antes de commitar.
+- **Markdown**: o Biome formata `.md` (tabelas, listas e blocos de código embutidos); `bun run lint:fix` aplica.
 - **README.md** (raiz) deve ser atualizado se houver mudança funcional/visual.
 
 ## Adicionando um novo handler IPC
@@ -69,6 +70,7 @@ npm test
 ```
 
 Testes ficam em `electron/main/**/*.test.ts`, ambiente Node. Cobrem:
+
 - `rate-limit.test.ts` — janela deslizante e limites por canal
 - `powershell.test.ts` — `psEscape` e bloqueio de injeção
 - `branded-types.test.ts` — validação de IDs de domínio

@@ -21,6 +21,7 @@ renderer ──IPC──> [rate-limit] ──> [validação Zod] ──> handler
 ### 2. Rate-limit (`services/rate-limit.ts`)
 
 Janela deslizante por canal para evitar abuso/starvation do main process:
+
 - `benchmark-dns`: 3 req / 5s
 - `apply-dns`: 5 req / 3s
 - `elevate-app`: 2 req / 10s
@@ -30,6 +31,7 @@ Janela deslizante por canal para evitar abuso/starvation do main process:
 ### 3. Validação de entrada (Zod)
 
 `validateIpcInput(channel, input)` valida contra `IpcSchemas`. Canais críticos:
+
 - `execute-script` / `extract-script` / `get-script-content`: `ScriptIdSchema` (regex alfanumérico + `_-`, 1–100 chars)
 - `apply-dns`: `InterfaceIndexSchema` + `DnsAddressesSchema` (IPv4 validado por regex)
 - `elevate-app`: `scriptId` opcional validado como `ScriptIdSchema`

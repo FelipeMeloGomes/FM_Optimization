@@ -6,30 +6,30 @@ bundle do renderer.
 
 ## Resumo
 
-| Métrica                    | Antes     | Depois        | Redução    |
-| -------------------------- | --------- | ------------- | ---------- |
-| Instalador NSIS            | 255,8 MB  | **102,34 MB** | **−60,0%** |
-| App instalado (unpacked)   | ~752,0 MB | **291,3 MB**  | **−61,3%** |
-| `app.asar`                 | 395,2 MB  | **6,77 MB**   | **−98,3%** |
-| `node_modules` no pacote   | 101,8 MB  | **4,30 MB**   | −95,8%     |
-| Pacotes no `app.asar`      | 219       | **18**        | −91,8%     |
-| `data/backups` (APKs)      | 284,6 MB  | **0**         | −100%      |
-| `locales/`                 | 48,8 MB   | **1,2 MB**    | −97,5%     |
-| `dxcompiler.dll`           | 24,6 MB   | **0**         | −100%      |
-| `out/` compilado           | 3,4 MB    | **2,30 MB**   | −32%       |
-| `.env.local` no pacote     | sim       | **não**       | —          |
+| Métrica                  | Antes     | Depois        | Redução    |
+| ------------------------ | --------- | ------------- | ---------- |
+| Instalador NSIS          | 255,8 MB  | **102,34 MB** | **−60,0%** |
+| App instalado (unpacked) | ~752,0 MB | **291,3 MB**  | **−61,3%** |
+| `app.asar`               | 395,2 MB  | **6,77 MB**   | **−98,3%** |
+| `node_modules` no pacote | 101,8 MB  | **4,30 MB**   | −95,8%     |
+| Pacotes no `app.asar`    | 219       | **18**        | −91,8%     |
+| `data/backups` (APKs)    | 284,6 MB  | **0**         | −100%      |
+| `locales/`               | 48,8 MB   | **1,2 MB**    | −97,5%     |
+| `dxcompiler.dll`         | 24,6 MB   | **0**         | −100%      |
+| `out/` compilado         | 3,4 MB    | **2,30 MB**   | −32%       |
+| `.env.local` no pacote   | sim       | **não**       | —          |
 
 ## Diagnóstico
 
 O `files` do `electron-builder.yml` só tinha negações, então valia o default
 `**/*` e o pacote levava o repositório inteiro:
 
-| Conteúdo         | Tamanho   | Por quê ia parar no pacote                     |
-| ---------------- | --------- | ---------------------------------------------- |
-| `data/`          | 284,6 MB  | APKs locais em `data/backups/` (não rastreados) |
-| `node_modules/`  | 101,8 MB  | `dependencies` acumulava pins e libs do renderer |
-| `.env.local`     | —         | continha o `GITHUB_TOKEN` (vazamento)           |
-| `out/`           | 3,4 MB    | correto                                        |
+| Conteúdo        | Tamanho  | Por quê ia parar no pacote                       |
+| --------------- | -------- | ------------------------------------------------ |
+| `data/`         | 284,6 MB | APKs locais em `data/backups/` (não rastreados)  |
+| `node_modules/` | 101,8 MB | `dependencies` acumulava pins e libs do renderer |
+| `.env.local`    | —        | continha o `GITHUB_TOKEN` (vazamento)            |
+| `out/`          | 3,4 MB   | correto                                          |
 
 O JS do app é só **1,56 MB** (renderer) + **0,17 MB** (main). O gargalo era o
 empacotamento, não o código.
@@ -86,14 +86,14 @@ boot do main process com `Cannot find module .../debug/src/index.js`.
 
 ## O que ficou de fora (piso técnico)
 
-| Item                          | Tamanho  | Motivo                        |
-| ----------------------------- | -------- | ----------------------------- |
-| `fm-optimize.exe` (Electron)  | 237,8 MB | binário do framework          |
-| `resources.pak` + `icudtl.dat` | 23,1 MB | núcleo do Chromium            |
-| `LICENSES.chromium.html`      | 5,4 MB   | obrigação legal               |
-| `vk_swiftshader` + `vulkan-1` | 6,1 MB   | fallback de GPU sem driver    |
-| `d3dcompiler_47.dll`          | 4,5 MB   | shaders D3D11 (usado)         |
-| `ffmpeg.dll`                  | 3,0 MB   | mídia do Chromium             |
+| Item                           | Tamanho  | Motivo                     |
+| ------------------------------ | -------- | -------------------------- |
+| `fm-optimize.exe` (Electron)   | 237,8 MB | binário do framework       |
+| `resources.pak` + `icudtl.dat` | 23,1 MB  | núcleo do Chromium         |
+| `LICENSES.chromium.html`       | 5,4 MB   | obrigação legal            |
+| `vk_swiftshader` + `vulkan-1`  | 6,1 MB   | fallback de GPU sem driver |
+| `d3dcompiler_47.dll`           | 4,5 MB   | shaders D3D11 (usado)      |
+| `ffmpeg.dll`                   | 3,0 MB   | mídia do Chromium          |
 
 Declarações `.d.ts`/`.d.cts` restantes somam 0,35 MB (< 0,1 MB comprimido) e não
 justificam outro ciclo de build. O próximo salto de tamanho exigiria trocar de
