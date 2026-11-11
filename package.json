@@ -17,7 +17,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "electron-updater": "^6.3.0",
+    "electron-updater": "^6.8.11",
     "systeminformation": "^5.33.16",
     "zod": "^4.6.6"
   },
