@@ -1,7 +1,10 @@
 version: 2
 updates:
-  # Atualizações de dependências do pacote (pnpm) — todos os dias
-  - package-ecosystem: "pnpm"
+  # Atualizações de dependências do pacote (bun) — todos os dias
+  # Nota: o GitHub suporta o ecossistema "bun" para atualizações de versão.
+  # Atualizações de segurança (Dependabot alerts) não são suportadas para bun;
+  # por isso o `overrides` do package.json e o `bun audit` são a rede de proteção.
+  - package-ecosystem: "bun"
     directory: "/"
     schedule:
       interval: "daily"

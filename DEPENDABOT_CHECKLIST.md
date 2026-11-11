@@ -16,7 +16,7 @@ Este documento registra a correção dos **100 alertas de segurança** que estav
 | Alertas abertos          | **0**                          |
 | Alertas corrigidos       | **100**                        |
 | Alertas dispensados      | 0                              |
-| `npm audit`              | **0 vulnerabilidades**         |
+| `bun audit`              | **0 vulnerabilidades** (516 pacotes) |
 | Gate de qualidade        | lint ✅ · typecheck ✅ · 1037 testes ✅ |
 | Gerenciador de pacotes   | **bun** (`bun.lock`)           |
 | Lockfiles removidos      | `package-lock.json`, `pnpm-lock.yaml` |
@@ -234,8 +234,11 @@ O projeto usa **bun**. O ciclo é:
 4. **Confirme que a versão vulnerável saiu da árvore**:
 
    ```powershell
-   npm audit
+   bun audit
    ```
+
+   > Use `bun audit`, não `npm audit`: sem `package-lock.json` o npm falha com
+   > `loadVirtual requires existing shrinkwrap file`.
 
 5. **Rode o gate de qualidade**:
 
@@ -259,8 +262,8 @@ O projeto usa **bun**. O ciclo é:
 ## Observações
 
 - **Nunca recrie `package-lock.json` nem `pnpm-lock.yaml`.** Foi um lockfile npm desatualizado que manteve o alerta #188 aberto mesmo depois da correção. O lockfile oficial é o `bun.lock`.
-- O `.github/dependabot.yml` está com `package-ecosystem: "pnpm"`. Como o projeto migrou para bun, vale revisar essa configuração: o ecossistema `bun` é suportado para **atualizações de versão**, mas o GitHub **não** oferece atualizações de segurança para ele.
-- Os aliases `@minimatch/3.1.5`, `@minimatch/5.1.9`, `@minimatch/9.0.9` e `@minimatch/10.2.6` em `devDependencies` ficaram redundantes depois dos `overrides` e podem ser removidos numa limpeza futura.
+- O `.github/dependabot.yml` foi ajustado de `package-ecosystem: "pnpm"` para **`"bun"`**. O GitHub suporta o ecossistema `bun` apenas para **atualizações de versão** — atualizações de segurança (Dependabot alerts) não são suportadas para bun. A rede de proteção contra vulnerabilidades passou a ser o `overrides` do `package.json` + `bun audit`.
+- Os aliases `@minimatch/3.1.5`, `@minimatch/5.1.9`, `@minimatch/9.0.9` e `@minimatch/10.2.6` foram **removidos** de `devDependencies`: ficaram redundantes depois dos `overrides`. O `bun.lock` agora resolve apenas `minimatch@11.0.1`.
 
 ---
 
