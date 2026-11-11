@@ -142,6 +142,7 @@ Antes de commitar: `bun run lint && bun run typecheck && bun run test`.
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — camadas, fluxo IPC e providers modulares
 - [SECURITY.md](docs/SECURITY.md) — controles de segurança e modelo de ameaça
 - [DEVELOPMENT.md](docs/DEVELOPMENT.md) — setup, convenções e como adicionar handlers IPC
+- [OPTIMIZATION.md](docs/OPTIMIZATION.md) — redução do instalador (255,8 → 102,3 MB) e contrato de empacotamento
 
 ## Estrutura do projeto
 
