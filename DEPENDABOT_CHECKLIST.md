@@ -5,7 +5,7 @@
 
 Este documento registra a correção dos **100 alertas de segurança** que estavam abertos no Dependabot do repositório `FelipeMeloGomes/FM_Optimization`, além de servir de guia para os próximos alertas.
 
-> 🔄 O `.github/dependabot.yml` está configurado para verificar atualizações **todos os dias**.
+> 🔄 O `.github/dependabot.yml` está configurado para verificar atualizações **semanalmente** (máximo de 5 PRs abertos).
 
 ---
 
