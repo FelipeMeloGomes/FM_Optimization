@@ -57,4 +57,4 @@ IDs de domínio (`ScriptId`, `InterfaceIndex`, `RestorePointSeq`) são _branded 
 
 ## Testes
 
-A suíte Vitest (`electron/main/**/*.test.ts`) cobre rate-limit, `psEscape`, branded types e `validateIpcInput`. Rodar com `npm test`.
+A suíte Vitest cobre `electron/main/**/*.test.ts` (rate-limit, `psEscape`, branded types, `validateIpcInput`) e o renderer em `src/**/*.test.{ts,tsx}`. Rodar com `bun run test`.

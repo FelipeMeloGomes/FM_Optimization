@@ -3,9 +3,8 @@
 ## Setup
 
 ```bash
-cd fm-optimize-electron
-npm install
-npm run dev     # modo desenvolvimento (Electron + Vite HMR)
+bun install
+bun run dev     # modo desenvolvimento (Electron + Vite HMR)
 ```
 
 > O app precisa de **administrador** para algumas funções (DNS, pontos de restauração). Sem admin, essas ações retornam erro amigável ou oferecem elevação.
@@ -14,12 +13,13 @@ npm run dev     # modo desenvolvimento (Electron + Vite HMR)
 
 | Script              | Descrição                                 |
 | ------------------- | ----------------------------------------- |
-| `npm run dev`       | Desenvolvimento                           |
-| `npm run build`     | Build de produção (gera em `out/`)        |
-| `npm run typecheck` | Typecheck do main (node) + renderer (web) |
-| `npm run lint`      | Biome (check)                             |
-| `npm run lint:fix`  | Biome (write)                             |
-| `npm run test`      | Testes do main process (Vitest)           |
+| `bun run dev`       | Desenvolvimento com hot reload            |
+| `bun run build`     | Build de produção (gera em `out/`)        |
+| `bun run typecheck` | Typecheck do main (node) + renderer (web) |
+| `bun run lint`      | Biome (check)                             |
+| `bun run lint:fix`  | Biome (correção automática)               |
+| `bun run format`    | Formatação com Biome                      |
+| `bun run test`      | Testes do main + renderer (Vitest)        |
 
 ## Convenções
 
@@ -66,12 +66,14 @@ npm run dev     # modo desenvolvimento (Electron + Vite HMR)
 ## Testes
 
 ```bash
-npm test
+bun run test
 ```
 
-Testes ficam em `electron/main/**/*.test.ts`, ambiente Node. Cobrem:
+São duas suítes no mesmo Vitest: `electron/main/**/*.test.ts` (ambiente Node) e
+`src/**/*.test.{ts,tsx}` (renderer). No main process cobrem:
 
 - `rate-limit.test.ts` — janela deslizante e limites por canal
 - `powershell.test.ts` — `psEscape` e bloqueio de injeção
 - `branded-types.test.ts` — validação de IDs de domínio
 - `validation.test.ts` — `IpcSchemas` e `validateIpcInput`
+- `packaging-config.test.ts` — contrato de empacotamento (ver [OPTIMIZATION.md](OPTIMIZATION.md))
