@@ -74,11 +74,9 @@
     "vite": "^6.4.4",
     "vitest": "^4.1.11"
   },
-  "pnpm": {
-    "overrides": {
-      "minimatch": "11.0.1",
-      "brace-expansion": "5.0.12",
-      "@xmldom/xmldom": "0.9.12"
-    }
+  "overrides": {
+    "minimatch": "11.0.1",
+    "brace-expansion": "5.0.12",
+    "@xmldom/xmldom": "0.9.12"
   }
 }
