@@ -10,11 +10,19 @@ extraResources:
       - "*.json"
       - "*.ico"
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  # Whitelist explícita: sem isto o default `**/*` empacotava o repositório
+  # inteiro (data/, docs/, .env.local), inflando o app.asar em ~380 MB.
+  - out/**/*
+  - package.json
+  - node_modules/**/*
+  - '!**/*.tsbuildinfo'
+  - '!**/*.map'
+  - '!**/.env*'
+# Mantém apenas os locales que o app usa (padrão copiava os 48 = ~49 MB).
+electronLanguages:
+  - pt-BR
+  - en-US
+compression: maximum
 win:
   executableName: fm-optimize
   target:

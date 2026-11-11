@@ -92,19 +92,19 @@ Os tweaks usam argumentos parametrizados e escapados (`psEscape`), e a elevaçã
 
 ## Início rápido
 
-Requisitos: **Windows 10/11**, **Node.js 20+** e **npm**.
+Requisitos: **Windows 10/11**, **Node.js 20+** e **bun**.
 
 ```bash
 git clone https://github.com/FelipeMeloGomes/FM_Optimization.git
 cd FM_Optimization
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 Para gerar a build de produção em `out/`:
 
 ```bash
-npm run build
+bun run build
 ```
 
 ### Instalador
@@ -116,19 +116,21 @@ npx electron-builder --win nsis     # apenas o instalador
 
 O instalador fica em `dist/fm-optimize-setup.exe`.
 
+O `electron-builder.yml` usa uma **whitelist** de `files` (`out/`, `package.json` e `node_modules/`), então nada além do app compilado entra no `app.asar` — nem `data/`, nem `.env*`, nem artefatos de build. As únicas dependências de produção são as que o main process realmente carrega (`electron-updater`, `systeminformation`, `zod`); o renderer é empacotado pelo Vite.
+
 ## Scripts
 
 | Comando             | Descrição                                     |
 | ------------------- | --------------------------------------------- |
-| `npm run dev`       | Desenvolvimento com hot reload                |
-| `npm run build`     | Build de produção em `out/`                   |
-| `npm run typecheck` | Typecheck do main process e do renderer       |
-| `npm run lint`      | Biome (check)                                 |
-| `npm run lint:fix`  | Biome (correção automática)                   |
-| `npm run format`    | Formatação com Biome                          |
-| `npm run test`      | Testes do main process e do renderer (Vitest) |
+| `bun run dev`       | Desenvolvimento com hot reload                |
+| `bun run build`     | Build de produção em `out/`                   |
+| `bun run typecheck` | Typecheck do main process e do renderer       |
+| `bun run lint`      | Biome (check)                                 |
+| `bun run lint:fix`  | Biome (correção automática)                   |
+| `bun run format`    | Formatação com Biome                          |
+| `bun run test`      | Testes do main process e do renderer (Vitest) |
 
-Antes de commitar: `npm run lint && npm run typecheck && npm run test`.
+Antes de commitar: `bun run lint && bun run typecheck && bun run test`.
 
 ## Download
 
