@@ -36,16 +36,18 @@ export default defineConfig({
           index: resolve(__dirname, 'index.html')
         },
         output: {
-          manualChunks: {
-            react: ['react', 'react-dom', 'react-router-dom'],
-            radix: [
-              '@radix-ui/react-slot',
-              '@radix-ui/react-dialog',
-              '@radix-ui/react-label',
-              '@radix-ui/react-progress',
-              '@radix-ui/react-switch',
+          // Vite 8 usa Rolldown: o formato objeto de `manualChunks` (Rollup)
+          // não existe mais. `codeSplitting.groups` é o equivalente atual e
+          // mantém os mesmos chunks de vendor estáveis para cache.
+          codeSplitting: {
+            groups: [
+              {
+                name: 'react',
+                test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/,
+              },
+              { name: 'radix', test: /node_modules[\\/]@radix-ui[\\/]/ },
+              { name: 'lucide', test: /node_modules[\\/]lucide-react[\\/]/ },
             ],
-            lucide: ['lucide-react'],
           },
         },
       },

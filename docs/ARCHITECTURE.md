@@ -44,7 +44,7 @@ Visão geral da arquitetura do app desktop (Electron + React + TypeScript).
 
 - **Providers modulares** (`src/contexts/`): `SystemContext` exporta providers por seção (`CpuProvider`, `GpuProvider`, `MemoryProvider`, `OsProvider`, `StorageProvider`) que carregam sob demanda. `DnsProvider` está encapsulado dentro da `NetworkPage` (lazy) para não rodar benchmark no startup. `AutoCleanProvider` mantém o status do agendador (próxima execução, pendências, admin) e escuta `auto-clean-status`/`auto-clean-finished`; a engrenagem da `TitleBar` abre o `AutoCleanModal`, e a `CleanerPage` mostra o banner de pendências.
 - **Pages lazy**: todas as rotas em `App.tsx` usam `React.lazy()`.
-- **Code-splitting**: `electron.vite.config.ts` separa vendors (`react`, `radix`, `lucide`) em chunks próprios.
+- **Code-splitting**: `electron.vite.config.ts` usa `build.rollupOptions.output.codeSplitting` (Rolldown, Vite 8+) para separar vendors (`react`, `radix`, `lucide`) em chunks próprios.
 - **Vendor de CPU é rótulo, não filtro**: `src/hooks/use-cpu-vendor.ts` é o único consumidor de `CpuInfo.vendor`. Ele combina a detecção com o override manual salvo em `settings.cpuVendorOverride`, aplicando a regra `detecção confiante sempre vence` — um override obsoleto nunca mascara uma detecção que funciona, ele só é consultado quando a detecção é `unknown`. `CpuPage` e `CommandPalette` consomem o hook; nenhum dos dois infere vendor por string.
 - **Categoria `CPU` é única**: `getCpuCategories()` não recebe vendor e sempre devolve `['CPU']`. Os 37 scripts fundidos não diferem por fabricante, então filtrar por vendor apenas esconderia ajustes válidos — o hero da `CpuPage` continua exibindo o fabricante detectado. A tier de RAM (`getRamScriptId(ramGb)`) também não depende do vendor, o que garante recomendação mesmo com CPU não identificada.
 
@@ -83,4 +83,4 @@ Visão geral da arquitetura do app desktop (Electron + React + TypeScript).
 | `electron/main/services/rate-limit.ts` | Rate-limit por canal                          |
 | `src/contexts/SystemContext.tsx`       | Providers modulares de sistema                |
 | `src/pages/NetworkPage.tsx`            | DNS benchmark + apply (encapsula DnsProvider) |
-| `electron.vite.config.ts`              | Build + manualChunks                          |
+| `electron.vite.config.ts`              | Build + code-splitting de vendors             |
