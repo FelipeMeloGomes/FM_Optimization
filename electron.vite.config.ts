@@ -2,6 +2,7 @@ import { resolve } from 'path'
 import { defineConfig } from 'electron-vite'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import visualizer from 'rollup-plugin-visualizer'
 
 export default defineConfig({
   main: {
@@ -26,7 +27,22 @@ export default defineConfig({
     resolve: {
       // Lê os "paths" do tsconfig (default é desligado no Vite 8).
       // Requer "@/*" declarado no tsconfig usado pelo renderer.
-      tsconfigPaths: true
+      tsconfigPaths: true,
+      // O react-router@7 expõe dist/development/ por padrão (sem condição
+      // de produção nos exports). Força a pasta production para eliminar
+      // código de dev (~90 KB no bundle).
+      alias: [
+        // O react-router@7 expõe dist/development/ por padrão (sem condição
+        // de produção nos exports). Força a pasta production para eliminar
+        // código de dev (~90 KB no bundle).
+        { find: 'react-router/dom', replacement: resolve(__dirname, 'node_modules/react-router/dist/production/dom-export.mjs') },
+        { find: 'react-router', replacement: resolve(__dirname, 'node_modules/react-router/dist/production/index.mjs') },
+      ],
+    },
+    // Força NODE_ENV=production para que o react-router (e outros pacotes)
+    // eliminem código de desenvolvimento por tree-shaking.
+    define: {
+      'process.env.NODE_ENV': '"production"',
     },
     build: {
       // Fontes nunca como data: URI — o CSP (`font-src 'self'`) bloqueia.
@@ -49,6 +65,11 @@ export default defineConfig({
         }
       }
     },
-    plugins: [react(), tailwindcss()]
+    plugins: [react(), tailwindcss(), visualizer({
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+      filename: 'renderer-stats.html',
+    })]
   }
 })
