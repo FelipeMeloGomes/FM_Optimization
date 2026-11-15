@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AsyncState, MemoryInfo, ScriptEntry } from '../../electron/shared/ipc-types';
+import type {
+  AsyncState,
+  DashboardData,
+  MemoryInfo,
+  ScriptEntry,
+} from '../../electron/shared/ipc-types';
 
 /**
  * Regressão da paleta de comandos (Ctrl+K).
@@ -15,7 +20,7 @@ import type { AsyncState, MemoryInfo, ScriptEntry } from '../../electron/shared/
 const store = vi.hoisted(() => ({
   scripts: { status: 'success', data: [] } as AsyncState<ScriptEntry[]>,
   filtered: [] as ScriptEntry[],
-  memory: { status: 'loading' } as AsyncState<MemoryInfo>,
+  system: { status: 'loading' } as AsyncState<DashboardData>,
   navigate: vi.fn(),
   applied: new Set<string>(),
 }));
@@ -25,7 +30,13 @@ vi.mock('../contexts/ScriptContext', () => ({
 }));
 
 vi.mock('../contexts/SystemContext', () => ({
-  useMemoryContext: () => ({ state: store.memory }),
+  useSystemContext: () => ({
+    state: store.system,
+    refreshing: false,
+    refresh: vi.fn(),
+    hasFetched: false,
+    isFromCache: false,
+  }),
 }));
 
 vi.mock('../hooks/use-is-script-applied', () => ({
@@ -88,10 +99,33 @@ function results(): string[] {
   return screen.queryAllByRole('button').map((button) => button.textContent ?? '');
 }
 
+const DASHBOARD: DashboardData = {
+  cpu: {
+    model: 'AMD Ryzen 7 5700X',
+    manufacturer: 'AuthenticAMD',
+    vendor: 'amd',
+    cores: 8,
+    logicalProcessors: 16,
+    architecture: 'x64',
+    usage: 12,
+  },
+  gpu: { name: 'AMD Radeon RX 7600', vram: '8 GB', driverVersion: '32.0.1', usage: 4 },
+  memory: MEMORY,
+  os: {
+    name: 'Windows 11 Pro',
+    version: '10.0.26100',
+    build: '26100',
+    edition: 'Pro',
+    installDate: '2025-01-01',
+  },
+  drives: [],
+  uptime: 1000,
+};
+
 beforeEach(() => {
   store.scripts = { status: 'success', data: [] };
   store.filtered = [];
-  store.memory = { status: 'success', data: MEMORY };
+  store.system = { status: 'success', data: DASHBOARD };
   store.navigate = vi.fn();
   store.applied = new Set<string>();
 });
@@ -196,7 +230,7 @@ describe('CommandPalette — escada de RAM', () => {
   });
 
   it('esconde todos os degraus quando a RAM é desconhecida', () => {
-    store.memory = { status: 'loading' };
+    store.system = { status: 'loading' };
 
     openPalette();
 

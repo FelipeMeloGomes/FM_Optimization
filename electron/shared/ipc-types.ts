@@ -402,6 +402,7 @@ export type AsyncState<T> =
 
 export interface ElectronAPI {
   getSystemInfo(): Promise<DashboardData>;
+  getSystemInfoCache(): Promise<{ version: number; timestamp: string; data: DashboardData } | null>;
   getCpuInfo(): Promise<CpuInfo>;
   getMemoryInfo(): Promise<MemoryInfo>;
   hasSSD(): Promise<boolean>;

@@ -29,7 +29,7 @@ import {
   restoreRemovedApp,
   setAdbPath,
 } from './services/adb';
-import { isAdmin } from './services/admin-check';
+import { isAdmin, isAdminAsync } from './services/admin-check';
 import { getAutoCleanScheduler } from './services/auto-clean';
 import { getCleanerStats } from './services/cleaner-stats';
 import {
@@ -64,6 +64,7 @@ import {
   getSystemInfo,
   hasSolidStateDrive,
 } from './services/system-info';
+import { readSystemCache, writeSystemCache } from './services/system-info-cache';
 import { validateIpcInput } from './validation';
 
 function handleIpc<T, V>(
@@ -139,7 +140,19 @@ function getStartupManager(): ReturnType<typeof createStartupManager> {
 export function registerIpcHandlers(): void {
   ipcMain.handle('get-system-info', async () => {
     try {
-      return { success: true as const, data: await getSystemInfo() };
+      const data = await getSystemInfo();
+      writeSystemCache(data);
+      return { success: true as const, data };
+    } catch (e: unknown) {
+      return { success: false as const, error: e instanceof Error ? e.message : String(e) };
+    }
+  });
+
+  ipcMain.handle('get-system-info-cache', () => {
+    try {
+      const cache = readSystemCache();
+      if (!cache) return { success: true as const, data: null };
+      return { success: true as const, data: cache };
     } catch (e: unknown) {
       return { success: false as const, error: e instanceof Error ? e.message : String(e) };
     }
@@ -167,22 +180,22 @@ export function registerIpcHandlers(): void {
   });
 
   ipcMain.handle('get-restore-points', () =>
-    handleIpcNoInput('get-restore-points', () => getRestorePoints())
+    handleIpcNoInput('get-restore-points', async () => getRestorePoints())
   );
 
   ipcMain.handle('create-restore-point', (_e, name: string) => {
-    return handleIpc('create-restore-point', name, (validated) => {
-      createRestorePoint(validated as string);
+    return handleIpc('create-restore-point', name, async (validated) => {
+      await createRestorePoint(validated as string);
     });
   });
 
   ipcMain.handle('delete-restore-point', (_e, seq: number) => {
-    return handleIpc('delete-restore-point', seq, (validated) => {
-      deleteRestorePoint(validated as number);
+    return handleIpc('delete-restore-point', seq, async (validated) => {
+      await deleteRestorePoint(validated as number);
     });
   });
 
-  ipcMain.handle('is-admin', () => handleIpcNoInput('is-admin', () => isAdmin()));
+  ipcMain.handle('is-admin', () => handleIpcNoInput('is-admin', async () => isAdminAsync()));
 
   ipcMain.handle('get-settings', () => handleIpcNoInput('get-settings', () => loadSettings()));
 
@@ -269,8 +282,8 @@ export function registerIpcHandlers(): void {
   );
 
   ipcMain.handle('restore-system', (_e, seq: number) => {
-    return handleIpc('restore-system', seq, (validated) => {
-      restoreSystem(validated as number);
+    return handleIpc('restore-system', seq, async (validated) => {
+      await restoreSystem(validated as number);
     });
   });
 
@@ -354,7 +367,7 @@ export function registerIpcHandlers(): void {
         interfaceIndex: number;
         addresses: string[];
       };
-      if (!isAdmin()) {
+      if (!(await isAdminAsync())) {
         throw new Error('Execute o aplicativo como administrador para alterar o DNS.');
       }
       if (addrs.length === 0) {

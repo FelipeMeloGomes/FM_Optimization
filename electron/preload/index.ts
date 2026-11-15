@@ -128,6 +128,10 @@ setupListeners();
 
 const electronAPI: ElectronAPI = {
   getSystemInfo: () => ipc<DashboardData>('get-system-info'),
+  getSystemInfoCache: () =>
+    ipc<{ version: number; timestamp: string; data: DashboardData } | null>(
+      'get-system-info-cache'
+    ),
   getCpuInfo: () => ipc<CpuInfo>('get-cpu-info'),
   getMemoryInfo: () => ipc<MemoryInfo>('get-memory-info'),
   hasSSD: () => ipc<boolean>('has-ssd'),

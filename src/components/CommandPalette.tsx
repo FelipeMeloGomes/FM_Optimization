@@ -2,7 +2,7 @@ import { Search, Terminal } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScriptContext } from '../contexts/ScriptContext';
-import { useMemoryContext } from '../contexts/SystemContext';
+import { useSystemContext } from '../contexts/SystemContext';
 import { getScriptRoute } from '../lib/category-routes';
 import { getRamScriptId } from '../lib/ram-script';
 import { cn } from '../lib/utils';
@@ -19,13 +19,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { state, filteredScripts } = useScriptContext();
-  const { state: memoryState } = useMemoryContext();
+  const { state: systemState } = useSystemContext();
 
   const userRamGb = useMemo<number | null>(() => {
-    if (memoryState.status !== 'success') return null;
-    const match = memoryState.data.total.match(/(\d+(?:\.\d+)?)/);
+    if (systemState.status !== 'success') return null;
+    const match = systemState.data.memory.total.match(/(\d+(?:\.\d+)?)/);
     return match ? parseFloat(match[1]) : null;
-  }, [memoryState]);
+  }, [systemState]);
 
   const recommendedRamScriptId = useMemo<string | null>(() => {
     if (!userRamGb) return null;

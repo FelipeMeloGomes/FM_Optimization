@@ -9,7 +9,7 @@ import {
   ShieldAlert,
   Trash2,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Badge,
   Button,
@@ -33,13 +33,27 @@ function formatDate(dateStr: string): string {
 }
 
 export default function RestorePointsPage() {
-  const { state, creating, restoring, isAdmin, adminRequired, refresh, create, remove, restore } =
-    useRestorePointContext();
+  const {
+    state,
+    creating,
+    restoring,
+    isAdmin,
+    adminRequired,
+    refresh,
+    hasFetched,
+    create,
+    remove,
+    restore,
+  } = useRestorePointContext();
   const [newName, setNewName] = useState('');
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<number | null>(null);
   const [restoreDone, setRestoreDone] = useState(false);
+
+  useEffect(() => {
+    if (!hasFetched) refresh();
+  }, [hasFetched, refresh]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;

@@ -7,7 +7,7 @@ import type { AutoCleanStatus } from '../shared/ipc-types';
 import { appState } from './app-state';
 import { registerIpcHandlers } from './ipc-handlers';
 import { resolveScriptId } from './legacy-script-ids';
-import { isAdmin } from './services/admin-check';
+import { isAdmin, isAdminAsync } from './services/admin-check';
 import { getAutoCleanScheduler } from './services/auto-clean';
 import { executeScript } from './services/script-executor';
 import { loadScripts } from './services/script-registry';
@@ -251,10 +251,7 @@ function setupAutoUpdater(): void {
     owner: 'FelipeMeloGomes',
     repo: 'FM_Optimization',
   });
-
-  if (app.isPackaged) {
-    autoUpdater.checkForUpdates();
-  }
+  // Check de atualização só manual via botão em Configurações.
 }
 
 function createWindow(mode: WindowMode): void {
@@ -363,7 +360,7 @@ function showTrayHintOnce(): void {
  * Liga o agendador, o tray e o autostart. O tray só existe com a limpeza
  * automática ligada: para quem não usa a feature, fechar continua encerrando.
  */
-function setupAutoClean(): void {
+function setupAutoClean(isElevated: boolean): void {
   const scheduler = getAutoCleanScheduler();
 
   const handlers = {
@@ -408,7 +405,7 @@ function setupAutoClean(): void {
   // quando o usuário abre o executável como administrador por conta própria.
   const explicitIntent =
     process.argv.includes('--relaunch-elevated') ||
-    (isAdmin() && status.settings.pending.length > 0);
+    (isElevated && status.settings.pending.length > 0);
   const delayMs = startedHidden && !explicitIntent ? 3 * 60_000 : 0;
   void scheduler.catchUp({ explicitIntent, delayMs });
 
@@ -424,11 +421,14 @@ async function bootstrap(): Promise<void> {
     return;
   }
 
+  // Verifica privilégios de admin de forma assíncrona para não bloquear o boot.
+  const elevated = await isAdminAsync();
+
   // A instância elevada que assumiu o lugar da anterior também é dona do
   // estado: escreve seu pid para o próximo handover.
   writeInstanceInfo({
     pid: process.pid,
-    elevated: isAdmin(),
+    elevated,
     startedAt: new Date().toISOString(),
   });
   clearHandoverRequest();
@@ -467,7 +467,7 @@ async function bootstrap(): Promise<void> {
   // padrao aqui: so tocar nela ja faz o Chromium subir um processo renderer
   // (~20 MB) mesmo sem janela. O spellcheck e desligado em webPreferences.
   if (shouldCreateWindowAtBoot(process.argv)) createWindow('boot');
-  setupAutoClean();
+  setupAutoClean(elevated);
 
   // Handle elevated script execution after window is created
   handleElevatedScript();
