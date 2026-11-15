@@ -22,10 +22,6 @@ vi.mock('../hooks/use-is-script-applied', () => ({
   useIsScriptApplied: () => (script: { id: string }) => store.applied.has(script.id),
 }));
 
-// ScriptBadge (filho real) importa RISK_STYLES de ScriptCard, que puxa o tema e
-// o BatmanBackground — `Path2D` não existe no jsdom.
-vi.mock('./BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import { ScriptSectionCard } from './ScriptSectionCard';
 
 function script(id: string, name: string, overrides: Partial<ScriptEntry> = {}): ScriptEntry {

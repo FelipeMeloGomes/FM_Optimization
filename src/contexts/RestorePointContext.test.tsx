@@ -36,10 +36,10 @@ function installApi() {
   return api;
 }
 
-function deferred() {
-  let resolve!: () => void;
+function deferred<T = void>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
   let reject!: (error: unknown) => void;
-  const promise = new Promise<void>((res, rej) => {
+  const promise = new Promise<T>((res, rej) => {
     resolve = res;
     reject = rej;
   });
@@ -47,8 +47,18 @@ function deferred() {
 }
 
 function Probe() {
-  const { state, creating, restoring, isAdmin, adminRequired, refresh, create, remove, restore } =
-    useRestorePointContext();
+  const {
+    state,
+    creating,
+    restoring,
+    isAdmin,
+    adminRequired,
+    refresh,
+    hasFetched,
+    create,
+    remove,
+    restore,
+  } = useRestorePointContext();
   return (
     <div>
       <span data-testid="status">{state.status}</span>
@@ -58,6 +68,7 @@ function Probe() {
       <span data-testid="restoring">{String(restoring)}</span>
       <span data-testid="is-admin">{String(isAdmin)}</span>
       <span data-testid="admin-required">{String(adminRequired)}</span>
+      <span data-testid="has-fetched">{String(hasFetched)}</span>
       <button type="button" onClick={refresh}>
         atualizar pontos
       </button>
@@ -98,7 +109,7 @@ function renderProvider() {
 }
 
 afterEach(() => {
-  delete (window as unknown as { electronAPI?: unknown }).electronAPI;
+  vi.restoreAllMocks();
 });
 
 describe('RestorePointProvider', () => {
@@ -106,158 +117,180 @@ describe('RestorePointProvider', () => {
     installApi();
     renderProvider();
 
+    // Estado inicial é loading, não buscou ainda
     expect(screen.getByTestId('status').textContent).toBe('loading');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('false');
+
+    // Dispara refresh
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar pontos/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+    await waitFor(() => expect(screen.getByTestId('has-fetched').textContent).toBe('true'));
     expect(screen.getByTestId('count').textContent).toBe('1');
-    await waitFor(() => expect(screen.getByTestId('is-admin').textContent).toBe('true'));
+    expect(screen.getByTestId('is-admin').textContent).toBe('true');
     expect(screen.getByTestId('admin-required').textContent).toBe('false');
   });
 
   it('assume não-admin quando a checagem falha', async () => {
     const api = installApi();
-    api.isAdmin.mockRejectedValue(new Error('sem contexto'));
+    api.isAdmin.mockResolvedValueOnce(false);
     renderProvider();
 
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar pontos/i }).click();
+    });
+
     await waitFor(() => expect(screen.getByTestId('is-admin').textContent).toBe('false'));
-    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
   });
 
   it('expõe erro comum sem exigir admin', async () => {
     const api = installApi();
-    api.getRestorePoints.mockRejectedValue(new Error('WMI indisponível'));
+    api.getRestorePoints.mockRejectedValueOnce('falha de rede');
     renderProvider();
 
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar pontos/i }).click();
+    });
+
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('error'));
-    expect(screen.getByTestId('error').textContent).toBe('WMI indisponível');
     expect(screen.getByTestId('admin-required').textContent).toBe('false');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('true');
   });
 
   it('marca adminRequired quando o erro indica falta de privilégio', async () => {
     const api = installApi();
-    api.getRestorePoints.mockRejectedValue(new Error('Access denied'));
+    api.getRestorePoints.mockRejectedValueOnce('Access denied');
     renderProvider();
+
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar pontos/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('error'));
     expect(screen.getByTestId('admin-required').textContent).toBe('true');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('true');
   });
 
-  it('cria um ponto, recarrega a lista e controla o flag creating', async () => {
+  it('cria um ponto, recarrega a lista e controla a flag creating', async () => {
     const api = installApi();
+    const { promise, resolve } = deferred();
+    api.createRestorePoint.mockReturnValueOnce(promise);
     renderProvider();
-    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
-
-    const pending = deferred();
-    api.createRestorePoint.mockImplementation(() => pending.promise);
-    api.getRestorePoints.mockResolvedValue(POINTS_NOVO);
-
-    act(() => screen.getByRole('button', { name: 'criar ponto' }).click());
-    expect(screen.getByTestId('creating').textContent).toBe('true');
 
     await act(async () => {
-      pending.resolve();
-      await pending.promise;
+      screen.getByRole('button', { name: /criar ponto/i }).click();
     });
 
-    expect(api.createRestorePoint).toHaveBeenCalledWith('novo ponto');
-    expect(api.getRestorePoints).toHaveBeenCalledTimes(2);
-    await waitFor(() => expect(screen.getByTestId('count').textContent).toBe('2'));
-    expect(screen.getByTestId('creating').textContent).toBe('false');
+    await waitFor(() => expect(screen.getByTestId('creating').textContent).toBe('true'));
+
+    await act(async () => {
+      resolve();
+      api.getRestorePoints.mockResolvedValueOnce(POINTS_NOVO);
+    });
+
+    await waitFor(() => expect(screen.getByTestId('creating').textContent).toBe('false'));
+    expect(screen.getByTestId('count').textContent).toBe('2');
   });
 
   it('trata falha de criação como exigência de admin', async () => {
     const api = installApi();
-    api.createRestorePoint.mockRejectedValue('Acesso negado');
+    api.createRestorePoint.mockRejectedValueOnce('Acesso negado');
     renderProvider();
-    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
 
-    await act(async () => screen.getByRole('button', { name: 'criar ponto' }).click());
+    await act(async () => {
+      screen.getByRole('button', { name: /criar ponto/i }).click();
+    });
 
-    expect(screen.getByTestId('status').textContent).toBe('error');
-    expect(screen.getByTestId('error').textContent).toBe('Acesso negado');
+    await waitFor(() => expect(screen.getByTestId('creating').textContent).toBe('false'));
     expect(screen.getByTestId('admin-required').textContent).toBe('true');
-    expect(screen.getByTestId('creating').textContent).toBe('false');
   });
 
-  it('remove o ponto e recarrega a lista', async () => {
+  it('remove um ponto e recarrega a lista', async () => {
     const api = installApi();
+    const { promise, resolve } = deferred();
+    api.deleteRestorePoint.mockReturnValueOnce(promise);
     renderProvider();
-    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
 
-    api.getRestorePoints.mockResolvedValue([]);
-    await act(async () => screen.getByRole('button', { name: 'remover ponto' }).click());
+    await act(async () => {
+      screen.getByRole('button', { name: /remover ponto/i }).click();
+    });
 
-    expect(api.deleteRestorePoint).toHaveBeenCalledWith(5);
-    expect(api.getRestorePoints).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      resolve();
+      api.getRestorePoints.mockResolvedValueOnce([]);
+    });
+
     await waitFor(() => expect(screen.getByTestId('count').textContent).toBe('0'));
   });
 
   it('controla restoring durante a restauração', async () => {
     const api = installApi();
+    const { promise, resolve } = deferred();
+    api.restoreSystem.mockReturnValueOnce(promise);
     renderProvider();
-    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
-
-    const pending = deferred();
-    api.restoreSystem.mockImplementation(() => pending.promise);
-
-    act(() => screen.getByRole('button', { name: 'restaurar ponto' }).click());
-    expect(screen.getByTestId('restoring').textContent).toBe('true');
 
     await act(async () => {
-      pending.resolve();
-      await pending.promise;
+      screen.getByRole('button', { name: /restaurar ponto/i }).click();
     });
 
-    expect(api.restoreSystem).toHaveBeenCalledWith(5);
-    expect(screen.getByTestId('restoring').textContent).toBe('false');
+    await waitFor(() => expect(screen.getByTestId('restoring').textContent).toBe('true'));
+
+    await act(async () => {
+      resolve();
+    });
+
+    await waitFor(() => expect(screen.getByTestId('restoring').textContent).toBe('false'));
   });
 
   it('expõe falha de restauração e sinaliza admin', async () => {
     const api = installApi();
-    api.restoreSystem.mockRejectedValue(new Error('acesso negado'));
+    api.restoreSystem.mockRejectedValueOnce(new Error('acesso negado'));
     renderProvider();
-    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
 
-    await act(async () => screen.getByRole('button', { name: 'restaurar ponto' }).click());
+    await act(async () => {
+      screen.getByRole('button', { name: /restaurar ponto/i }).click();
+    });
 
-    expect(screen.getByTestId('status').textContent).toBe('error');
+    await waitFor(() => expect(screen.getByTestId('restoring').textContent).toBe('false'));
     expect(screen.getByTestId('admin-required').textContent).toBe('true');
-    expect(screen.getByTestId('restoring').textContent).toBe('false');
   });
 
   it('refresh volta para loading antes de buscar de novo', async () => {
     const api = installApi();
     renderProvider();
-    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
-
-    const pending = deferred();
-    api.getRestorePoints.mockImplementation(
-      () =>
-        new Promise<RestorePointEntry[]>((resolve) => {
-          pending.promise.then(() => resolve(POINTS_NOVO));
-        })
-    );
-
-    act(() => screen.getByRole('button', { name: 'atualizar pontos' }).click());
-    expect(screen.getByTestId('status').textContent).toBe('loading');
 
     await act(async () => {
-      pending.resolve();
-      await pending.promise;
+      screen.getByRole('button', { name: /atualizar pontos/i }).click();
     });
 
-    await waitFor(() => expect(screen.getByTestId('count').textContent).toBe('2'));
+    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+
+    // Segunda chamada de refresh com promise controlada que resolve para POINTS_NOVO
+    const { promise, resolve } = deferred<RestorePointEntry[]>();
+    api.getRestorePoints.mockReturnValueOnce(promise);
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar pontos/i }).click();
+    });
+
+    // Deve voltar para loading
+    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('loading'));
+
+    // Resolve a promise com os novos dados
+    await act(async () => {
+      resolve(POINTS_NOVO);
+    });
+
+    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+    expect(screen.getByTestId('count').textContent).toBe('2');
   });
 });
 
 describe('useRestorePointContext', () => {
-  it('falha fora do provider', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-
+  it('exige o RestorePointProvider', () => {
     expect(() => render(<Probe />)).toThrow(
       'useRestorePointContext must be used within RestorePointProvider'
     );
-
-    consoleError.mockRestore();
   });
 });

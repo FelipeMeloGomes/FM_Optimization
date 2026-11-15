@@ -13,8 +13,6 @@ vi.mock('../contexts/HistoryContext', () => ({
   useHistoryContext: () => ({ state: store.state }),
 }));
 
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import HistoryPage from './HistoryPage';
 
 const store = vi.hoisted<{ state: AsyncState<ExecutionHistoryEntry[]> }>(() => ({

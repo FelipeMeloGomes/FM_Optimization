@@ -27,8 +27,6 @@ vi.mock('../hooks/use-is-script-applied', () => ({
   useIsScriptApplied: () => () => false,
 }));
 
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import DebloatPage from './DebloatPage';
 
 const store = vi.hoisted<{ page: AsyncState<ScriptEntry[]>; scripts: ScriptEntry[] }>(() => ({

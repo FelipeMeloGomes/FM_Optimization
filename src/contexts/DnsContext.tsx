@@ -125,30 +125,8 @@ export function DnsProvider({ children }: { children: ReactNode }) {
     let cleanupResult: (() => void) | undefined;
     fetchNetworkInfo().then((info) => {
       if (info) {
-        const providers = DNS_PROVIDERS.filter((p) => !p.isDhcp).map((p) => ({
-          primary: p.primary,
-          secondary: p.secondary,
-        }));
-        setBenchmarkStatus('loading');
-        setBenchmarkProgress({ current: 0, total: providers.length });
-
-        cleanupProgress = window.electronAPI.onBenchmarkProgress((progress) => {
-          setBenchmarkProgress(progress);
-        });
-        cleanupResult = window.electronAPI.onBenchmarkResult((result) => {
-          setBenchmarks((prev) => {
-            const next = new Map(prev);
-            next.set(result.address, result);
-            return next;
-          });
-        });
-
-        window.electronAPI
-          .benchmarkDns(providers)
-          .then(() => {
-            setBenchmarkStatus('done');
-          })
-          .catch(() => setBenchmarkStatus('done'));
+        // Do NOT auto-run benchmark on mount - only when user clicks "Run Benchmark"
+        // This avoids unnecessary PowerShell spawns on every page visit
       }
     });
     return () => {

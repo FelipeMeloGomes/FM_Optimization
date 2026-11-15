@@ -401,11 +401,6 @@ export function listEmulatorInstances(emulatorId: string): AdbInstance[] {
   });
 }
 
-export function initAdbPath(): string {
-  if (!adbPath) adbPath = detectAdbPath();
-  return adbPath;
-}
-
 export function setAdbPath(path: string): void {
   adbPath = path;
 }
@@ -778,23 +773,6 @@ export async function backupApp(
     await execAdb(['-s', serial, 'pull', paths[i], local], 600_000);
   }
   return resolve(dir, `${packageName}.apk`);
-}
-
-export async function restoreApp(serial: string, apkPath: string): Promise<void> {
-  await execAdb(['-s', serial, 'install', '-r', apkPath]);
-}
-
-export async function restoreAppByName(
-  serial: string,
-  instanceId: string,
-  packageName: string
-): Promise<void> {
-  const rec = getRemovedAppsStore()
-    .listRemovedApps()
-    .find((r) => r.packageName === packageName);
-  if (!rec) throw new Error(`Nenhum registro de remoção para ${packageName}`);
-  assertRestoreAllowed(rec, instanceId);
-  await restoreRemovedApp(serial, instanceId, packageName);
 }
 
 function toRemovedAppInfo(rec: RemovedAppRecord): RemovedApp {

@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useRef, useState } from 'react';
 import type { AsyncState, RestorePointEntry } from '../../electron/shared/ipc-types';
 
 interface RestorePointContextValue {
@@ -8,6 +8,7 @@ interface RestorePointContextValue {
   isAdmin: boolean;
   adminRequired: boolean;
   refresh: () => void;
+  hasFetched: boolean;
   create: (name: string) => Promise<void>;
   remove: (seq: number) => Promise<void>;
   restore: (seq: number) => Promise<void>;
@@ -26,16 +27,26 @@ export function RestorePointProvider({ children }: { children: ReactNode }) {
   const [restoring, setRestoring] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminRequired, setAdminRequired] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
+  const fetchRef = useRef(false);
 
   const refresh = useCallback(() => {
+    if (fetchRef.current) return;
+    fetchRef.current = true;
+    setHasFetched(true);
     setState({ status: 'loading' });
-    window.electronAPI
-      .getRestorePoints()
-      .then((data) => setState({ status: 'success', data }))
+    Promise.all([window.electronAPI.getRestorePoints(), window.electronAPI.isAdmin()])
+      .then(([data, admin]) => {
+        setState({ status: 'success', data });
+        setIsAdmin(admin);
+      })
       .catch((e) => {
         const admin = isAdminRequiredError(e);
         setAdminRequired(admin);
         setState({ status: 'error', error: typeof e === 'string' ? e : (e as Error).message });
+      })
+      .finally(() => {
+        fetchRef.current = false;
       });
   }, []);
 
@@ -76,29 +87,25 @@ export function RestorePointProvider({ children }: { children: ReactNode }) {
     [refresh]
   );
 
-  const restore = useCallback(async (seq: number) => {
-    setRestoring(true);
-    try {
-      await window.electronAPI.restoreSystem(seq);
-    } catch (e) {
-      const admin = isAdminRequiredError(e);
-      setAdminRequired(admin);
-      setState({
-        status: 'error',
-        error: typeof e === 'string' ? e : 'Falha ao restaurar sistema',
-      });
-    } finally {
-      setRestoring(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.electronAPI
-      .isAdmin()
-      .then(setIsAdmin)
-      .catch(() => setIsAdmin(false));
-    refresh();
-  }, [refresh]);
+  const restore = useCallback(
+    async (seq: number) => {
+      setRestoring(true);
+      try {
+        await window.electronAPI.restoreSystem(seq);
+        await refresh();
+      } catch (e) {
+        const admin = isAdminRequiredError(e);
+        setAdminRequired(admin);
+        setState({
+          status: 'error',
+          error: typeof e === 'string' ? e : 'Falha ao restaurar o sistema',
+        });
+      } finally {
+        setRestoring(false);
+      }
+    },
+    [refresh]
+  );
 
   return (
     <RestorePointContext.Provider
@@ -109,6 +116,7 @@ export function RestorePointProvider({ children }: { children: ReactNode }) {
         isAdmin,
         adminRequired,
         refresh,
+        hasFetched,
         create,
         remove,
         restore,

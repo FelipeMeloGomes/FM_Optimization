@@ -20,10 +20,6 @@ vi.mock('../hooks/use-is-script-applied', () => ({
     script.id !== undefined && store.applied.has(script.id),
 }));
 
-// ConfirmDialog importa RISK_STYLES de ScriptCard, que puxa o SettingsContext e
-// o BatmanBackground — `Path2D` não existe no jsdom.
-vi.mock('./BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import { ConfirmDialog } from './ConfirmDialog';
 
 interface Item {

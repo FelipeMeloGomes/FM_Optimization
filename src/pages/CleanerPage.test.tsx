@@ -46,8 +46,6 @@ vi.mock('../contexts/AutoCleanContext', () => ({
   useAutoCleanContext: () => store.autoClean,
 }));
 
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import CleanerPage from './CleanerPage';
 
 let store: {

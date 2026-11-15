@@ -1,5 +1,5 @@
 import { AlertTriangle, Cpu } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { ScriptSectionCard } from '../components/ScriptSectionCard';
@@ -37,9 +37,18 @@ const TONE_BADGE = {
 } as const;
 
 export default function CpuPage() {
-  const { state: cpuState } = useCpuContext();
-  const { state: memoryState } = useMemoryContext();
+  const { state: cpuState, refresh: refreshCpu, hasFetched: cpuFetched } = useCpuContext();
+  const {
+    state: memoryState,
+    refresh: refreshMemory,
+    hasFetched: memoryFetched,
+  } = useMemoryContext();
   const { effective: cpuVendor, categories, isManual, setOverride, clearOverride } = useCpuVendor();
+
+  useEffect(() => {
+    if (!cpuFetched) refreshCpu();
+    if (!memoryFetched) refreshMemory();
+  }, [cpuFetched, memoryFetched, refreshCpu, refreshMemory]);
 
   const isUnidentified = cpuVendor === 'unknown';
   const cpuModel = cpuState.status === 'success' ? cpuState.data.model : null;

@@ -103,6 +103,7 @@ export interface AppSettings {
   toastDuration: 'short' | 'medium' | 'long';
   adbPath: string | null;
   autoClean: AutoCleanSettings;
+  powerSaveMode: boolean;
 }
 
 export interface AutoCleanSettings {
@@ -176,6 +177,8 @@ export interface ScriptEnded {
   scriptName?: string;
   /** Ausente em eventos antigos; limpeza agendada tem toast próprio. */
   trigger?: 'manual' | 'scheduled';
+  /** `code: null` sozinho não distingue cancelamento de desfecho desconhecido. */
+  cancelled?: boolean;
 }
 
 export interface ExecutionHistoryEntry {
@@ -277,10 +280,6 @@ export interface RemovedApp {
   removedAt: string;
   mode: RemoveMode;
   hasBackup: boolean;
-}
-
-export interface AdbConfig {
-  adbPath: string;
 }
 
 export interface AdbChoosePathResult {
@@ -404,6 +403,7 @@ export type AsyncState<T> =
 
 export interface ElectronAPI {
   getSystemInfo(): Promise<DashboardData>;
+  getSystemInfoCache(): Promise<{ version: number; timestamp: string; data: DashboardData } | null>;
   getCpuInfo(): Promise<CpuInfo>;
   getMemoryInfo(): Promise<MemoryInfo>;
   hasSSD(): Promise<boolean>;
@@ -463,17 +463,6 @@ export interface ElectronAPI {
     arch?: string;
     packageName: string;
   }): Promise<RemoveAppResult>;
-  adbBackupApp(payload: {
-    serial: string;
-    instanceId: string;
-    packageName: string;
-  }): Promise<string>;
-  adbRestoreApp(serial: string, apkPath: string): Promise<void>;
-  adbRestoreAppByName(payload: {
-    serial: string;
-    instanceId: string;
-    packageName: string;
-  }): Promise<void>;
   adbListRemovedApps(): Promise<RemovedApp[]>;
   adbRestoreRemovedApp(payload: {
     serial: string;

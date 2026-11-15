@@ -10,21 +10,45 @@ import type {
 import { resolveCpuName } from './cpu-identity';
 import { type CpuIdentity, getCpuIdentityOnce, normalizeCpuVendor } from './cpu-vendor';
 import { formatGpuName } from './gpu-identity';
-import {
-  formatVramGb,
-  matchRegistryVram,
-  parseVideoControllers,
-  pickDedicatedGpu,
-} from './gpu-info';
+import { formatVramGb, matchRegistryVram, pickDedicatedGpu } from './gpu-info';
 import { execPowerShell } from './powershell';
 
-function formatBytes(bytes: number): string {
-  const gb = bytes / (1024 * 1024 * 1024);
-  return `${gb.toFixed(1)} GB`;
+// Cache for consolidated WMI queries
+let wmiCache: { data: ConsolidatedWmiData; expires: number } | null = null;
+let wmiCacheTtl = 5000; // 5 seconds default
+
+export function setPowerSaveMode(enabled: boolean): void {
+  wmiCacheTtl = enabled ? 300000 : 5000; // 5 minutes when power save, 5 seconds otherwise
 }
 
+interface ConsolidatedWmiData {
+  cpu?: WmiProcessor;
+  gpu?: { name: string; driverVersion: string; pnpDeviceId: string }[];
+  memory?: { type: string; slots: number; frequency: string }[];
+  os?: { caption: string; buildNumber: string; version: string; installDate: string };
+  drives?: {
+    deviceId: string;
+    volumeName: string;
+    size: number;
+    free: number;
+    fileSystem: string;
+  }[];
+  physicalDisk?: { mediaType: string }[];
+}
+
+const WMI_CONSOLIDATED_QUERY = `
+$ProgressPreference = 'SilentlyContinue'
+$cpu = Get-CimInstance Win32_Processor -Property Name,Manufacturer,Description,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed | Select-Object -First 1 | ConvertTo-Json
+$gpu = Get-CimInstance Win32_VideoController -Property Name,DriverVersion,PNPDeviceID | ConvertTo-Json -Depth 3
+$mem = Get-CimInstance Win32_PhysicalMemory -Property SMBIOSMemoryType,Speed | ConvertTo-Json -Depth 3
+$os = Get-CimInstance Win32_OperatingSystem -Property Caption,Version,BuildNumber,InstallDate | ConvertTo-Json
+$drives = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -Property DeviceID,VolumeName,Size,FreeSpace,FileSystem | Select-Object DeviceID,VolumeName,@{N="Size";E={$_.Size/1GB}},@{N="Free";E={$_.FreeSpace/1GB}},FileSystem | ConvertTo-Json -Depth 3
+$disk = Get-PhysicalDisk -Property MediaType | ConvertTo-Json -Depth 3
+@{ cpu=$cpu; gpu=$gpu; memory=$mem; os=$os; drives=$drives; physicalDisk=$disk } | ConvertTo-Json -Depth 5
+`;
+
 const WMI_CPU_QUERY =
-  'Get-CimInstance Win32_Processor | Select-Object -First 1 Name, Manufacturer, Description, NumberOfCores, NumberOfLogicalProcessors, MaxClockSpeed | ConvertTo-Json';
+  'Get-CimInstance Win32_Processor -Property Name,Manufacturer,Description,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed | Select-Object -First 1 | ConvertTo-Json';
 
 interface WmiProcessor {
   name?: string;
@@ -58,6 +82,129 @@ export function parseWmiProcessor(raw?: string): WmiProcessor {
     };
   } catch {
     return {};
+  }
+}
+
+async function fetchConsolidatedWmi(): Promise<ConsolidatedWmiData> {
+  if (wmiCache && Date.now() < wmiCache.expires) {
+    return wmiCache.data;
+  }
+
+  try {
+    const output = await execPowerShell(WMI_CONSOLIDATED_QUERY);
+    const parsed = JSON.parse(output) as ConsolidatedWmiData;
+    wmiCache = { data: parsed, expires: Date.now() + wmiCacheTtl };
+    return parsed;
+  } catch {
+    return {};
+  }
+}
+
+function parseConsolidatedGpu(
+  raw?: string
+): { name: string; driverVersion: string; pnpDeviceId: string }[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    return items
+      .filter(
+        (g: unknown): g is { Name: string; DriverVersion: string; PNPDeviceID: string } =>
+          typeof g === 'object' && g !== null && 'Name' in g && 'PNPDeviceID' in g
+      )
+      .map((g) => ({
+        name: g.Name,
+        driverVersion: g.DriverVersion,
+        pnpDeviceId: g.PNPDeviceID,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function parseConsolidatedMemory(
+  raw?: string
+): { type: string; slots: number; frequency: string }[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    return items
+      .filter(
+        (m: unknown): m is { SMBIOSMemoryType: string; Speed: number } =>
+          typeof m === 'object' && m !== null && 'SMBIOSMemoryType' in m
+      )
+      .map((m) => ({
+        type: m.SMBIOSMemoryType,
+        slots: 1,
+        frequency: String(m.Speed),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function parseConsolidatedOs(
+  raw?: string
+): { caption: string; buildNumber: string; version: string; installDate: string } | undefined {
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      caption: parsed.Caption || '',
+      buildNumber: parsed.BuildNumber || '',
+      version: parsed.Version || '',
+      installDate: parsed.InstallDate || '',
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function parseConsolidatedDrives(
+  raw?: string
+): { deviceId: string; volumeName: string; size: number; free: number; fileSystem: string }[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    return items
+      .filter(
+        (
+          d: unknown
+        ): d is {
+          DeviceID: string;
+          VolumeName: string;
+          Size: number;
+          Free: number;
+          FileSystem: string;
+        } => typeof d === 'object' && d !== null && 'DeviceID' in d
+      )
+      .map((d) => ({
+        deviceId: d.DeviceID,
+        volumeName: d.VolumeName,
+        size: d.Size,
+        free: d.Free,
+        fileSystem: d.FileSystem,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function parseConsolidatedPhysicalDisk(raw?: string): { mediaType: string }[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    return items
+      .filter(
+        (d: unknown): d is { MediaType: string } =>
+          typeof d === 'object' && d !== null && 'MediaType' in d
+      )
+      .map((d) => ({ mediaType: d.MediaType }));
+  } catch {
+    return [];
   }
 }
 
@@ -129,9 +276,18 @@ export async function getCpuInfo(): Promise<CpuInfo> {
   const cpu = cpus()[0];
   const logicalCount = cpus().length;
 
-  const [identity, cpuDetail, usageOutput] = await Promise.all([
+  // Try to get WMI data from consolidated cache first
+  const wmiData = await fetchConsolidatedWmi();
+  const cpuDetail = wmiData.cpu ? JSON.stringify(wmiData.cpu) : '';
+
+  // If no WMI data, fall back to individual query
+  let finalCpuDetail = cpuDetail;
+  if (!cpuDetail) {
+    finalCpuDetail = await execPowerShell(WMI_CPU_QUERY).catch(() => '');
+  }
+
+  const [identity, usageOutput] = await Promise.all([
     getCpuIdentityOnce(),
-    execPowerShell(WMI_CPU_QUERY).catch(() => ''),
     execPowerShell(
       '$cpu = Get-Counter "\\Processor(_Total)\\% Processor Time"; [math]::Round($cpu.CounterSamples.CookedValue)'
     ).catch(() => ''),
@@ -142,7 +298,7 @@ export async function getCpuInfo(): Promise<CpuInfo> {
   return buildCpuInfo({
     osModel: cpu?.model,
     logicalCount,
-    wmiRaw: cpuDetail,
+    wmiRaw: finalCpuDetail,
     identity,
     architecture: arch(),
     usage,
@@ -153,10 +309,18 @@ const REGISTRY_VRAM_CMD =
   "$base='HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}'; 0..9 | ForEach-Object { $p = Get-ItemProperty (Join-Path $base ('000' + $_)) -ErrorAction SilentlyContinue; if ($p.MatchingDeviceId -and $null -ne $p.'HardwareInformation.qwMemorySize') { ($p.MatchingDeviceId + '|' + $p.'HardwareInformation.qwMemorySize') } }";
 
 export async function getGpuInfo(): Promise<GpuInfo> {
-  const [output, nvidiaVram, registryVramRaw, nvidiaSmi] = await Promise.all([
-    execPowerShell(
-      'Get-CimInstance Win32_VideoController | Select-Object Name,DriverVersion,PNPDeviceID | ConvertTo-Json -Depth 3'
-    ).catch(() => ''),
+  // Try consolidated WMI first
+  const wmiData = await fetchConsolidatedWmi();
+  let output = wmiData.gpu && Array.isArray(wmiData.gpu) ? JSON.stringify(wmiData.gpu) : '';
+
+  // Fallback to individual query if consolidated failed
+  if (!output) {
+    output = await execPowerShell(
+      'Get-CimInstance Win32_VideoController -Property Name,DriverVersion,PNPDeviceID | ConvertTo-Json -Depth 3'
+    ).catch(() => '');
+  }
+
+  const [nvidiaVram, registryVramRaw, nvidiaSmi] = await Promise.all([
     execPowerShell(
       'nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>$null'
     ).catch(() => ''),
@@ -166,9 +330,16 @@ export async function getGpuInfo(): Promise<GpuInfo> {
     ).catch(() => ''),
   ]);
 
-  if (!output) return { name: 'N/A', vram: 'N/A', driverVersion: 'N/A', usage: 0 };
+  const gpuList = parseConsolidatedGpu(output);
+  if (gpuList.length === 0) return { name: 'N/A', vram: 'N/A', driverVersion: 'N/A', usage: 0 };
 
-  const gpu = pickDedicatedGpu(parseVideoControllers(output));
+  const gpu = pickDedicatedGpu(
+    gpuList.map((g) => ({
+      name: g.name,
+      driverVersion: g.driverVersion,
+      pnpDeviceId: g.pnpDeviceId,
+    }))
+  );
   const name = formatGpuName(gpu?.name);
   const driverVersion = gpu?.driverVersion || 'N/A';
 
@@ -183,7 +354,7 @@ export async function getGpuInfo(): Promise<GpuInfo> {
     } else {
       const escapedId = gpu.pnpDeviceId.replace(/'/g, "''");
       const adapterRam = await execPowerShell(
-        `(Get-CimInstance Win32_VideoController -Filter "PNPDeviceID='${escapedId}'").AdapterRAM`
+        `(Get-CimInstance Win32_VideoController -Filter "PNPDeviceID='${escapedId}'" -Property AdapterRAM).AdapterRAM`
       ).catch(() => '');
       if (adapterRam) {
         const val = parseInt(adapterRam.trim(), 10);
@@ -214,15 +385,39 @@ export async function getMemoryInfo(): Promise<MemoryInfo> {
   const free = freemem();
   const used = total - free;
 
-  const [typeOutput, slotsOutput, freqOutput] = await Promise.all([
-    execPowerShell(
-      '(Get-CimInstance Win32_PhysicalMemory | Select-Object -First 1).SMBIOSMemoryType'
-    ).catch(() => ''),
-    execPowerShell('(Get-CimInstance Win32_PhysicalMemory | Measure-Object).Count').catch(() => ''),
-    execPowerShell('(Get-CimInstance Win32_PhysicalMemory | Select-Object -First 1).Speed').catch(
-      () => ''
-    ),
-  ]);
+  // Try consolidated WMI first
+  const wmiData = await fetchConsolidatedWmi();
+  let typeOutput = '';
+  let slotsOutput = '';
+  let freqOutput = '';
+
+  if (wmiData.memory && Array.isArray(wmiData.memory) && wmiData.memory.length > 0) {
+    const mem = wmiData.memory[0];
+    // Ensure mem is an object with expected properties
+    if (mem && typeof mem === 'object' && 'SMBIOSMemoryType' in mem) {
+      typeOutput = String(mem.type ?? '');
+      slotsOutput = String(wmiData.memory.length);
+      freqOutput = String(mem.frequency ?? '');
+    } else {
+      // Fall through to individual queries
+      typeOutput = '';
+      slotsOutput = '';
+      freqOutput = '';
+    }
+  } else {
+    // Fallback to individual queries
+    [typeOutput, slotsOutput, freqOutput] = await Promise.all([
+      execPowerShell(
+        '(Get-CimInstance Win32_PhysicalMemory -Property SMBIOSMemoryType | Select-Object -First 1).SMBIOSMemoryType'
+      ).catch(() => ''),
+      execPowerShell(
+        '(Get-CimInstance Win32_PhysicalMemory -Property Speed | Measure-Object).Count'
+      ).catch(() => ''),
+      execPowerShell(
+        '(Get-CimInstance Win32_PhysicalMemory -Property Speed | Select-Object -First 1).Speed'
+      ).catch(() => ''),
+    ]);
+  }
 
   const typeMap: Record<string, string> = {
     '20': 'DDR',
@@ -246,25 +441,33 @@ export async function getMemoryInfo(): Promise<MemoryInfo> {
 }
 
 export async function getOsInfo(): Promise<OsInfo> {
-  const output = await execPowerShell(
-    'Get-CimInstance Win32_OperatingSystem | Select-Object Caption,Version,BuildNumber,InstallDate | ConvertTo-Json -Depth 3'
-  ).catch(() => '');
+  // Try consolidated WMI first
+  const wmiData = await fetchConsolidatedWmi();
+  let osInfo = wmiData.os;
+
+  // Validate osInfo has expected properties
+  if (!osInfo || typeof osInfo !== 'object' || !('Caption' in osInfo)) {
+    osInfo = undefined;
+  }
+
+  if (!osInfo) {
+    // Fallback to individual query
+    const output = await execPowerShell(
+      'Get-CimInstance Win32_OperatingSystem -Property Caption,Version,BuildNumber,InstallDate | ConvertTo-Json -Depth 3'
+    ).catch(() => '');
+    osInfo = parseConsolidatedOs(output) || undefined;
+  }
 
   let name = `${type()} ${release()}`;
   let build = release();
   let edition = version();
   let installDate = '';
 
-  if (output) {
-    try {
-      const parsed = JSON.parse(output);
-      if (parsed.Caption) name = parsed.Caption;
-      if (parsed.BuildNumber) build = parsed.BuildNumber;
-      if (parsed.Version) edition = parsed.Version;
-      if (parsed.InstallDate) installDate = parsed.InstallDate;
-    } catch {
-      /* use defaults */
-    }
+  if (osInfo) {
+    if (osInfo.caption) name = osInfo.caption;
+    if (osInfo.buildNumber) build = osInfo.buildNumber;
+    if (osInfo.version) edition = osInfo.version;
+    if (osInfo.installDate) installDate = osInfo.installDate;
   }
 
   return { name, version: release(), build, edition, installDate };
@@ -279,41 +482,54 @@ interface RawDriveInfo {
 }
 
 export async function getStorageDrives(): Promise<StorageDrive[]> {
-  const output = await execPowerShell(
-    'Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" | Select-Object DeviceID,VolumeName,@{N="Size";E={$_.Size/1GB}},@{N="Free";E={$_.FreeSpace/1GB}},FileSystem | ConvertTo-Json -Depth 3'
-  ).catch(() => '');
-  if (!output) return [];
+  // Try consolidated WMI first
+  const wmiData = await fetchConsolidatedWmi();
+  let drives = wmiData.drives;
 
-  try {
-    const parsed = JSON.parse(output);
-    const items: RawDriveInfo[] = Array.isArray(parsed) ? parsed : [parsed];
-    return items.map((d) => {
-      const size = d.Size || 0;
-      const free = d.Free || 0;
-      const usedPercent = size > 0 ? Math.round(((size - free) / size) * 100) : 0;
-      return {
-        letter: d.DeviceID || '',
-        label: d.VolumeName || '',
-        size: d.Size ? `${Math.round(d.Size)} GB` : 'N/A',
-        free: d.Free ? `${Math.round(d.Free)} GB` : 'N/A',
-        usedPercent,
-        type: d.FileSystem || '',
-      };
-    });
-  } catch {
-    return [];
+  if (!drives || !Array.isArray(drives) || drives.length === 0) {
+    // Fallback to individual query
+    const output = await execPowerShell(
+      'Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -Property DeviceID,VolumeName,Size,FreeSpace,FileSystem | Select-Object DeviceID,VolumeName,@{N="Size";E={$_.Size/1GB}},@{N="Free";E={$_.FreeSpace/1GB}},FileSystem | ConvertTo-Json -Depth 3'
+    ).catch(() => '');
+    drives = parseConsolidatedDrives(output);
   }
+
+  return drives.map((d) => {
+    const size = d.size || 0;
+    const free = d.free || 0;
+    const usedPercent = size > 0 ? Math.round(((size - free) / size) * 100) : 0;
+    return {
+      letter: d.deviceId || '',
+      label: d.volumeName || '',
+      size: d.size ? `${Math.round(d.size)} GB` : 'N/A',
+      free: d.free ? `${Math.round(d.free)} GB` : 'N/A',
+      usedPercent,
+      type: d.fileSystem || '',
+    };
+  });
 }
 
 export async function hasSolidStateDrive(): Promise<boolean> {
-  const output = await execPowerShell(
-    '(Get-PhysicalDisk | Where-Object MediaType -eq "SSD" | Measure-Object).Count'
-  ).catch(() => '');
-  const count = Number.parseInt(output.trim(), 10);
-  return Number.isFinite(count) && count > 0;
+  // Try consolidated WMI first
+  const wmiData = await fetchConsolidatedWmi();
+  const physicalDisks = wmiData.physicalDisk;
+
+  if (!physicalDisks || !Array.isArray(physicalDisks) || physicalDisks.length === 0) {
+    // Fallback to individual query
+    const output = await execPowerShell(
+      '(Get-PhysicalDisk | Where-Object MediaType -eq "SSD" | Measure-Object).Count'
+    ).catch(() => '');
+    const count = Number.parseInt(output.trim(), 10);
+    return Number.isFinite(count) && count > 0;
+  }
+
+  return physicalDisks.some((d) => d.mediaType === 'SSD');
 }
 
 export async function getSystemInfo(): Promise<DashboardData> {
+  // Fetch consolidated WMI once for all sub-queries
+  await fetchConsolidatedWmi();
+
   const [cpu, gpu, memory, os, drives] = await Promise.all([
     getCpuInfo(),
     getGpuInfo(),
@@ -323,4 +539,9 @@ export async function getSystemInfo(): Promise<DashboardData> {
   ]);
 
   return { cpu, gpu, memory, os, drives, uptime: Math.floor(uptime()) };
+}
+
+function formatBytes(bytes: number): string {
+  const gb = bytes / (1024 * 1024 * 1024);
+  return `${gb.toFixed(1)} GB`;
 }

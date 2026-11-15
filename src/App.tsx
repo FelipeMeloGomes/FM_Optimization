@@ -9,6 +9,7 @@ import { ScriptProvider } from './contexts/ScriptContext';
 import { ScriptExecutionProvider } from './contexts/ScriptExecutionContext';
 import { SettingsProvider, useSettingsContext } from './contexts/SettingsContext';
 import { CpuProvider, MemoryProvider, SystemProvider } from './contexts/SystemContext';
+import { useLastRoute } from './hooks/use-last-route';
 import { AppLayout } from './layout/AppLayout';
 import { composeProviders } from './lib/compose-providers';
 import { isPageLocked } from './lib/page-lock';
@@ -43,9 +44,21 @@ const AllProviders = composeProviders(
   AutoCleanProvider
 );
 
+const ROUTE_PATHS = ROUTES.map((route) => route.path);
+
+/**
+ * Restaura a rota da sessão anterior. Não renderiza nada: existe só para dar
+ * contexto de router ao hook.
+ */
+function RouteMemory() {
+  useLastRoute(ROUTE_PATHS);
+  return null;
+}
+
 export default function App() {
   return (
     <AllProviders>
+      <RouteMemory />
       <Suspense fallback={<PageLoader />}>
         <ErrorBoundary>
           <Routes>

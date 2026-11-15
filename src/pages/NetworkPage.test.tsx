@@ -35,8 +35,6 @@ vi.mock('../contexts/HistoryContext', () => ({
   useHistoryContext: () => ({ state: { status: 'success', data: [] } }),
 }));
 
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import NetworkPage from './NetworkPage';
 
 const store: {

@@ -3,11 +3,13 @@ import { join, resolve } from 'node:path';
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, dialog, Menu, Notification, powerMonitor, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import type { AutoCleanStatus } from '../shared/ipc-types';
 import { appState } from './app-state';
 import { registerIpcHandlers } from './ipc-handlers';
 import { resolveScriptId } from './legacy-script-ids';
-import { isAdmin } from './services/admin-check';
+import { isAdmin, isAdminAsync } from './services/admin-check';
 import { getAutoCleanScheduler } from './services/auto-clean';
+import { loadSettings } from './services/data-service';
 import { executeScript } from './services/script-executor';
 import { loadScripts } from './services/script-registry';
 import {
@@ -21,8 +23,18 @@ import {
   writeHandoverRequest,
   writeInstanceInfo,
 } from './services/single-instance';
+import { setPowerSaveMode } from './services/system-info';
 import { destroyTray, ensureTray, isTrayActive, refreshTray } from './tray';
 import { DnsAddressesSchema } from './validation';
+import {
+  applyChromiumBackgroundSwitches,
+  applyPowerSaveSwitches,
+  canFocus,
+  resolveCloseAction,
+  shouldCreateWindowAtBoot,
+  shouldShowWindow,
+  type WindowMode,
+} from './window-policy';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -30,6 +42,26 @@ export { mainWindow };
 
 const startedHidden = process.argv.includes('--hidden');
 const waitPidArg = readNumericArg(process.argv, '--wait-pid');
+
+// Carrega settings cedo para aplicar flags de power save antes do app.whenReady()
+let powerSaveMode = false;
+try {
+  const settings = loadSettings();
+  powerSaveMode = settings.powerSaveMode ?? false;
+} catch {
+  /* settings não disponível ainda, usa padrão */
+}
+
+// Configura TTL do cache WMI baseado no modo economia
+setPowerSaveMode(powerSaveMode);
+
+// O Chromium lê a command line uma única vez, no boot.
+applyChromiumBackgroundSwitches(app.commandLine);
+
+// Aplica flags de power save mode antes do app.whenReady()
+if (powerSaveMode) {
+  applyPowerSaveSwitches(app.commandLine);
+}
 
 // Valida que o scriptId pertence à allowlist de scripts conhecidos.
 function isValidScriptId(scriptId: string): boolean {
@@ -51,7 +83,7 @@ function handleElevatedScript(): boolean {
     const currentId = resolveScriptId(scriptId);
     // Wait a bit for window to be ready, then execute
     setTimeout(() => {
-      if (mainWindow) {
+      if (canFocus(mainWindow)) {
         try {
           executeScript(currentId);
         } catch (e) {
@@ -81,7 +113,7 @@ function handleElevatedScript(): boolean {
         return true;
       }
       setTimeout(() => {
-        if (mainWindow) {
+        if (canFocus(mainWindow)) {
           try {
             applyDnsElevated(interfaceIndex, parsed.data);
           } catch (e) {
@@ -126,14 +158,27 @@ function iconPath(): string {
 }
 
 function sendToRenderer(channel: string, ...args: unknown[]): void {
-  mainWindow?.webContents.send(channel, ...args);
+  if (!canFocus(mainWindow)) return;
+  mainWindow.webContents.send(channel, ...args);
 }
 
 function focusMainWindow(): void {
-  if (!mainWindow) return;
+  if (!canFocus(mainWindow)) return;
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.show();
   mainWindow.focus();
+}
+
+/**
+ * Porta de entrada única da janela: a bandeja, a segunda instância e o evento
+ * `activate` chamam isto. Se a janela foi destruída ao fechar, recria.
+ */
+function openMainWindow(): void {
+  if (!canFocus(mainWindow)) {
+    createWindow('on-demand');
+    return;
+  }
+  focusMainWindow();
 }
 
 /**
@@ -226,14 +271,12 @@ function setupAutoUpdater(): void {
     owner: 'FelipeMeloGomes',
     repo: 'FM_Optimization',
   });
-
-  if (app.isPackaged) {
-    autoUpdater.checkForUpdates();
-  }
+  // Check de atualização só manual via botão em Configurações.
 }
 
-function createWindow(): void {
-  mainWindow = new BrowserWindow({
+function createWindow(mode: WindowMode): void {
+  const showOnReady = shouldShowWindow(mode, startedHidden);
+  const window = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 960,
@@ -247,6 +290,9 @@ function createWindow(): void {
       sandbox: true,
       contextIsolation: true,
       nodeIntegration: false,
+      // O app nao tem campo de texto livre; carregar dicionarios hunspell no
+      // renderer so gastaria memoria.
+      spellcheck: false,
       // Content Security Policy
       webSecurity: true,
       allowRunningInsecureContent: false,
@@ -255,20 +301,28 @@ function createWindow(): void {
       // CSP is enforced via the webSecurity flag and the preload script
     },
   });
+  mainWindow = window;
 
-  mainWindow.on('ready-to-show', () => {
-    if (!startedHidden) mainWindow?.show();
+  window.on('ready-to-show', () => {
+    if (showOnReady) window.show();
   });
 
-  mainWindow.on('close', (event) => {
-    // Com a bandeja ativa, fechar esconde. Sem ela, fecha de verdade.
-    if (appState.isQuitting || !isTrayActive()) return;
+  window.on('close', (event) => {
+    // Com a bandeja ativa, fechar destroi a janela (libera renderer e processo
+    // GPU) e o app continua no icone. Sem bandeja, fecha de verdade.
+    if (resolveCloseAction(appState.isQuitting, isTrayActive()) !== 'destroy') return;
     event.preventDefault();
-    mainWindow?.hide();
     showTrayHintOnce();
+    window.destroy();
   });
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
+  window.on('closed', () => {
+    // Uma referencia morta quebraria focusMainWindow/sendToRenderer; o proximo
+    // clique na bandeja recria a janela do zero.
+    if (mainWindow === window) mainWindow = null;
+  });
+
+  window.webContents.setWindowOpenHandler((details) => {
     try {
       const parsed = new URL(details.url);
       if (['https:', 'http:', 'mailto:'].includes(parsed.protocol)) {
@@ -281,9 +335,9 @@ function createWindow(): void {
   });
 
   if (is.dev && process.env.ELECTRON_RENDERER_URL) {
-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
+    window.loadURL(process.env.ELECTRON_RENDERER_URL);
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+    window.loadFile(join(__dirname, '../renderer/index.html'));
   }
 }
 
@@ -326,14 +380,11 @@ function showTrayHintOnce(): void {
  * Liga o agendador, o tray e o autostart. O tray só existe com a limpeza
  * automática ligada: para quem não usa a feature, fechar continua encerrando.
  */
-function setupAutoClean(): void {
+function setupAutoClean(isElevated: boolean): void {
   const scheduler = getAutoCleanScheduler();
 
   const handlers = {
-    onOpen: () => {
-      if (!mainWindow) createWindow();
-      focusMainWindow();
-    },
+    onOpen: () => openMainWindow(),
     onRunNow: () => {
       void scheduler.runNow(scheduler.getStatus().settings.cleaners);
     },
@@ -346,39 +397,41 @@ function setupAutoClean(): void {
     },
   };
 
-  scheduler.subscribe((status) => {
+  const applyStatus = (status: AutoCleanStatus): void => {
     if (status.settings.enabled) {
       ensureTray(iconPath(), handlers);
       refreshTray(status.settings.pending.length);
       return;
     }
     destroyTray();
-    // Sem tray, uma janela escondida ficaria inalcançável.
-    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) mainWindow.show();
-  });
+    // Sem bandeja a janela é a única porta de entrada do app: recria se ela foi
+    // destruída ao fechar e mostra se estiver só escondida.
+    if (!canFocus(mainWindow)) {
+      if (!appState.isQuitting) createWindow('on-demand');
+      return;
+    }
+    if (!mainWindow.isVisible()) mainWindow.show();
+  };
+
+  scheduler.subscribe(applyStatus);
 
   scheduler.start();
   scheduler.syncLaunchAtLogin();
 
   const status = scheduler.getStatus();
-  if (status.settings.enabled) {
-    ensureTray(iconPath(), handlers);
-    refreshTray(status.settings.pending.length);
-  }
+  applyStatus(status);
 
   // Rodar pendências quando o app abre elevado: seja pelo botão do app, seja
   // quando o usuário abre o executável como administrador por conta própria.
   const explicitIntent =
     process.argv.includes('--relaunch-elevated') ||
-    (isAdmin() && status.settings.pending.length > 0);
+    (isElevated && status.settings.pending.length > 0);
   const delayMs = startedHidden && !explicitIntent ? 3 * 60_000 : 0;
   void scheduler.catchUp({ explicitIntent, delayMs });
 
   powerMonitor.on('resume', () => {
     scheduler.handleResume();
   });
-
-  if (startedHidden && !isTrayActive()) mainWindow?.show();
 }
 
 async function bootstrap(): Promise<void> {
@@ -388,11 +441,14 @@ async function bootstrap(): Promise<void> {
     return;
   }
 
+  // Verifica privilégios de admin de forma assíncrona para não bloquear o boot.
+  const elevated = await isAdminAsync();
+
   // A instância elevada que assumiu o lugar da anterior também é dona do
   // estado: escreve seu pid para o próximo handover.
   writeInstanceInfo({
     pid: process.pid,
-    elevated: isAdmin(),
+    elevated,
     startedAt: new Date().toISOString(),
   });
   clearHandoverRequest();
@@ -404,7 +460,7 @@ async function bootstrap(): Promise<void> {
   });
 
   app.on('second-instance', () => {
-    focusMainWindow();
+    void app.whenReady().then(openMainWindow);
   });
 
   const handoverWatcher = watchHandoverRequests();
@@ -425,14 +481,19 @@ async function bootstrap(): Promise<void> {
 
   registerIpcHandlers();
   setupAutoUpdater();
-  createWindow();
-  setupAutoClean();
+
+  // Com --hidden (autostart) a janela nasce so quando o usuario pedir: sem
+  // janela nao existe renderer nem processo GPU (~180 MB). Nao acesse a sessao
+  // padrao aqui: so tocar nela ja faz o Chromium subir um processo renderer
+  // (~20 MB) mesmo sem janela. O spellcheck e desligado em webPreferences.
+  if (shouldCreateWindowAtBoot(process.argv)) createWindow('boot');
+  setupAutoClean(elevated);
 
   // Handle elevated script execution after window is created
   handleElevatedScript();
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    openMainWindow();
   });
 }
 

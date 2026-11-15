@@ -1,17 +1,43 @@
-import { execSync } from 'node:child_process';
+import { type ChildProcess, spawn } from 'node:child_process';
 import type { RestorePointEntry } from '../../shared/ipc-types';
 
-function execPowerShell(script: string): string {
-  try {
+function execPowerShell(script: string, timeout = 30000): Promise<string> {
+  return new Promise((resolve, reject) => {
     const buf = Buffer.from(script, 'utf16le');
-    return execSync(`powershell.exe -NoProfile -EncodedCommand ${buf.toString('base64')}`, {
-      encoding: 'utf-8',
-      timeout: 30000,
-    }).trim();
-  } catch (e: unknown) {
-    const err = e as { stderr?: string; message?: string };
-    throw new Error(err.stderr || err.message || String(e));
-  }
+    const proc = spawn(
+      'powershell.exe',
+      ['-NoProfile', '-EncodedCommand', buf.toString('base64')],
+      {
+        timeout,
+      }
+    ) as ChildProcess;
+
+    let stdout = '';
+    let stderr = '';
+
+    proc.stdout?.setEncoding('utf-8');
+    proc.stderr?.setEncoding('utf-8');
+
+    proc.stdout?.on('data', (data: string) => {
+      stdout += data;
+    });
+    proc.stderr?.on('data', (data: string) => {
+      stderr += data;
+    });
+
+    proc.on('error', (err: Error) => {
+      reject(new Error(`Failed to spawn PowerShell: ${err.message}`));
+    });
+
+    proc.on('close', (code: number) => {
+      if (code === 0) {
+        resolve(stdout.trim());
+      } else {
+        const errMsg = stderr.trim() || `PowerShell exited with code ${code}`;
+        reject(new Error(errMsg));
+      }
+    });
+  });
 }
 
 const RESTORE_TYPES: Record<number, string> = {
@@ -22,7 +48,7 @@ const RESTORE_TYPES: Record<number, string> = {
   13: 'Cancelled Operation',
 };
 
-export function getRestorePoints(): RestorePointEntry[] {
+export async function getRestorePoints(): Promise<RestorePointEntry[]> {
   const script = `
 [Console]::OutputEncoding = [Text.Encoding]::UTF8
 $points = Get-ComputerRestorePoint
@@ -34,35 +60,40 @@ foreach ($rp in $points) {
   Write-Output ("$s|||$d|||$r|||$t")
 }
 `;
-  const output = execPowerShell(script);
-  if (!output) return [];
+  try {
+    const output = await execPowerShell(script);
+    if (!output) return [];
 
-  const items: RestorePointEntry[] = [];
-  for (const line of output.split('\n')) {
-    const cols = line.split('|||');
-    if (cols.length < 4) continue;
-    const rpt = parseInt(cols[2], 10);
-    items.push({
-      sequenceNumber: parseInt(cols[0], 10),
-      description: cols[1] || '',
-      creationTime: cols[3] || '',
-      eventType: RESTORE_TYPES[rpt] || 'Unknown',
-    });
+    const items: RestorePointEntry[] = [];
+    for (const line of output.split('\n')) {
+      const cols = line.split('|||');
+      if (cols.length < 4) continue;
+      const rpt = parseInt(cols[2], 10);
+      items.push({
+        sequenceNumber: parseInt(cols[0], 10),
+        description: cols[1] || '',
+        creationTime: cols[3] || '',
+        eventType: RESTORE_TYPES[rpt] || 'Unknown',
+      });
+    }
+    return items;
+  } catch (e: unknown) {
+    const err = e as { message?: string };
+    throw new Error(err.message || String(e));
   }
-  return items;
 }
 
-export function createRestorePoint(name: string): void {
+export async function createRestorePoint(name: string): Promise<void> {
   const safeName = name
     .replace(/[^a-zA-Z0-9 áéíóúàèìòùâêîôûãõçÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕÇ\s.:_-]/g, '')
     .trim();
   if (!safeName) throw new Error('Nome do ponto de restauração inválido');
-  execPowerShell(
+  await execPowerShell(
     `Checkpoint-Computer -Description "${safeName}" -RestorePointType MODIFY_SETTINGS`
   );
 }
 
-export function deleteRestorePoint(seq: number): void {
+export async function deleteRestorePoint(seq: number): Promise<void> {
   const script = `
 Add-Type @'
 using System;
@@ -74,14 +105,14 @@ public class SR {
 '@
 [SR]::SRRemoveRestorePoint(${seq})
 `;
-  execPowerShell(script);
+  await execPowerShell(script);
 }
 
-export function restoreSystem(seq: number): void {
+export async function restoreSystem(seq: number): Promise<void> {
   if (typeof seq !== 'number' || !Number.isFinite(seq) || seq <= 0) {
     throw new Error('SequenceNumber inválido');
   }
-  execPowerShell(
+  await execPowerShell(
     `Get-ComputerRestorePoint | Where-Object { $_.SequenceNumber -eq ${Math.floor(seq)} } | Restore-Computer -Confirm:$false -Force`
   );
 }
