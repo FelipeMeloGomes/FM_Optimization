@@ -5,6 +5,7 @@ import { app, BrowserWindow, dialog, Menu, Notification, powerMonitor, shell } f
 import { autoUpdater } from 'electron-updater';
 import type { AutoCleanStatus } from '../shared/ipc-types';
 import { appState } from './app-state';
+import { startMemoryMonitor, stopMemoryMonitor } from './devtools/memory-monitor';
 import { registerIpcHandlers } from './ipc-handlers';
 import { resolveScriptId } from './legacy-script-ids';
 import { isAdmin, isAdminAsync } from './services/admin-check';
@@ -29,6 +30,7 @@ import { DnsAddressesSchema } from './validation';
 import {
   applyChromiumBackgroundSwitches,
   applyPowerSaveSwitches,
+  applyV8HeapLimit,
   canFocus,
   resolveCloseAction,
   shouldCreateWindowAtBoot,
@@ -57,6 +59,10 @@ setPowerSaveMode(powerSaveMode);
 
 // O Chromium lê a command line uma única vez, no boot.
 applyChromiumBackgroundSwitches(app.commandLine);
+
+// Limita heap V8 (produção + dev) — precisa ser antes de app.whenReady()
+// Calibrado: renderer peak RSS ~104 MB → heap ~70 MB → limite 192 MB (2.7x headroom)
+applyV8HeapLimit(app.commandLine);
 
 // Aplica flags de power save mode antes do app.whenReady()
 if (powerSaveMode) {
@@ -320,7 +326,13 @@ function createWindow(mode: WindowMode): void {
     // Uma referencia morta quebraria focusMainWindow/sendToRenderer; o proximo
     // clique na bandeja recria a janela do zero.
     if (mainWindow === window) mainWindow = null;
+    stopMemoryMonitor();
   });
+
+  // Dev-only memory monitoring
+  if (process.env.NODE_ENV === 'development') {
+    startMemoryMonitor(window);
+  }
 
   window.webContents.setWindowOpenHandler((details) => {
     try {
