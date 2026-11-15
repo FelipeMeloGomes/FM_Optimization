@@ -225,12 +225,6 @@ const electronAPI: ElectronAPI = {
     arch?: string;
     packageName: string;
   }) => ipc<RemoveAppResult>('adb:remove-app', payload),
-  adbBackupApp: (payload: { serial: string; instanceId: string; packageName: string }) =>
-    ipc<string>('adb:backup-app', payload),
-  adbRestoreApp: (serial: string, apkPath: string) =>
-    ipcVoid('adb:restore-app', { serial, apkPath }),
-  adbRestoreAppByName: (payload: { serial: string; instanceId: string; packageName: string }) =>
-    ipcVoid('adb:restore-app-by-name', payload),
   adbListRemovedApps: () => ipc<RemovedApp[]>('adb:list-removed'),
   adbRestoreRemovedApp: (payload: { serial: string; instanceId: string; packageName: string }) =>
     ipcVoid('adb:restore-removed', payload),

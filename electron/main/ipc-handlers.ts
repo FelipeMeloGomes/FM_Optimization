@@ -15,7 +15,6 @@ import { appState } from './app-state';
 import { auditIpcValidation } from './audit-logger';
 import { resolveScriptId } from './legacy-script-ids';
 import {
-  backupApp,
   clearRemovedApp,
   clearRemovedHistory,
   detectEmulatorAdbPath,
@@ -27,8 +26,6 @@ import {
   listEmulatorInstances,
   listRemovedApps,
   removeApp,
-  restoreApp,
-  restoreAppByName,
   restoreRemovedApp,
   setAdbPath,
 } from './services/adb';
@@ -493,35 +490,6 @@ export function registerIpcHandlers(): void {
         packageName: string;
       };
       return removeApp(serial, instanceId, instanceName ?? '', arch ?? '', packageName);
-    });
-  });
-
-  ipcMain.handle('adb:backup-app', (_e, payload: unknown) => {
-    return handleIpc('adb:backup-app', payload, (validated) => {
-      const { serial, instanceId, packageName } = validated as {
-        serial: string;
-        instanceId: string;
-        packageName: string;
-      };
-      return backupApp(serial, instanceId, packageName);
-    });
-  });
-
-  ipcMain.handle('adb:restore-app', (_e, payload: unknown) => {
-    return handleIpc('adb:restore-app', payload, (validated) => {
-      const { serial, apkPath } = validated as { serial: string; apkPath: string };
-      return restoreApp(serial, apkPath);
-    });
-  });
-
-  ipcMain.handle('adb:restore-app-by-name', (_e, payload: unknown) => {
-    return handleIpc('adb:restore-app-by-name', payload, (validated) => {
-      const { serial, instanceId, packageName } = validated as {
-        serial: string;
-        instanceId: string;
-        packageName: string;
-      };
-      return restoreAppByName(serial, instanceId, packageName);
     });
   });
 

@@ -279,10 +279,6 @@ export interface RemovedApp {
   hasBackup: boolean;
 }
 
-export interface AdbConfig {
-  adbPath: string;
-}
-
 export interface AdbChoosePathResult {
   canceled: boolean;
   adbPath?: string;
@@ -463,17 +459,6 @@ export interface ElectronAPI {
     arch?: string;
     packageName: string;
   }): Promise<RemoveAppResult>;
-  adbBackupApp(payload: {
-    serial: string;
-    instanceId: string;
-    packageName: string;
-  }): Promise<string>;
-  adbRestoreApp(serial: string, apkPath: string): Promise<void>;
-  adbRestoreAppByName(payload: {
-    serial: string;
-    instanceId: string;
-    packageName: string;
-  }): Promise<void>;
   adbListRemovedApps(): Promise<RemovedApp[]>;
   adbRestoreRemovedApp(payload: {
     serial: string;
