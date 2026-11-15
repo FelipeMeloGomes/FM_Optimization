@@ -123,7 +123,7 @@ describe('getGpuInfo', () => {
   it('formata o nome da GPU e preserva o original', async () => {
     mockPowerShell([
       [
-        'Win32_VideoController | Select-Object',
+        'Win32_VideoController -Property Name,DriverVersion,PNPDeviceID',
         JSON.stringify([
           { Name: 'AMD Radeon(TM) Graphics', DriverVersion: '1.0', PNPDeviceID: 'PCI\\VEN_1002' },
           {
@@ -149,7 +149,7 @@ describe('getGpuInfo', () => {
   it('usa o VRAM do registro e o contador do Windows quando não há nvidia-smi', async () => {
     mockPowerShell([
       [
-        'Win32_VideoController | Select-Object',
+        'Win32_VideoController -Property Name,DriverVersion,PNPDeviceID',
         JSON.stringify([
           {
             Name: 'AMD Radeon RX 580 Series',
@@ -173,7 +173,7 @@ describe('getGpuInfo', () => {
   it('cai para o AdapterRAM quando o registro não traz o tamanho', async () => {
     mockPowerShell([
       [
-        'Win32_VideoController | Select-Object',
+        'Win32_VideoController -Property Name,DriverVersion,PNPDeviceID',
         JSON.stringify([
           {
             Name: 'Intel(R) UHD Graphics 630',
@@ -198,13 +198,16 @@ describe('getGpuInfo', () => {
 
   it('pede ao WMI os campos usados para escolher e identificar a GPU', async () => {
     mockPowerShell([
-      ['Win32_VideoController | Select-Object', JSON.stringify([{ Name: 'AMD Radeon RX 7600' }])],
+      [
+        'Win32_VideoController -Property Name,DriverVersion,PNPDeviceID',
+        JSON.stringify([{ Name: 'AMD Radeon RX 7600' }]),
+      ],
     ]);
 
     await getGpuInfo();
 
     const query = calledScripts().find((script) =>
-      script.includes('Win32_VideoController | Select-Object')
+      script.includes('Win32_VideoController -Property Name,DriverVersion,PNPDeviceID')
     );
     expect(query).toBeDefined();
     for (const field of ['Name', 'DriverVersion', 'PNPDeviceID']) {

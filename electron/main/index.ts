@@ -23,6 +23,7 @@ import {
   writeHandoverRequest,
   writeInstanceInfo,
 } from './services/single-instance';
+import { setPowerSaveMode } from './services/system-info';
 import { destroyTray, ensureTray, isTrayActive, refreshTray } from './tray';
 import { DnsAddressesSchema } from './validation';
 import {
@@ -50,6 +51,9 @@ try {
 } catch {
   /* settings não disponível ainda, usa padrão */
 }
+
+// Configura TTL do cache WMI baseado no modo economia
+setPowerSaveMode(powerSaveMode);
 
 // O Chromium lê a command line uma única vez, no boot.
 applyChromiumBackgroundSwitches(app.commandLine);

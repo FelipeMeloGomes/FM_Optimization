@@ -15,7 +15,11 @@ import { execPowerShell } from './powershell';
 
 // Cache for consolidated WMI queries
 let wmiCache: { data: ConsolidatedWmiData; expires: number } | null = null;
-const WMI_CACHE_TTL = 5000; // 5 seconds
+let wmiCacheTtl = 5000; // 5 seconds default
+
+export function setPowerSaveMode(enabled: boolean): void {
+  wmiCacheTtl = enabled ? 300000 : 5000; // 5 minutes when power save, 5 seconds otherwise
+}
 
 interface ConsolidatedWmiData {
   cpu?: WmiProcessor;
@@ -34,17 +38,17 @@ interface ConsolidatedWmiData {
 
 const WMI_CONSOLIDATED_QUERY = `
 $ProgressPreference = 'SilentlyContinue'
-$cpu = Get-CimInstance Win32_Processor | Select-Object -First 1 Name,Manufacturer,Description,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed | ConvertTo-Json
-$gpu = Get-CimInstance Win32_VideoController | Select-Object Name,DriverVersion,PNPDeviceID | ConvertTo-Json -Depth 3
-$mem = Get-CimInstance Win32_PhysicalMemory | Select-Object SMBIOSMemoryType,Speed | ConvertTo-Json -Depth 3
-$os = Get-CimInstance Win32_OperatingSystem | Select-Object Caption,Version,BuildNumber,InstallDate | ConvertTo-Json
-$drives = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" | Select-Object DeviceID,VolumeName,@{N="Size";E={$_.Size/1GB}},@{N="Free";E={$_.FreeSpace/1GB}},FileSystem | ConvertTo-Json -Depth 3
-$disk = Get-PhysicalDisk | Select-Object MediaType | ConvertTo-Json -Depth 3
+$cpu = Get-CimInstance Win32_Processor -Property Name,Manufacturer,Description,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed | Select-Object -First 1 | ConvertTo-Json
+$gpu = Get-CimInstance Win32_VideoController -Property Name,DriverVersion,PNPDeviceID | ConvertTo-Json -Depth 3
+$mem = Get-CimInstance Win32_PhysicalMemory -Property SMBIOSMemoryType,Speed | ConvertTo-Json -Depth 3
+$os = Get-CimInstance Win32_OperatingSystem -Property Caption,Version,BuildNumber,InstallDate | ConvertTo-Json
+$drives = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -Property DeviceID,VolumeName,Size,FreeSpace,FileSystem | Select-Object DeviceID,VolumeName,@{N="Size";E={$_.Size/1GB}},@{N="Free";E={$_.FreeSpace/1GB}},FileSystem | ConvertTo-Json -Depth 3
+$disk = Get-PhysicalDisk -Property MediaType | ConvertTo-Json -Depth 3
 @{ cpu=$cpu; gpu=$gpu; memory=$mem; os=$os; drives=$drives; physicalDisk=$disk } | ConvertTo-Json -Depth 5
 `;
 
 const WMI_CPU_QUERY =
-  'Get-CimInstance Win32_Processor | Select-Object -First 1 Name,Manufacturer,Description,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed | ConvertTo-Json';
+  'Get-CimInstance Win32_Processor -Property Name,Manufacturer,Description,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed | Select-Object -First 1 | ConvertTo-Json';
 
 interface WmiProcessor {
   name?: string;
@@ -89,7 +93,7 @@ async function fetchConsolidatedWmi(): Promise<ConsolidatedWmiData> {
   try {
     const output = await execPowerShell(WMI_CONSOLIDATED_QUERY);
     const parsed = JSON.parse(output) as ConsolidatedWmiData;
-    wmiCache = { data: parsed, expires: Date.now() + WMI_CACHE_TTL };
+    wmiCache = { data: parsed, expires: Date.now() + wmiCacheTtl };
     return parsed;
   } catch {
     return {};
@@ -312,7 +316,7 @@ export async function getGpuInfo(): Promise<GpuInfo> {
   // Fallback to individual query if consolidated failed
   if (!output) {
     output = await execPowerShell(
-      'Get-CimInstance Win32_VideoController | Select-Object Name,DriverVersion,PNPDeviceID | ConvertTo-Json -Depth 3'
+      'Get-CimInstance Win32_VideoController -Property Name,DriverVersion,PNPDeviceID | ConvertTo-Json -Depth 3'
     ).catch(() => '');
   }
 
@@ -350,7 +354,7 @@ export async function getGpuInfo(): Promise<GpuInfo> {
     } else {
       const escapedId = gpu.pnpDeviceId.replace(/'/g, "''");
       const adapterRam = await execPowerShell(
-        `(Get-CimInstance Win32_VideoController -Filter "PNPDeviceID='${escapedId}'").AdapterRAM`
+        `(Get-CimInstance Win32_VideoController -Filter "PNPDeviceID='${escapedId}'" -Property AdapterRAM).AdapterRAM`
       ).catch(() => '');
       if (adapterRam) {
         const val = parseInt(adapterRam.trim(), 10);
@@ -404,14 +408,14 @@ export async function getMemoryInfo(): Promise<MemoryInfo> {
     // Fallback to individual queries
     [typeOutput, slotsOutput, freqOutput] = await Promise.all([
       execPowerShell(
-        '(Get-CimInstance Win32_PhysicalMemory | Select-Object -First 1).SMBIOSMemoryType'
+        '(Get-CimInstance Win32_PhysicalMemory -Property SMBIOSMemoryType | Select-Object -First 1).SMBIOSMemoryType'
       ).catch(() => ''),
-      execPowerShell('(Get-CimInstance Win32_PhysicalMemory | Measure-Object).Count').catch(
-        () => ''
-      ),
-      execPowerShell('(Get-CimInstance Win32_PhysicalMemory | Select-Object -First 1).Speed').catch(
-        () => ''
-      ),
+      execPowerShell(
+        '(Get-CimInstance Win32_PhysicalMemory -Property Speed | Measure-Object).Count'
+      ).catch(() => ''),
+      execPowerShell(
+        '(Get-CimInstance Win32_PhysicalMemory -Property Speed | Select-Object -First 1).Speed'
+      ).catch(() => ''),
     ]);
   }
 
@@ -449,7 +453,7 @@ export async function getOsInfo(): Promise<OsInfo> {
   if (!osInfo) {
     // Fallback to individual query
     const output = await execPowerShell(
-      'Get-CimInstance Win32_OperatingSystem | Select-Object Caption,Version,BuildNumber,InstallDate | ConvertTo-Json -Depth 3'
+      'Get-CimInstance Win32_OperatingSystem -Property Caption,Version,BuildNumber,InstallDate | ConvertTo-Json -Depth 3'
     ).catch(() => '');
     osInfo = parseConsolidatedOs(output) || undefined;
   }
@@ -485,7 +489,7 @@ export async function getStorageDrives(): Promise<StorageDrive[]> {
   if (!drives || !Array.isArray(drives) || drives.length === 0) {
     // Fallback to individual query
     const output = await execPowerShell(
-      'Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" | Select-Object DeviceID,VolumeName,@{N="Size";E={$_.Size/1GB}},@{N="Free";E={$_.FreeSpace/1GB}},FileSystem | ConvertTo-Json -Depth 3'
+      'Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -Property DeviceID,VolumeName,Size,FreeSpace,FileSystem | Select-Object DeviceID,VolumeName,@{N="Size";E={$_.Size/1GB}},@{N="Free";E={$_.FreeSpace/1GB}},FileSystem | ConvertTo-Json -Depth 3'
     ).catch(() => '');
     drives = parseConsolidatedDrives(output);
   }
