@@ -6,6 +6,7 @@ import { validateScriptPath } from '../path-validation';
 import { isAdmin } from './admin-check';
 import { addHistoryEntry, loadSettings, updateHistoryEntry } from './data-service';
 import { buildInteractiveLaunch, type InteractiveExtension } from './script-commands';
+import { notifyScriptEnded } from './script-notification';
 import { createHistoryEntry, normalizeInteractiveExitCode } from './script-outcome';
 import { extractScriptToTemp, getScriptById } from './script-registry';
 
@@ -28,13 +29,20 @@ interface RunOptions {
 
 function notifyEnded(data: ScriptEnded, win?: BrowserWindow | null): void {
   const payload = JSON.stringify(data);
+  let delivered = false;
   if (win && !win.isDestroyed()) {
     win.webContents.send('script-ended', payload);
-    return;
+    delivered = true;
+  } else {
+    for (const window of BrowserWindow.getAllWindows()) {
+      if (!window.isDestroyed()) {
+        window.webContents.send('script-ended', payload);
+        delivered = true;
+      }
+    }
   }
-  for (const window of BrowserWindow.getAllWindows()) {
-    if (!window.isDestroyed()) window.webContents.send('script-ended', payload);
-  }
+  // Janela fechada: sem renderer nao ha toast, entao o aviso vira notificacao.
+  notifyScriptEnded(data, delivered);
 }
 
 function isInteractiveExtension(ext: ScriptExtension | undefined): ext is InteractiveExtension {
@@ -137,7 +145,7 @@ function startRun(
       settled = true;
 
       activeProcesses.delete(id);
-      notifyEnded({ id, code, scriptName, trigger: options.trigger }, options.win);
+      notifyEnded({ id, code, scriptName, trigger: options.trigger, cancelled }, options.win);
 
       const endTime = Date.now();
       if (interactive) {

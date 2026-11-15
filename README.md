@@ -36,7 +36,7 @@
 ### Manutenção
 
 - **Limpeza** — arquivos temporários, cache de navegadores e atualizações do Windows, com contagem de arquivos e tamanho por categoria em tempo real.
-- **Limpeza automática** — agendamento diário, semanal ou mensal, com escolha das categorias. Com a automação ligada, fechar a janela libera a memória dela e o app continua na bandeja (~90 MB, sem renderer), podendo iniciar com o Windows já escondido e voltar na última página ao ser reaberto.
+- **Limpeza automática** — agendamento diário, semanal ou mensal, com escolha das categorias. Com a automação ligada, fechar a janela libera a memória dela e o app continua na bandeja (~90 MB, sem renderer), podendo iniciar com o Windows já escondido e voltar na última página ao ser reaberto. Scripts finalizados com a janela fechada avisam por notificação nativa do Windows.
 - **Debloat** — remoção de bloatware do Windows (Cortana, OneDrive, Xbox, Copilot, Widgets) e dos apps Discord (Equicord + FakeNitro) e Spotify (Spicetify). O debloat de apps tem opção de reverter.
 - **Personalização** — barra de tarefas e menu Iniciar limpos, menu de contexto clássico, animações, transparência e efeitos visuais.
 - **Utilitários** — SFC, DISM, CHKDSK, TRIM de SSD, limpeza do WinSxS, compactação do sistema e outros comandos de manutenção.

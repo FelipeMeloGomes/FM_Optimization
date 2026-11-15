@@ -176,6 +176,8 @@ export interface ScriptEnded {
   scriptName?: string;
   /** Ausente em eventos antigos; limpeza agendada tem toast próprio. */
   trigger?: 'manual' | 'scheduled';
+  /** `code: null` sozinho não distingue cancelamento de desfecho desconhecido. */
+  cancelled?: boolean;
 }
 
 export interface ExecutionHistoryEntry {
