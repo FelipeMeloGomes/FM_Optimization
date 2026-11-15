@@ -4,8 +4,8 @@
   "description": "FM Optimize - Windows optimization toolkit",
   "main": "./out/main/index.js",
   "scripts": {
-    "dev": "electron-vite dev -- --js-flags=\"--max-old-space-size=256 --expose-gc\"",
-    "start": "electron . --js-flags=\"--max-old-space-size=256\"",
+    "dev": "electron-vite dev -- --js-flags=\"--max-old-space-size=192 --expose-gc\"",
+    "start": "electron . --js-flags=\"--max-old-space-size=192\"",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "postinstall": "electron-builder install-app-deps",

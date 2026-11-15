@@ -124,7 +124,7 @@ function Probe() {
   );
 }
 
-function renderProvider(settings: Partial<AppSettings> = {}) {
+function renderProvider(_settings: Partial<AppSettings> = {}) {
   return render(
     <SettingsProvider>
       <HistoryProvider>

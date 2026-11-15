@@ -86,3 +86,15 @@ export const POWER_SAVE_SWITCHES = [
 export function applyPowerSaveSwitches(target: { appendSwitch(name: string): void }): void {
   for (const name of POWER_SAVE_SWITCHES) target.appendSwitch(name);
 }
+
+/**
+ * Limite de heap V8 (em MB). Calibrado: renderer peak RSS ~104 MB → heap ~70 MB.
+ * Limite 192 MB dá ~2.7x headroom. Deve ser aplicado antes de app.whenReady().
+ */
+export const V8_HEAP_LIMIT_MB = 192;
+
+export function applyV8HeapLimit(target: {
+  appendSwitch(name: string, value: string): void;
+}): void {
+  target.appendSwitch('--js-flags', `--max-old-space-size=${V8_HEAP_LIMIT_MB}`);
+}
