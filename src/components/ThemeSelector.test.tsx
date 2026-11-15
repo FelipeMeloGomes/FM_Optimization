@@ -11,10 +11,6 @@ import type { AppSettings } from '../../electron/shared/ipc-types';
  * acessível. Sem isso, o usuário clica em "Matrix" e o app salva outro tema.
  */
 
-// `theme-config` importa o BatmanBackground, que instancia `Path2D` no topo do
-// módulo — API de canvas que o jsdom não implementa.
-vi.mock('./BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 const state = vi.hoisted(() => ({
   settings: {} as Partial<AppSettings>,
   update: vi.fn(),

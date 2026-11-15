@@ -37,10 +37,6 @@ vi.mock('react-router-dom', async (importOriginal) => {
   return { ...actual, useNavigate: () => store.navigate };
 });
 
-// ScriptBadge (filho real) importa ScriptCard → SettingsContext → tema, e o
-// BatmanBackground instancia `Path2D` no topo do módulo (não existe no jsdom).
-vi.mock('./BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import { CommandPalette } from './CommandPalette';
 
 function script(id: string, name: string, category = 'CPU', subcategory = ''): ScriptEntry {

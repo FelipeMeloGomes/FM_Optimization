@@ -10,9 +10,6 @@ import type {
   ElevatedLaunchResult,
 } from '../../electron/shared/ipc-types';
 
-// O tema importa o BatmanBackground, que instancia `Path2D` no topo do módulo.
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 // O toast dispara `Audio`/`sonner`; aqui só interessa o que o contexto pediu.
 const toastSpy = vi.hoisted(() => vi.fn());
 vi.mock('../components/EnhancedToast', () => ({ showEnhancedToast: toastSpy }));

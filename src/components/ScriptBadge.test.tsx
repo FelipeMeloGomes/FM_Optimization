@@ -19,11 +19,6 @@ vi.mock('../hooks/use-is-script-applied', () => ({
   useIsScriptApplied: () => (script: { id: string }) => store.applied.has(script.id),
 }));
 
-// ScriptBadge importa RISK_STYLES de ScriptCard, que puxa o SettingsContext e,
-// por ele, o tema — e o BatmanBackground instancia `Path2D` no topo do módulo,
-// API de canvas inexistente no node. O fundo não influencia os selos.
-vi.mock('./BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import { ScriptBadge } from './ScriptBadge';
 
 function script(overrides: Partial<ScriptEntry> = {}): ScriptEntry {

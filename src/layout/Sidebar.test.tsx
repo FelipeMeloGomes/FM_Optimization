@@ -1,15 +1,10 @@
 import { Home } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { TooltipProvider } from '../components/ui/tooltip';
 import { SettingsProvider } from '../contexts/SettingsContext';
 import { Sidebar, SidebarLink } from './Sidebar';
-
-// O tema importa o BatmanBackground, que instancia `Path2D` no topo do módulo —
-// uma API de canvas inexistente no ambiente node do Vitest. O fundo não
-// influencia a sidebar, então basta não carregá-lo.
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
 
 /**
  * Regressão do alinhamento da sidebar recolhida.

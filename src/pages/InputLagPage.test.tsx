@@ -44,9 +44,6 @@ vi.mock('../hooks/use-is-script-applied', () => ({
   useIsScriptApplied: () => (script: { id: string }) => store.applied.has(script.id),
 }));
 
-// Path2D não existe no jsdom; o fundo não influencia a página.
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import InputLagPage from './InputLagPage';
 
 function script(id: string, name: string): ScriptEntry {

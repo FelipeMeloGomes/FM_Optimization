@@ -63,7 +63,7 @@
 - **Histórico de execução** — duração, status e origem (manual ou agendada) de cada tweak. Cards aplicados ganham o selo **Aplicado**, inclusive os scripts interativos: o app espera a janela fechar e registra o código de saída real (menu fechado sem aplicar ou handoff sem desfecho fica como `—`).
 - **Bloqueio de páginas** — oculte páginas da barra lateral e proteja-as com senha mestra criptografada via DPAPI (Emuladores bloqueado por padrão).
 - **Atualização integrada** — download e instalação de novas versões direto do GitHub.
-- **Interface** — tema dark azul neon com fundo de circuito animado, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`).
+- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`).
 - **Atalhos** — `Ctrl+1`…`Ctrl+9` navegam entre páginas e `Ctrl+,` abre as Configurações.
 
 ## Tecnologias
@@ -145,6 +145,7 @@ O Biome cobre TypeScript, JSON, CSS e **Markdown**: os `.md` do repositório ent
 - [SECURITY.md](docs/SECURITY.md) — controles de segurança e modelo de ameaça
 - [DEVELOPMENT.md](docs/DEVELOPMENT.md) — setup, convenções e como adicionar handlers IPC
 - [OPTIMIZATION.md](docs/OPTIMIZATION.md) — redução do instalador (255,8 → 102,3 MB) e contrato de empacotamento
+- [RUNTIME.md](docs/RUNTIME.md) — consumo medido com a janela aberta e na bandeja
 
 ## Estrutura do projeto
 
