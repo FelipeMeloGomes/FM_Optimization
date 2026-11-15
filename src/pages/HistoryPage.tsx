@@ -1,4 +1,3 @@
-import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   AlertOctagon,
   AlertTriangle,
@@ -9,7 +8,7 @@ import {
   XCircle,
   Zap,
 } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import {
   Badge,
   EmptyState,
@@ -21,12 +20,6 @@ import {
   TableRow,
 } from '../components/ui';
 import { useHistoryContext } from '../contexts/HistoryContext';
-
-const ROW_HEIGHT = 52;
-const OVERSCAN = 5;
-
-// Disable virtualization in test environment (vitest uses jsdom without proper scroll)
-const isTestEnv = typeof process !== 'undefined' && process.env.VITEST === 'true';
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString('pt-BR');
@@ -42,7 +35,6 @@ function formatDuration(ms: number): string {
 
 function HistoryRow({
   entry,
-  style,
 }: {
   entry: {
     id: string;
@@ -53,10 +45,9 @@ function HistoryRow({
     wasCancelled: boolean;
     exitCode: number | null;
   };
-  style?: React.CSSProperties;
 }) {
   return (
-    <TableRow key={entry.id} style={{ height: ROW_HEIGHT, ...style }}>
+    <TableRow key={entry.id}>
       <TableCell className="font-medium">{entry.scriptName}</TableCell>
       <TableCell>
         {entry.trigger === 'scheduled' ? (
@@ -107,8 +98,6 @@ function HistoryRow({
 
 export default function HistoryPage() {
   const { state } = useHistoryContext();
-  const parentRef = useRef<HTMLDivElement>(null);
-  const [containerHeight, setContainerHeight] = useState(400);
 
   const history = state.status === 'success' ? state.data : [];
 
@@ -122,18 +111,6 @@ export default function HistoryPage() {
     const cancelled = h.filter((e) => e.wasCancelled).length;
     return { total: h.length, success, failed, cancelled };
   }, [state]);
-
-  const virtualizer = useVirtualizer({
-    count: history.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => ROW_HEIGHT,
-    overscan: OVERSCAN,
-    paddingStart: 0,
-    paddingEnd: 0,
-  });
-
-  // Update container height based on virtualized rows
-  const totalHeight = history.length * ROW_HEIGHT;
 
   if (state.status === 'loading') {
     return (
@@ -227,7 +204,7 @@ export default function HistoryPage() {
         </div>
       )}
 
-      {/* History Table - Virtualized */}
+      {/* History Table - Native scrolling via Table component */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <div className="size-1.5 rounded-full bg-primary" />
@@ -253,44 +230,9 @@ export default function HistoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isTestEnv ? (
-                  // In test environment, render all rows without virtualization
-                  history.map((entry) => <HistoryRow key={entry.id} entry={entry} />)
-                ) : (
-                  <div
-                    ref={parentRef}
-                    style={{
-                      height: Math.min(containerHeight, totalHeight),
-                      width: '100%',
-                      overflow: 'auto',
-                      position: 'relative',
-                    }}
-                    onScroll={() => setContainerHeight(parentRef.current?.clientHeight ?? 400)}
-                  >
-                    <div
-                      style={{
-                        height: totalHeight,
-                        width: '100%',
-                        position: 'relative',
-                      }}
-                    >
-                      {virtualizer.getVirtualItems().map((virtualRow) => (
-                        <HistoryRow
-                          key={history[virtualRow.index].id}
-                          entry={history[virtualRow.index]}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: `${virtualRow.size}px`,
-                            transform: `translateY(${virtualRow.start}px)`,
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {history.map((entry) => (
+                  <HistoryRow key={entry.id} entry={entry} />
+                ))}
               </TableBody>
             </Table>
           </div>

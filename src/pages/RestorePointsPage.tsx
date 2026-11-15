@@ -313,45 +313,43 @@ export default function RestorePointsPage() {
                     />
                   ))
                 ) : (
-                  <>
+                  <div
+                    ref={tableContainerRef}
+                    style={{
+                      height: Math.min(containerHeight, totalHeight),
+                      width: '100%',
+                      overflow: 'auto',
+                      position: 'relative',
+                    }}
+                    onScroll={() =>
+                      setContainerHeight(tableContainerRef.current?.clientHeight ?? 400)
+                    }
+                  >
                     <div
-                      ref={tableContainerRef}
                       style={{
-                        height: Math.min(containerHeight, totalHeight),
+                        height: totalHeight,
                         width: '100%',
-                        overflow: 'auto',
                         position: 'relative',
                       }}
-                      onScroll={() =>
-                        setContainerHeight(tableContainerRef.current?.clientHeight ?? 400)
-                      }
                     >
-                      <div
-                        style={{
-                          height: totalHeight,
-                          width: '100%',
-                          position: 'relative',
-                        }}
-                      >
-                        {virtualizer.getVirtualItems().map((virtualRow) => (
-                          <RestorePointRow
-                            key={filtered[virtualRow.index].sequenceNumber}
-                            rp={filtered[virtualRow.index]}
-                            onRestore={setConfirmRestore}
-                            onDelete={setConfirmDelete}
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              width: '100%',
-                              height: `${virtualRow.size}px`,
-                              transform: `translateY(${virtualRow.start}px)`,
-                            }}
-                          />
-                        ))}
-                      </div>
+                      {virtualizer.getVirtualItems().map((virtualRow) => (
+                        <RestorePointRow
+                          key={filtered[virtualRow.index].sequenceNumber}
+                          rp={filtered[virtualRow.index]}
+                          onRestore={setConfirmRestore}
+                          onDelete={setConfirmDelete}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: `${virtualRow.size}px`,
+                            transform: `translateY(${virtualRow.start}px)`,
+                          }}
+                        />
+                      ))}
                     </div>
-                  </>
+                  </div>
                 )}
               </TableBody>
             </Table>
