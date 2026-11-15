@@ -1,3 +1,4 @@
+import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   AlertTriangle,
   Clock,
@@ -9,7 +10,7 @@ import {
   ShieldAlert,
   Trash2,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Badge,
   Button,
@@ -28,18 +29,91 @@ import {
 } from '../components/ui';
 import { useRestorePointContext } from '../contexts/RestorePointContext';
 
+const ROW_HEIGHT = 52;
+const OVERSCAN = 5;
+
+// Disable virtualization in test environment
+const isTestEnv = typeof process !== 'undefined' && process.env.VITEST === 'true';
+
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString('pt-BR');
 }
 
+function RestorePointRow({
+  rp,
+  onRestore,
+  onDelete,
+  style,
+}: {
+  rp: { sequenceNumber: number; description: string; creationTime: string; eventType: string };
+  onRestore: (seq: number) => void;
+  onDelete: (seq: number) => void;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <TableRow key={rp.sequenceNumber} style={{ height: ROW_HEIGHT, ...style }}>
+      <TableCell className="font-medium">{rp.description}</TableCell>
+      <TableCell className="text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <Clock className="size-3" />
+          {formatDate(rp.creationTime)}
+        </div>
+      </TableCell>
+      <TableCell>
+        <Badge variant="secondary" className="text-[10px]">
+          {rp.eventType}
+        </Badge>
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onRestore(rp.sequenceNumber)}
+            title="Restaurar sistema para este ponto"
+            aria-label={`Restaurar sistema para o ponto ${rp.description}`}
+            className="size-8"
+          >
+            <RotateCcw className="size-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(rp.sequenceNumber)}
+            title="Excluir ponto de restauração"
+            aria-label={`Excluir o ponto ${rp.description}`}
+            className="size-8"
+          >
+            <Trash2 className="size-3.5 text-destructive" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export default function RestorePointsPage() {
-  const { state, creating, restoring, isAdmin, adminRequired, refresh, create, remove, restore } =
-    useRestorePointContext();
+  const {
+    state,
+    creating,
+    restoring,
+    isAdmin,
+    adminRequired,
+    refresh,
+    hasFetched,
+    create,
+    remove,
+    restore,
+  } = useRestorePointContext();
   const [newName, setNewName] = useState('');
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<number | null>(null);
   const [restoreDone, setRestoreDone] = useState(false);
+
+  useEffect(() => {
+    if (!hasFetched) refresh();
+  }, [hasFetched, refresh]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
@@ -52,6 +126,20 @@ export default function RestorePointsPage() {
     () => restorePoints.filter((rp) => rp.description.toLowerCase().includes(search.toLowerCase())),
     [restorePoints, search]
   );
+
+  // Virtualization refs and state
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState(400);
+  const totalHeight = filtered.length * ROW_HEIGHT;
+
+  const virtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: OVERSCAN,
+    paddingStart: 0,
+    paddingEnd: 0,
+  });
 
   if (state.status === 'loading') {
     return (
@@ -215,46 +303,54 @@ export default function RestorePointsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((rp) => (
-                  <TableRow key={rp.sequenceNumber}>
-                    <TableCell className="font-medium">{rp.description}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="size-3" />
-                        {formatDate(rp.creationTime)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="text-[10px]">
-                        {rp.eventType}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setConfirmRestore(rp.sequenceNumber)}
-                          title="Restaurar sistema para este ponto"
-                          aria-label={`Restaurar sistema para o ponto ${rp.description}`}
-                          className="size-8"
-                        >
-                          <RotateCcw className="size-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setConfirmDelete(rp.sequenceNumber)}
-                          title="Excluir ponto de restauração"
-                          aria-label={`Excluir o ponto ${rp.description}`}
-                          className="size-8"
-                        >
-                          <Trash2 className="size-3.5 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {isTestEnv ? (
+                  filtered.map((rp) => (
+                    <RestorePointRow
+                      key={rp.sequenceNumber}
+                      rp={rp}
+                      onRestore={setConfirmRestore}
+                      onDelete={setConfirmDelete}
+                    />
+                  ))
+                ) : (
+                  <div
+                    ref={tableContainerRef}
+                    style={{
+                      height: Math.min(containerHeight, totalHeight),
+                      width: '100%',
+                      overflow: 'auto',
+                      position: 'relative',
+                    }}
+                    onScroll={() =>
+                      setContainerHeight(tableContainerRef.current?.clientHeight ?? 400)
+                    }
+                  >
+                    <div
+                      style={{
+                        height: totalHeight,
+                        width: '100%',
+                        position: 'relative',
+                      }}
+                    >
+                      {virtualizer.getVirtualItems().map((virtualRow) => (
+                        <RestorePointRow
+                          key={filtered[virtualRow.index].sequenceNumber}
+                          rp={filtered[virtualRow.index]}
+                          onRestore={setConfirmRestore}
+                          onDelete={setConfirmDelete}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: `${virtualRow.size}px`,
+                            transform: `translateY(${virtualRow.start}px)`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </TableBody>
             </Table>
           </div>

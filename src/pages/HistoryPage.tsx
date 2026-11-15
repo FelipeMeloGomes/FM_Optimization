@@ -33,18 +33,83 @@ function formatDuration(ms: number): string {
   return `${m}m ${s % 60}s`;
 }
 
+function HistoryRow({
+  entry,
+}: {
+  entry: {
+    id: string;
+    scriptName: string;
+    trigger?: 'manual' | 'scheduled';
+    startTime: string;
+    durationMs: number;
+    wasCancelled: boolean;
+    exitCode: number | null;
+  };
+}) {
+  return (
+    <TableRow key={entry.id}>
+      <TableCell className="font-medium">{entry.scriptName}</TableCell>
+      <TableCell>
+        {entry.trigger === 'scheduled' ? (
+          <Badge variant="secondary" className="gap-1 text-primary bg-primary/10">
+            <Clock className="size-3" /> Automática
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="gap-1 text-violet-400 bg-violet-500/10">
+            <MousePointerClick className="size-3" /> Manual
+          </Badge>
+        )}
+      </TableCell>
+      <TableCell className="text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <Clock className="size-3" />
+          {formatDate(entry.startTime)}
+        </div>
+      </TableCell>
+      <TableCell className="text-muted-foreground">
+        {entry.wasCancelled ? '—' : formatDuration(entry.durationMs)}
+      </TableCell>
+      <TableCell>
+        {entry.wasCancelled && (
+          <Badge variant="secondary" className="gap-1 text-amber-400 bg-amber-500/10">
+            <XCircle className="size-3" /> Cancelado
+          </Badge>
+        )}
+        {entry.exitCode === 0 && (
+          <Badge variant="secondary" className="gap-1 text-emerald-400 bg-emerald-500/10">
+            <CheckCircle className="size-3" /> Sucesso
+          </Badge>
+        )}
+        {entry.exitCode != null && entry.exitCode > 0 && (
+          <Badge variant="destructive" className="gap-1">
+            <AlertTriangle className="size-3" /> Erro ({entry.exitCode})
+          </Badge>
+        )}
+        {entry.exitCode != null && entry.exitCode < 0 && (
+          <Badge variant="destructive" className="gap-1">
+            <AlertOctagon className="size-3" /> Erro (spawn)
+          </Badge>
+        )}
+        {entry.exitCode === null && !entry.wasCancelled && '—'}
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export default function HistoryPage() {
   const { state } = useHistoryContext();
 
+  const history = state.status === 'success' ? state.data : [];
+
   const stats = useMemo(() => {
     if (state.status !== 'success') return null;
-    const history = state.data;
-    const success = history.filter((h) => h.exitCode === 0).length;
-    const failed = history.filter(
-      (h) => h.exitCode != null && h.exitCode !== 0 && !h.wasCancelled
+    const h = state.data;
+    const success = h.filter((e) => e.exitCode === 0).length;
+    const failed = h.filter(
+      (e) => e.exitCode != null && e.exitCode !== 0 && !e.wasCancelled
     ).length;
-    const cancelled = history.filter((h) => h.wasCancelled).length;
-    return { total: history.length, success, failed, cancelled };
+    const cancelled = h.filter((e) => e.wasCancelled).length;
+    return { total: h.length, success, failed, cancelled };
   }, [state]);
 
   if (state.status === 'loading') {
@@ -64,8 +129,6 @@ export default function HistoryPage() {
       </div>
     );
   }
-
-  const history = state.data;
 
   return (
     <div className="space-y-6">
@@ -141,7 +204,7 @@ export default function HistoryPage() {
         </div>
       )}
 
-      {/* History Table */}
+      {/* History Table - Native scrolling via Table component */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <div className="size-1.5 rounded-full bg-primary" />
@@ -168,58 +231,7 @@ export default function HistoryPage() {
               </TableHeader>
               <TableBody>
                 {history.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell className="font-medium">{entry.scriptName}</TableCell>
-                    <TableCell>
-                      {entry.trigger === 'scheduled' ? (
-                        <Badge variant="secondary" className="gap-1 text-primary bg-primary/10">
-                          <Clock className="size-3" /> Automática
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="secondary"
-                          className="gap-1 text-violet-400 bg-violet-500/10"
-                        >
-                          <MousePointerClick className="size-3" /> Manual
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="size-3" />
-                        {formatDate(entry.startTime)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {entry.wasCancelled ? '—' : formatDuration(entry.durationMs)}
-                    </TableCell>
-                    <TableCell>
-                      {entry.wasCancelled && (
-                        <Badge variant="secondary" className="gap-1 text-amber-400 bg-amber-500/10">
-                          <XCircle className="size-3" /> Cancelado
-                        </Badge>
-                      )}
-                      {entry.exitCode === 0 && (
-                        <Badge
-                          variant="secondary"
-                          className="gap-1 text-emerald-400 bg-emerald-500/10"
-                        >
-                          <CheckCircle className="size-3" /> Sucesso
-                        </Badge>
-                      )}
-                      {entry.exitCode != null && entry.exitCode > 0 && (
-                        <Badge variant="destructive" className="gap-1">
-                          <AlertTriangle className="size-3" /> Erro ({entry.exitCode})
-                        </Badge>
-                      )}
-                      {entry.exitCode != null && entry.exitCode < 0 && (
-                        <Badge variant="destructive" className="gap-1">
-                          <AlertOctagon className="size-3" /> Erro (spawn)
-                        </Badge>
-                      )}
-                      {entry.exitCode === null && !entry.wasCancelled && '—'}
-                    </TableCell>
-                  </TableRow>
+                  <HistoryRow key={entry.id} entry={entry} />
                 ))}
               </TableBody>
             </Table>

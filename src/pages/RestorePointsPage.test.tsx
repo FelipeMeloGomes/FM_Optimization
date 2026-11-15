@@ -14,8 +14,6 @@ vi.mock('../contexts/RestorePointContext', () => ({
   useRestorePointContext: () => store.restore,
 }));
 
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import RestorePointsPage from './RestorePointsPage';
 
 const store = vi.hoisted<{

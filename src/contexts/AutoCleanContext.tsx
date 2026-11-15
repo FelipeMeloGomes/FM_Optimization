@@ -57,6 +57,9 @@ export function AutoCleanProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   useEffect(() => {
+    // No power save mode: desabilita listeners de status para reduzir polling
+    if (settings.powerSaveMode) return;
+
     const offStatus = window.electronAPI.onAutoCleanStatus(setStatus);
     const offFinished = window.electronAPI.onAutoCleanFinished((result) => {
       const description = describeResult(result);
@@ -74,7 +77,7 @@ export function AutoCleanProvider({ children }: { children: ReactNode }) {
       offStatus();
       offFinished();
     };
-  }, [soundEnabled]);
+  }, [soundEnabled, settings.powerSaveMode]);
 
   // Mantém o estado do renderer alinhado com o que o main aceitou. Salvar apenas
   // na config evita que a próxima alteração de tema sobrescreva o agendamento.

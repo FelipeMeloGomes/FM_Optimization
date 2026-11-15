@@ -11,7 +11,7 @@ import {
   ShieldAlert,
   Zap,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { formatMemoryTotal } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
 import { Badge, Button, Skeleton } from '../components/ui';
@@ -58,9 +58,13 @@ function parseMemoryPercent(used: string, total: string): number {
 }
 
 export default function DashboardPage() {
-  const { state, refreshing, refresh } = useSystemContext();
+  const { state, refreshing, refresh, hasFetched, isFromCache } = useSystemContext();
   const { state: scriptsState } = useScriptContext();
   const { state: historyState } = useHistoryContext();
+
+  useEffect(() => {
+    if (!hasFetched) refresh();
+  }, [hasFetched, refresh]);
 
   const systemHealth = useMemo(() => {
     if (state.status !== 'success') return null;
@@ -189,6 +193,12 @@ export default function DashboardPage() {
                         ? 'Atenção'
                         : 'Crítico'}
                   </p>
+                </div>
+              )}
+              {isFromCache && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Clock className="size-3" />
+                  <span>Dados em cache</span>
                 </div>
               )}
               <Button

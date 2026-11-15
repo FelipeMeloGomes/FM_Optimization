@@ -53,6 +53,7 @@ function installApi() {
     getCpuInfo: vi.fn<() => Promise<CpuInfo>>(async () => CPU),
     getMemoryInfo: vi.fn<() => Promise<MemoryInfo>>(async () => MEMORY),
     getSystemInfo: vi.fn<() => Promise<DashboardData>>(async () => DASHBOARD),
+    getSystemInfoCache: vi.fn<() => Promise<null>>(async () => null),
   };
   (window as unknown as { electronAPI: unknown }).electronAPI = api;
   return api;
@@ -67,13 +68,14 @@ function deferred<T>() {
 }
 
 function CpuProbe() {
-  const { state, refreshing, refresh } = useCpuContext();
+  const { state, refreshing, refresh, hasFetched } = useCpuContext();
   return (
     <div>
       <span data-testid="status">{state.status}</span>
       <span data-testid="model">{state.status === 'success' ? state.data.model : ''}</span>
       <span data-testid="error">{state.status === 'error' ? state.error : ''}</span>
       <span data-testid="refreshing">{String(refreshing)}</span>
+      <span data-testid="has-fetched">{String(hasFetched)}</span>
       <button type="button" onClick={refresh}>
         atualizar cpu
       </button>
@@ -82,13 +84,14 @@ function CpuProbe() {
 }
 
 function MemoryProbe() {
-  const { state, refreshing, refresh } = useMemoryContext();
+  const { state, refreshing, refresh, hasFetched } = useMemoryContext();
   return (
     <div>
       <span data-testid="status">{state.status}</span>
       <span data-testid="total">{state.status === 'success' ? state.data.total : ''}</span>
       <span data-testid="error">{state.status === 'error' ? state.error : ''}</span>
       <span data-testid="refreshing">{String(refreshing)}</span>
+      <span data-testid="has-fetched">{String(hasFetched)}</span>
       <button type="button" onClick={refresh}>
         atualizar memória
       </button>
@@ -97,7 +100,7 @@ function MemoryProbe() {
 }
 
 function SystemProbe() {
-  const { state, refreshing, refresh } = useSystemContext();
+  const { state, refreshing, refresh, hasFetched } = useSystemContext();
   return (
     <div>
       <span data-testid="status">{state.status}</span>
@@ -106,82 +109,98 @@ function SystemProbe() {
       </span>
       <span data-testid="error">{state.status === 'error' ? state.error : ''}</span>
       <span data-testid="refreshing">{String(refreshing)}</span>
+      <span data-testid="has-fetched">{String(hasFetched)}</span>
       <button type="button" onClick={refresh}>
-        atualizar sistema
+        atualizar dashboard
       </button>
     </div>
   );
 }
 
+function wrapCpu(ui: React.ReactElement) {
+  return render(<CpuProvider>{ui}</CpuProvider>);
+}
+
+function wrapMemory(ui: React.ReactElement) {
+  return render(<MemoryProvider>{ui}</MemoryProvider>);
+}
+
+function wrapSystem(ui: React.ReactElement) {
+  return render(<SystemProvider>{ui}</SystemProvider>);
+}
+
 afterEach(() => {
-  delete (window as unknown as { electronAPI?: unknown }).electronAPI;
+  vi.restoreAllMocks();
 });
 
 describe('CpuProvider', () => {
-  it('começa em loading e publica os dados da CPU', async () => {
+  it('começa em loading e NÃO busca até refresh ser chamado', async () => {
     installApi();
-    render(
-      <CpuProvider>
-        <CpuProbe />
-      </CpuProvider>
-    );
+    wrapCpu(<CpuProbe />);
 
     expect(screen.getByTestId('status').textContent).toBe('loading');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('false');
+
+    // Chama refresh para disparar a busca
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar cpu/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
     expect(screen.getByTestId('model').textContent).toBe('AMD Ryzen 7 5700X');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('true');
     expect(screen.getByTestId('refreshing').textContent).toBe('false');
   });
 
   it('expõe a mensagem quando a leitura falha', async () => {
     const api = installApi();
-    api.getCpuInfo.mockRejectedValue(new Error('cpu indisponível'));
-    render(
-      <CpuProvider>
-        <CpuProbe />
-      </CpuProvider>
-    );
+    api.getCpuInfo.mockRejectedValueOnce('cpu indisponível');
+    wrapCpu(<CpuProbe />);
+
+    // Chama refresh para disparar a busca
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar cpu/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('error'));
     expect(screen.getByTestId('error').textContent).toBe('cpu indisponível');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('true');
   });
 
   it('usa o texto do erro quando a rejeição é uma string', async () => {
     const api = installApi();
-    api.getCpuInfo.mockRejectedValue('falha crua');
-    render(
-      <CpuProvider>
-        <CpuProbe />
-      </CpuProvider>
-    );
+    api.getCpuInfo.mockRejectedValueOnce('falha crua');
+    wrapCpu(<CpuProbe />);
+
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar cpu/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('error'));
     expect(screen.getByTestId('error').textContent).toBe('falha crua');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('true');
   });
 
   it('marca refreshing durante o refresh e troca os dados ao concluir', async () => {
     const api = installApi();
-    render(
-      <CpuProvider>
-        <CpuProbe />
-      </CpuProvider>
-    );
-    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
-    await waitFor(() => expect(screen.getByTestId('refreshing').textContent).toBe('false'));
+    const { promise, resolve } = deferred<CpuInfo>();
+    api.getCpuInfo.mockReturnValueOnce(promise);
 
-    const pending = deferred<CpuInfo>();
-    api.getCpuInfo.mockImplementation(() => pending.promise);
-
-    act(() => screen.getByRole('button', { name: 'atualizar cpu' }).click());
-    expect(screen.getByTestId('refreshing').textContent).toBe('true');
-    expect(screen.getByTestId('model').textContent).toBe('AMD Ryzen 7 5700X');
+    wrapCpu(<CpuProbe />);
 
     await act(async () => {
-      pending.resolve(CPU_NOVO);
-      await pending.promise;
+      screen.getByRole('button', { name: /atualizar cpu/i }).click();
     });
 
-    await waitFor(() => expect(screen.getByTestId('model').textContent).toBe('AMD Ryzen 9 7900X'));
+    await waitFor(() => expect(screen.getByTestId('refreshing').textContent).toBe('true'));
+    expect(screen.getByTestId('has-fetched').textContent).toBe('true');
+
+    await act(async () => {
+      resolve(CPU_NOVO);
+    });
+
+    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+    expect(screen.getByTestId('model').textContent).toBe('AMD Ryzen 9 7900X');
     expect(screen.getByTestId('refreshing').textContent).toBe('false');
   });
 });
@@ -189,43 +208,50 @@ describe('CpuProvider', () => {
 describe('MemoryProvider', () => {
   it('publica a memória lida', async () => {
     installApi();
-    render(
-      <MemoryProvider>
-        <MemoryProbe />
-      </MemoryProvider>
-    );
+    wrapMemory(<MemoryProbe />);
+
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar memória/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
     expect(screen.getByTestId('total').textContent).toBe('32 GB');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('true');
+    expect(screen.getByTestId('refreshing').textContent).toBe('false');
   });
 
   it('mantém o estado de erro sem dados', async () => {
     const api = installApi();
-    api.getMemoryInfo.mockRejectedValue(new Error('sem memória'));
-    render(
-      <MemoryProvider>
-        <MemoryProbe />
-      </MemoryProvider>
-    );
+    api.getMemoryInfo.mockRejectedValueOnce('sem memória');
+    wrapMemory(<MemoryProbe />);
+
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar memória/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('error'));
     expect(screen.getByTestId('error').textContent).toBe('sem memória');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('true');
     expect(screen.getByTestId('total').textContent).toBe('');
   });
 
   it('recarrega ao acionar refresh', async () => {
     const api = installApi();
-    render(
-      <MemoryProvider>
-        <MemoryProbe />
-      </MemoryProvider>
-    );
-    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+    wrapMemory(<MemoryProbe />);
 
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar memória/i }).click();
+    });
+
+    await waitFor(() => expect(screen.getByTestId('total').textContent).toBe('32 GB'));
     const antes = api.getMemoryInfo.mock.calls.length;
-    api.getMemoryInfo.mockResolvedValue({ ...MEMORY, total: '64 GB' });
 
-    await act(async () => screen.getByRole('button', { name: 'atualizar memória' }).click());
+    const MEMORY_NOVA: MemoryInfo = { ...MEMORY, total: '64 GB' };
+    api.getMemoryInfo.mockResolvedValueOnce(MEMORY_NOVA);
+
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar memória/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('total').textContent).toBe('64 GB'));
     expect(api.getMemoryInfo.mock.calls.length).toBe(antes + 1);
@@ -235,76 +261,92 @@ describe('MemoryProvider', () => {
 describe('SystemProvider', () => {
   it('carrega o dashboard agregado', async () => {
     installApi();
-    render(
-      <SystemProvider>
-        <SystemProbe />
-      </SystemProvider>
-    );
+    wrapSystem(<SystemProbe />);
 
-    expect(screen.getByTestId('status').textContent).toBe('loading');
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar dashboard/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
     expect(screen.getByTestId('uptime').textContent).toBe('1000');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('true');
+    expect(screen.getByTestId('refreshing').textContent).toBe('false');
   });
 
   it('expõe erro do dashboard', async () => {
     const api = installApi();
-    api.getSystemInfo.mockRejectedValue(new Error('dashboard quebrado'));
-    render(
-      <SystemProvider>
-        <SystemProbe />
-      </SystemProvider>
-    );
+    api.getSystemInfo.mockRejectedValueOnce('dashboard quebrado');
+    wrapSystem(<SystemProbe />);
+
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar dashboard/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('error'));
     expect(screen.getByTestId('error').textContent).toBe('dashboard quebrado');
+    expect(screen.getByTestId('has-fetched').textContent).toBe('true');
   });
 
   it('refaz a leitura quando refresh é chamado', async () => {
     const api = installApi();
-    render(
-      <SystemProvider>
-        <SystemProbe />
-      </SystemProvider>
-    );
-    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+    wrapSystem(<SystemProbe />);
 
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar dashboard/i }).click();
+    });
+
+    await waitFor(() => expect(screen.getByTestId('uptime').textContent).toBe('1000'));
     const antes = api.getSystemInfo.mock.calls.length;
-    api.getSystemInfo.mockResolvedValue({ ...DASHBOARD, uptime: 2000 });
 
-    await act(async () => screen.getByRole('button', { name: 'atualizar sistema' }).click());
+    api.getSystemInfo.mockResolvedValueOnce({ ...DASHBOARD, uptime: 2000 });
+
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar dashboard/i }).click();
+    });
 
     await waitFor(() => expect(screen.getByTestId('uptime').textContent).toBe('2000'));
     expect(api.getSystemInfo.mock.calls.length).toBe(antes + 1);
   });
+
+  it('permite refresh manual múltiplas vezes', async () => {
+    const api = installApi();
+    wrapSystem(<SystemProbe />);
+
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar dashboard/i }).click();
+    });
+
+    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+    expect(api.getSystemInfo.mock.calls.length).toBe(1);
+
+    // Segundo refresh manual deve disparar nova busca
+    await act(async () => {
+      screen.getByRole('button', { name: /atualizar dashboard/i }).click();
+    });
+
+    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+    expect(api.getSystemInfo.mock.calls.length).toBe(2);
+  });
 });
 
-describe('hooks de sistema fora do provider', () => {
-  it('useCpuContext exige o CpuProvider', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-
+describe('useCpuContext', () => {
+  it('exige o CpuProvider', () => {
     expect(() => render(<CpuProbe />)).toThrow('useCpuContext must be used within its Provider');
-
-    consoleError.mockRestore();
   });
+});
 
-  it('useMemoryContext exige o MemoryProvider', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-
+describe('useMemoryContext', () => {
+  it('exige o MemoryProvider', () => {
     expect(() => render(<MemoryProbe />)).toThrow(
       'useMemoryContext must be used within its Provider'
     );
-
-    consoleError.mockRestore();
   });
+});
 
-  it('useSystemContext exige o SystemProvider', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-
+describe('useSystemContext', () => {
+  it('exige o SystemProvider', () => {
     expect(() => render(<SystemProbe />)).toThrow(
       'useSystemContext must be used within SystemProvider'
     );
-
-    consoleError.mockRestore();
   });
 });

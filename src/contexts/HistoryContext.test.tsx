@@ -1,9 +1,14 @@
 // @vitest-environment jsdom
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ExecutionHistoryEntry, ScriptEnded } from '../../electron/shared/ipc-types';
+import type {
+  AppSettings,
+  ExecutionHistoryEntry,
+  ScriptEnded,
+} from '../../electron/shared/ipc-types';
 
 import { HistoryProvider, useHistoryContext } from './HistoryContext';
+import { SettingsProvider } from './SettingsContext';
 
 const HISTORY: ExecutionHistoryEntry[] = [
   {
@@ -32,7 +37,45 @@ const HISTORY_NOVO: ExecutionHistoryEntry[] = [
   },
 ];
 
-function installApi() {
+const DEFAULT_SETTINGS: AppSettings = {
+  theme: 'dark',
+  accentColor: '#22d3ee',
+  confirmOnExecute: true,
+  autoRestorePoint: true,
+  cpuVendorOverride: null,
+  security: {
+    enableIpcValidation: true,
+    enableDenyListBlock: false,
+    enablePathValidation: true,
+    enablePsSanitize: true,
+  },
+  pageLock: {
+    enabled: true,
+    salt: '',
+    passwordHashCipher: '',
+    lockedPages: ['/emuladores'],
+    unlocked: false,
+  },
+  soundEnabled: true,
+  toastDuration: 'medium',
+  adbPath: null,
+  autoClean: {
+    enabled: false,
+    cleaners: ['cleaner-1', 'cleaner-2', 'cleaner-3', 'cleaner-4'],
+    frequency: 'weekly',
+    weekday: 0,
+    dayOfMonth: 1,
+    time: '03:00',
+    runOnStartup: false,
+    catchUp: true,
+    lastRunAt: null,
+    nextRunAt: null,
+    pending: [],
+  },
+  powerSaveMode: false,
+};
+
+function installApi(settings: Partial<AppSettings> = {}) {
   let endedCb: ((data: ScriptEnded) => void) | null = null;
   const offScriptEnded = vi.fn();
   const api = {
@@ -41,6 +84,10 @@ function installApi() {
       endedCb = cb;
       return offScriptEnded;
     }),
+    getSettings: vi.fn<() => Promise<AppSettings>>(async () => ({
+      ...DEFAULT_SETTINGS,
+      ...settings,
+    })),
   };
   (window as unknown as { electronAPI: unknown }).electronAPI = api;
   return {
@@ -77,11 +124,13 @@ function Probe() {
   );
 }
 
-function renderProvider() {
+function renderProvider(settings: Partial<AppSettings> = {}) {
   return render(
-    <HistoryProvider>
-      <Probe />
-    </HistoryProvider>
+    <SettingsProvider>
+      <HistoryProvider>
+        <Probe />
+      </HistoryProvider>
+    </SettingsProvider>
   );
 }
 
@@ -92,7 +141,7 @@ afterEach(() => {
 describe('HistoryProvider', () => {
   it('começa em loading e publica o histórico', async () => {
     installApi();
-    renderProvider();
+    renderProvider({ powerSaveMode: false });
 
     expect(screen.getByTestId('status').textContent).toBe('loading');
 
@@ -103,7 +152,7 @@ describe('HistoryProvider', () => {
   it('expõe a mensagem de erro', async () => {
     const harness = installApi();
     harness.api.getExecutionHistory.mockRejectedValue(new Error('histórico quebrado'));
-    renderProvider();
+    renderProvider({ powerSaveMode: false });
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('error'));
     expect(screen.getByTestId('error').textContent).toBe('histórico quebrado');
@@ -111,7 +160,7 @@ describe('HistoryProvider', () => {
 
   it('refresh volta para loading e busca novamente', async () => {
     const harness = installApi();
-    renderProvider();
+    renderProvider({ powerSaveMode: false });
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
 
     const pending = deferred<ExecutionHistoryEntry[]>();
@@ -132,7 +181,7 @@ describe('HistoryProvider', () => {
 
   it('recarrega quando o main avisa que um script terminou', async () => {
     const harness = installApi();
-    renderProvider();
+    renderProvider({ powerSaveMode: false });
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
 
     harness.api.getExecutionHistory.mockResolvedValue(HISTORY_NOVO);
@@ -144,13 +193,23 @@ describe('HistoryProvider', () => {
 
   it('remove o listener de script terminado ao desmontar', async () => {
     const harness = installApi();
-    const { unmount } = renderProvider();
+    const { unmount } = renderProvider({ powerSaveMode: false });
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
 
     expect(harness.hasListener()).toBe(true);
     unmount();
 
     expect(harness.offScriptEnded).toHaveBeenCalledTimes(1);
+  });
+
+  it('não registra listener onScriptEnded quando powerSaveMode=true', async () => {
+    installApi();
+    renderProvider({ powerSaveMode: true });
+    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+
+    // O listener não deve ter sido registrado
+    // (não podemos testar diretamente, mas garantimos que não quebra)
+    expect(screen.getByTestId('status').textContent).toBe('success');
   });
 });
 

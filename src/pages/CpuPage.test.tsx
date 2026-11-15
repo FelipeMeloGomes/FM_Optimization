@@ -62,10 +62,6 @@ vi.mock('../hooks/use-is-script-applied', () => ({
   useIsScriptApplied: () => () => false,
 }));
 
-// O tema instancia `Path2D` no topo do módulo (canvas não existe no node) e
-// chega aqui por um dos componentes de card; o fundo não influencia a página.
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import CpuPage from './CpuPage';
 
 const CPU: CpuInfo = {

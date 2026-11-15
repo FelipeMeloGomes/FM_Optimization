@@ -1,5 +1,4 @@
 import type { AppSettings } from '../../electron/shared/ipc-types';
-import { BatmanBackground } from '../components/BatmanBackground';
 
 export interface ThemeConfig {
   id: AppSettings['theme'];
@@ -14,10 +13,8 @@ export interface ThemeConfig {
     text: string;
   };
   icon?: React.ComponentType<{ className?: string }>;
-  backgroundComponent?: React.ComponentType;
   signature?: {
     glowColor: string;
-    particleCount?: number;
   };
 }
 
@@ -69,10 +66,8 @@ export const THEMES: ThemeConfig[] = [
     cssSelector: ':root.batman',
     isDark: true,
     preview: { bg: '#08080e', card: '#10101a', accent: '#d4a017', text: '#e0dcd4' },
-    backgroundComponent: BatmanBackground,
     signature: {
       glowColor: 'rgba(201, 162, 39, 0.6)',
-      particleCount: 20,
     },
   },
 ];

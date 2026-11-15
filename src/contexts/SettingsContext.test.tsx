@@ -3,10 +3,6 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppSettings } from '../../electron/shared/ipc-types';
 
-// O tema importa o BatmanBackground, que instancia `Path2D` no topo do módulo;
-// nem o jsdom implementa canvas. O fundo não influencia as configurações.
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import { SettingsProvider, useSettingsContext } from './SettingsContext';
 
 const SAVED: AppSettings = {
@@ -44,6 +40,7 @@ const SAVED: AppSettings = {
     nextRunAt: 2,
     pending: [],
   },
+  powerSaveMode: false,
 };
 
 function installApi(overrides: Partial<Record<string, unknown>> = {}) {

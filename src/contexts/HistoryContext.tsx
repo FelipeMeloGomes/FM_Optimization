@@ -1,5 +1,6 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import type { AsyncState, ExecutionHistoryEntry } from '../../electron/shared/ipc-types';
+import { useSettingsContext } from './SettingsContext';
 
 interface HistoryContextValue {
   state: AsyncState<ExecutionHistoryEntry[]>;
@@ -10,6 +11,7 @@ const HistoryContext = createContext<HistoryContextValue | null>(null);
 
 export function HistoryProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AsyncState<ExecutionHistoryEntry[]>>({ status: 'loading' });
+  const { settings } = useSettingsContext();
 
   const refresh = useCallback(() => {
     setState({ status: 'loading' });
@@ -25,11 +27,13 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
     refresh();
   }, [refresh]);
 
+  // No power save mode: desabilita listener de script finalizado para reduzir polling
   useEffect(() => {
+    if (settings.powerSaveMode) return;
     return window.electronAPI.onScriptEnded(() => {
       refresh();
     });
-  }, [refresh]);
+  }, [refresh, settings.powerSaveMode]);
 
   return <HistoryContext.Provider value={{ state, refresh }}>{children}</HistoryContext.Provider>;
 }

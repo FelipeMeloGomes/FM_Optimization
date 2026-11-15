@@ -118,26 +118,6 @@ export const benchmarkDnsSchema = z.object({
   providers: BenchmarkProvidersSchema,
 });
 
-export const ExportDataSchema = z.object({
-  version: z.string(),
-  exportedAt: z.string(),
-  settings: SettingsSchema.partial().optional(),
-  history: z
-    .array(
-      z.object({
-        id: z.string(),
-        scriptId: z.string(),
-        scriptName: z.string(),
-        startTime: z.string(),
-        endTime: z.string(),
-        durationMs: z.number(),
-        exitCode: z.number().nullable(),
-        wasCancelled: z.boolean(),
-      })
-    )
-    .optional(),
-});
-
 export const EmulatorIdSchema = z.enum(['bluestacks-4', 'bluestacks-5']);
 
 export const adbDetectEmulatorSchema = z.object({
@@ -157,23 +137,6 @@ export const adbRemoveAppSchema = z.object({
   instanceId: z.string().min(1, 'Instance ID is required'),
   instanceName: z.string().optional(),
   arch: z.string().optional(),
-  packageName: z.string().min(1, 'Package name is required'),
-});
-
-export const adbBackupAppSchema = z.object({
-  serial: z.string().min(1, 'Device serial is required'),
-  instanceId: z.string().min(1, 'Instance ID is required'),
-  packageName: z.string().min(1, 'Package name is required'),
-});
-
-export const adbRestoreAppSchema = z.object({
-  serial: z.string().min(1, 'Device serial is required'),
-  apkPath: z.string().min(1, 'APK path is required'),
-});
-
-export const adbRestoreAppByNameSchema = z.object({
-  serial: z.string().min(1, 'Device serial is required'),
-  instanceId: z.string().min(1, 'Instance ID is required'),
   packageName: z.string().min(1, 'Package name is required'),
 });
 
@@ -251,9 +214,6 @@ export const IpcSchemas: Record<string, z.ZodSchema> = {
   'adb:detect-emulator': adbDetectEmulatorSchema,
   'adb:list-apps': adbListAppsSchema,
   'adb:remove-app': adbRemoveAppSchema,
-  'adb:backup-app': adbBackupAppSchema,
-  'adb:restore-app': adbRestoreAppSchema,
-  'adb:restore-app-by-name': adbRestoreAppByNameSchema,
   'adb:list-removed': z.undefined(),
   'adb:restore-removed': adbRestoreRemovedSchema,
   'adb:clear-removed': adbClearRemovedSchema,

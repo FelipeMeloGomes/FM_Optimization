@@ -20,8 +20,6 @@ vi.mock('../contexts/SettingsContext', () => ({
   useSettingsContext: () => store.settings,
 }));
 
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import EmuladoresPage from './EmuladoresPage';
 
 const store: {

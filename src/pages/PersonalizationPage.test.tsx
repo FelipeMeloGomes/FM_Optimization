@@ -27,8 +27,6 @@ vi.mock('../hooks/use-is-script-applied', () => ({
   useIsScriptApplied: () => () => false,
 }));
 
-vi.mock('../components/BatmanBackground', () => ({ BatmanBackground: () => null }));
-
 import PersonalizationPage from './PersonalizationPage';
 
 const store = vi.hoisted<{

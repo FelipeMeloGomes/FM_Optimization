@@ -128,6 +128,10 @@ setupListeners();
 
 const electronAPI: ElectronAPI = {
   getSystemInfo: () => ipc<DashboardData>('get-system-info'),
+  getSystemInfoCache: () =>
+    ipc<{ version: number; timestamp: string; data: DashboardData } | null>(
+      'get-system-info-cache'
+    ),
   getCpuInfo: () => ipc<CpuInfo>('get-cpu-info'),
   getMemoryInfo: () => ipc<MemoryInfo>('get-memory-info'),
   hasSSD: () => ipc<boolean>('has-ssd'),
@@ -225,12 +229,6 @@ const electronAPI: ElectronAPI = {
     arch?: string;
     packageName: string;
   }) => ipc<RemoveAppResult>('adb:remove-app', payload),
-  adbBackupApp: (payload: { serial: string; instanceId: string; packageName: string }) =>
-    ipc<string>('adb:backup-app', payload),
-  adbRestoreApp: (serial: string, apkPath: string) =>
-    ipcVoid('adb:restore-app', { serial, apkPath }),
-  adbRestoreAppByName: (payload: { serial: string; instanceId: string; packageName: string }) =>
-    ipcVoid('adb:restore-app-by-name', payload),
   adbListRemovedApps: () => ipc<RemovedApp[]>('adb:list-removed'),
   adbRestoreRemovedApp: (payload: { serial: string; instanceId: string; packageName: string }) =>
     ipcVoid('adb:restore-removed', payload),

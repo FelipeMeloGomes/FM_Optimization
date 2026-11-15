@@ -43,6 +43,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   toastDuration: 'medium',
   adbPath: null,
   autoClean: DEFAULT_AUTO_CLEAN,
+  powerSaveMode: false,
 };
 
 function defaultSettings(): AppSettings {
@@ -218,6 +219,10 @@ export function loadSettings(): AppSettings {
       adbPath:
         typeof parsed.adbPath === 'string' && parsed.adbPath.length > 0 ? parsed.adbPath : null,
       autoClean: parseAutoClean(parsed.autoClean),
+      powerSaveMode:
+        typeof parsed.powerSaveMode === 'boolean'
+          ? parsed.powerSaveMode
+          : DEFAULT_SETTINGS.powerSaveMode,
     };
   } catch {
     return defaultSettings();
