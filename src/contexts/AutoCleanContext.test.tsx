@@ -54,6 +54,7 @@ const SAVED: AppSettings = {
   toastDuration: 'medium',
   adbPath: null,
   autoClean: AUTO_CLEAN_SETTINGS,
+  powerSaveMode: false,
 };
 
 const STATUS: AutoCleanStatus = {

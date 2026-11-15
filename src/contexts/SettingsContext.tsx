@@ -56,6 +56,7 @@ const DEFAULT: AppSettings = {
     nextRunAt: null,
     pending: [],
   },
+  powerSaveMode: false,
 };
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } {

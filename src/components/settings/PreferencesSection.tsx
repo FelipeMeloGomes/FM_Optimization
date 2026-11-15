@@ -29,6 +29,15 @@ export function PreferencesSection() {
             onChange={(e) => update({ autoRestorePoint: e.target.checked })}
           />
         </div>
+        <div className="p-4 transition-colors duration-200 hover:bg-muted/30">
+          <Toggle
+            id="power-save-mode"
+            label="Modo Economia"
+            description="Reduz uso de CPU/GPU desativando aceleracao de hardware e aumentando cache (requer reinicio)"
+            checked={settings.powerSaveMode}
+            onChange={(e) => update({ powerSaveMode: e.target.checked })}
+          />
+        </div>
       </div>
     </div>
   );

@@ -71,3 +71,18 @@ export function applyChromiumBackgroundSwitches(target: {
 }): void {
   for (const name of CHROMIUM_BACKGROUND_SWITCHES) target.appendSwitch(name);
 }
+
+/**
+ * Switches para modo economia: desativam GPU e limitam renderer.
+ * Devem ser aplicados antes de app.whenReady().
+ */
+export const POWER_SAVE_SWITCHES = [
+  'disable-gpu',
+  'disable-gpu-compositing',
+  'disable-software-rasterizer',
+  'renderer-process-limit=1',
+] as const;
+
+export function applyPowerSaveSwitches(target: { appendSwitch(name: string): void }): void {
+  for (const name of POWER_SAVE_SWITCHES) target.appendSwitch(name);
+}

@@ -40,6 +40,7 @@ const SAVED: AppSettings = {
     nextRunAt: 2,
     pending: [],
   },
+  powerSaveMode: false,
 };
 
 function installApi(overrides: Partial<Record<string, unknown>> = {}) {

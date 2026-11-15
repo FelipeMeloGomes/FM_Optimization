@@ -128,7 +128,6 @@ export function RestorePointProvider({ children }: { children: ReactNode }) {
 }
 
 export function useRestorePointContext(): RestorePointContextValue {
-  // biome-ignore lint/correctness/noComponentHookFactories: hook identity é estável
   const ctx = useContext(RestorePointContext);
   if (!ctx) throw new Error('useRestorePointContext must be used within RestorePointProvider');
   return ctx;

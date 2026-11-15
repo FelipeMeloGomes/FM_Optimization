@@ -103,6 +103,7 @@ export interface AppSettings {
   toastDuration: 'short' | 'medium' | 'long';
   adbPath: string | null;
   autoClean: AutoCleanSettings;
+  powerSaveMode: boolean;
 }
 
 export interface AutoCleanSettings {

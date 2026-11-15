@@ -9,6 +9,7 @@ import { registerIpcHandlers } from './ipc-handlers';
 import { resolveScriptId } from './legacy-script-ids';
 import { isAdmin, isAdminAsync } from './services/admin-check';
 import { getAutoCleanScheduler } from './services/auto-clean';
+import { loadSettings } from './services/data-service';
 import { executeScript } from './services/script-executor';
 import { loadScripts } from './services/script-registry';
 import {
@@ -26,6 +27,7 @@ import { destroyTray, ensureTray, isTrayActive, refreshTray } from './tray';
 import { DnsAddressesSchema } from './validation';
 import {
   applyChromiumBackgroundSwitches,
+  applyPowerSaveSwitches,
   canFocus,
   resolveCloseAction,
   shouldCreateWindowAtBoot,
@@ -40,8 +42,22 @@ export { mainWindow };
 const startedHidden = process.argv.includes('--hidden');
 const waitPidArg = readNumericArg(process.argv, '--wait-pid');
 
+// Carrega settings cedo para aplicar flags de power save antes do app.whenReady()
+let powerSaveMode = false;
+try {
+  const settings = loadSettings();
+  powerSaveMode = settings.powerSaveMode ?? false;
+} catch {
+  /* settings não disponível ainda, usa padrão */
+}
+
 // O Chromium lê a command line uma única vez, no boot.
 applyChromiumBackgroundSwitches(app.commandLine);
+
+// Aplica flags de power save mode antes do app.whenReady()
+if (powerSaveMode) {
+  applyPowerSaveSwitches(app.commandLine);
+}
 
 // Valida que o scriptId pertence à allowlist de scripts conhecidos.
 function isValidScriptId(scriptId: string): boolean {
