@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Square,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type {
   ScheduledTaskEntry,
   StartupAppEntry,
@@ -41,6 +41,7 @@ import {
   Tabs,
 } from '../components/ui';
 import { useStartup } from '../hooks/use-startup';
+import { useVirtualRows } from '../hooks/use-virtual-rows';
 import { cn } from '../lib/utils';
 
 type TabId = 'apps' | 'tasks' | 'services';
@@ -74,6 +75,8 @@ const SERVICE_STATE_LABELS: Record<StartupServiceEntry['state'], string> = {
   Paused: 'Pausado',
   Unknown: 'Desconhecido',
 };
+
+const LIST_MAX_HEIGHT = 'max-h-[calc(100vh-420px)] min-h-[320px]';
 
 function normalize(value: string): string {
   return value.toLocaleLowerCase('pt-BR');
@@ -157,6 +160,14 @@ export default function StartupPage() {
         matches([service.name, service.displayName], query)
     );
   }, [snapshot, onlyEnabled, query]);
+
+  const appsScrollRef = useRef<HTMLDivElement>(null);
+  const tasksScrollRef = useRef<HTMLDivElement>(null);
+  const servicesScrollRef = useRef<HTMLDivElement>(null);
+
+  const appsV = useVirtualRows(apps, appsScrollRef);
+  const tasksV = useVirtualRows(tasks, tasksScrollRef);
+  const servicesV = useVirtualRows(services, servicesScrollRef);
 
   if (state.status === 'loading') {
     return (
@@ -340,8 +351,12 @@ export default function StartupPage() {
               }
             />
           ) : (
-            <Table className="table-fixed">
-              <TableHeader>
+            <Table
+              className="table-fixed"
+              containerRef={appsScrollRef}
+              containerClassName={LIST_MAX_HEIGHT}
+            >
+              <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow>
                   <TableHead>Aplicativo</TableHead>
                   <TableHead className="w-32 sm:w-40">Origem</TableHead>
@@ -350,10 +365,16 @@ export default function StartupPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {apps.map((app) => {
+                {appsV.paddingTop > 0 && (
+                  <tr style={{ height: appsV.paddingTop }}>
+                    <td colSpan={4} />
+                  </tr>
+                )}
+                {appsV.virtualItems.map((virtualRow) => {
+                  const app = apps[virtualRow.index];
                   const locked = app.requiresAdmin && !data.isAdmin;
                   return (
-                    <TableRow key={app.id}>
+                    <TableRow key={app.id} data-index={virtualRow.index} ref={appsV.measureElement}>
                       <TableCell>
                         <div className="flex min-w-0 items-center gap-2">
                           <span className="truncate font-medium text-foreground" title={app.name}>
@@ -415,6 +436,11 @@ export default function StartupPage() {
                     </TableRow>
                   );
                 })}
+                {appsV.paddingBottom > 0 && (
+                  <tr style={{ height: appsV.paddingBottom }}>
+                    <td colSpan={4} />
+                  </tr>
+                )}
               </TableBody>
             </Table>
           )}
@@ -435,8 +461,12 @@ export default function StartupPage() {
               }
             />
           ) : (
-            <Table className="table-fixed">
-              <TableHeader>
+            <Table
+              className="table-fixed"
+              containerRef={tasksScrollRef}
+              containerClassName={LIST_MAX_HEIGHT}
+            >
+              <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow>
                   <TableHead>Tarefa</TableHead>
                   <TableHead className="w-28 sm:w-36">Gatilho</TableHead>
@@ -445,10 +475,20 @@ export default function StartupPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tasks.map((task) => {
+                {tasksV.paddingTop > 0 && (
+                  <tr style={{ height: tasksV.paddingTop }}>
+                    <td colSpan={4} />
+                  </tr>
+                )}
+                {tasksV.virtualItems.map((virtualRow) => {
+                  const task = tasks[virtualRow.index];
                   const locked = !data.isAdmin;
                   return (
-                    <TableRow key={task.id}>
+                    <TableRow
+                      key={task.id}
+                      data-index={virtualRow.index}
+                      ref={tasksV.measureElement}
+                    >
                       <TableCell>
                         <div className="flex min-w-0 items-center gap-2">
                           <span className="truncate font-medium text-foreground" title={task.name}>
@@ -513,6 +553,11 @@ export default function StartupPage() {
                     </TableRow>
                   );
                 })}
+                {tasksV.paddingBottom > 0 && (
+                  <tr style={{ height: tasksV.paddingBottom }}>
+                    <td colSpan={4} />
+                  </tr>
+                )}
               </TableBody>
             </Table>
           )}
@@ -533,8 +578,12 @@ export default function StartupPage() {
               }
             />
           ) : (
-            <Table className="table-fixed">
-              <TableHeader>
+            <Table
+              className="table-fixed"
+              containerRef={servicesScrollRef}
+              containerClassName={LIST_MAX_HEIGHT}
+            >
+              <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow>
                   <TableHead>Serviço</TableHead>
                   <TableHead className="w-32 sm:w-40">Início</TableHead>
@@ -544,10 +593,20 @@ export default function StartupPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {services.map((service) => {
+                {servicesV.paddingTop > 0 && (
+                  <tr style={{ height: servicesV.paddingTop }}>
+                    <td colSpan={5} />
+                  </tr>
+                )}
+                {servicesV.virtualItems.map((virtualRow) => {
+                  const service = services[virtualRow.index];
                   const locked = !data.isAdmin || service.protected;
                   return (
-                    <TableRow key={service.id}>
+                    <TableRow
+                      key={service.id}
+                      data-index={virtualRow.index}
+                      ref={servicesV.measureElement}
+                    >
                       <TableCell>
                         <div className="flex min-w-0 items-center gap-2">
                           <span
@@ -654,6 +713,11 @@ export default function StartupPage() {
                     </TableRow>
                   );
                 })}
+                {servicesV.paddingBottom > 0 && (
+                  <tr style={{ height: servicesV.paddingBottom }}>
+                    <td colSpan={5} />
+                  </tr>
+                )}
               </TableBody>
             </Table>
           )}

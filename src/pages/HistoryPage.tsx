@@ -8,7 +8,7 @@ import {
   XCircle,
   Zap,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import {
   Badge,
   EmptyState,
@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '../components/ui';
 import { useHistoryContext } from '../contexts/HistoryContext';
+import { useVirtualRows } from '../hooks/use-virtual-rows';
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString('pt-BR');
@@ -33,8 +34,13 @@ function formatDuration(ms: number): string {
   return `${m}m ${s % 60}s`;
 }
 
+const HISTORY_ROW_HEIGHT = 57;
+const LIST_MAX_HEIGHT = 'max-h-[calc(100vh-460px)] min-h-[320px]';
+
 function HistoryRow({
   entry,
+  index,
+  rowRef,
 }: {
   entry: {
     id: string;
@@ -45,9 +51,11 @@ function HistoryRow({
     wasCancelled: boolean;
     exitCode: number | null;
   };
+  index?: number;
+  rowRef?: React.Ref<HTMLTableRowElement>;
 }) {
   return (
-    <TableRow key={entry.id}>
+    <TableRow data-index={index} ref={rowRef}>
       <TableCell className="font-medium">{entry.scriptName}</TableCell>
       <TableCell>
         {entry.trigger === 'scheduled' ? (
@@ -100,6 +108,13 @@ export default function HistoryPage() {
   const { state } = useHistoryContext();
 
   const history = state.status === 'success' ? state.data : [];
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { virtualItems, paddingTop, paddingBottom, measureElement } = useVirtualRows(
+    history,
+    scrollRef,
+    HISTORY_ROW_HEIGHT
+  );
 
   const stats = useMemo(() => {
     if (state.status !== 'success') return null;
@@ -219,8 +234,8 @@ export default function HistoryPage() {
           />
         ) : (
           <div className="rounded-xl border border-border overflow-hidden">
-            <Table>
-              <TableHeader>
+            <Table containerRef={scrollRef} containerClassName={LIST_MAX_HEIGHT}>
+              <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow className="bg-muted/30">
                   <TableHead>Script</TableHead>
                   <TableHead>Origem</TableHead>
@@ -230,9 +245,27 @@ export default function HistoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {history.map((entry) => (
-                  <HistoryRow key={entry.id} entry={entry} />
-                ))}
+                {paddingTop > 0 && (
+                  <tr style={{ height: paddingTop }}>
+                    <td colSpan={5} />
+                  </tr>
+                )}
+                {virtualItems.map((virtualRow) => {
+                  const entry = history[virtualRow.index];
+                  return (
+                    <HistoryRow
+                      key={entry.id}
+                      entry={entry}
+                      index={virtualRow.index}
+                      rowRef={measureElement}
+                    />
+                  );
+                })}
+                {paddingBottom > 0 && (
+                  <tr style={{ height: paddingBottom }}>
+                    <td colSpan={5} />
+                  </tr>
+                )}
               </TableBody>
             </Table>
           </div>

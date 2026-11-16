@@ -19,6 +19,7 @@ vi.mock('../hooks/use-startup', () => ({
   useStartup: () => store.startup,
 }));
 
+import { mockElementSize } from '@/tests/mock-element-size';
 import StartupPage from './StartupPage';
 
 const store = vi.hoisted<{
@@ -114,11 +115,13 @@ function renderPage() {
 }
 
 beforeEach(() => {
+  mockElementSize();
   startup();
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe('StartupPage — estados', () => {
