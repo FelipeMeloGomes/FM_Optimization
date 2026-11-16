@@ -33,12 +33,15 @@ import {
   applyV8HeapLimit,
   canFocus,
   resolveCloseAction,
+  shouldCreateMissingWindow,
   shouldCreateWindowAtBoot,
   shouldShowWindow,
   type WindowMode,
 } from './window-policy';
 
 let mainWindow: BrowserWindow | null = null;
+/** Já existiu janela nesta sessão? Diferencia boot oculto de janela fechada. */
+let windowWasCreated = false;
 
 export { mainWindow };
 
@@ -46,10 +49,10 @@ const startedHidden = process.argv.includes('--hidden');
 const waitPidArg = readNumericArg(process.argv, '--wait-pid');
 
 // Carrega settings cedo para aplicar flags de power save antes do app.whenReady()
-let powerSaveMode = false;
+let powerSaveMode = true;
 try {
   const settings = loadSettings();
-  powerSaveMode = settings.powerSaveMode ?? false;
+  powerSaveMode = settings.powerSaveMode ?? true;
 } catch {
   /* settings não disponível ainda, usa padrão */
 }
@@ -308,6 +311,7 @@ function createWindow(mode: WindowMode): void {
     },
   });
   mainWindow = window;
+  windowWasCreated = true;
 
   window.on('ready-to-show', () => {
     if (showOnReady) window.show();
@@ -417,9 +421,13 @@ function setupAutoClean(isElevated: boolean): void {
     }
     destroyTray();
     // Sem bandeja a janela é a única porta de entrada do app: recria se ela foi
-    // destruída ao fechar e mostra se estiver só escondida.
+    // destruída ao fechar e mostra se estiver só escondida. Exceção: boot com
+    // `--hidden` sem janela nenhuma — ali o usuário pediu para não abrir UI (e
+    // abrir o atalho de novo chega pela segunda instância).
     if (!canFocus(mainWindow)) {
-      if (!appState.isQuitting) createWindow('on-demand');
+      if (appState.isQuitting) return;
+      if (!shouldCreateMissingWindow({ startedHidden, windowWasCreated })) return;
+      createWindow('on-demand');
       return;
     }
     if (!mainWindow.isVisible()) mainWindow.show();

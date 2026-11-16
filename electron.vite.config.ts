@@ -37,6 +37,9 @@ export default defineConfig({
         // código de dev (~90 KB no bundle).
         { find: 'react-router/dom', replacement: resolve(__dirname, 'node_modules/react-router/dist/production/dom-export.mjs') },
         { find: 'react-router', replacement: resolve(__dirname, 'node_modules/react-router/dist/production/index.mjs') },
+        { find: '@/', replacement: resolve(__dirname, 'src') },
+        { find: '@/lib', replacement: resolve(__dirname, 'src/lib') },
+        { find: '@/utils', replacement: resolve(__dirname, 'src/utils') },
       ],
     },
     // Força NODE_ENV=production para que o react-router (e outros pacotes)

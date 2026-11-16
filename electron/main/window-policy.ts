@@ -47,6 +47,22 @@ export function resolveCloseAction(isQuitting: boolean, trayActive: boolean): Cl
 }
 
 /**
+ * Sem bandeja a janela é a única porta de entrada do app — mas o boot com
+ * `--hidden` pediu explicitamente para não abrir UI.
+ *
+ * Recriamos a janela só quando uma já existiu nesta sessão (bandeja desligada
+ * com a janela fechada) ou quando o boot não era oculto. No boot oculto sem
+ * janela o app continua alcançável abrindo o atalho de novo: a segunda
+ * instância chama `openMainWindow`.
+ */
+export function shouldCreateMissingWindow(options: {
+  startedHidden: boolean;
+  windowWasCreated: boolean;
+}): boolean {
+  return options.windowWasCreated || !options.startedHidden;
+}
+
+/**
  * `BrowserWindow` destruída continua sendo um objeto truthy: usar só `if (win)`
  * estoura em "Object has been destroyed" ao chamar `show()`/`focus()`.
  */

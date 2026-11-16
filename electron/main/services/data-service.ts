@@ -43,7 +43,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   toastDuration: 'medium',
   adbPath: null,
   autoClean: DEFAULT_AUTO_CLEAN,
-  powerSaveMode: false,
+  powerSaveMode: true,
 };
 
 function defaultSettings(): AppSettings {

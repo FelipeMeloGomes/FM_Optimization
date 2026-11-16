@@ -60,10 +60,19 @@ describe('janela em segundo plano', () => {
   });
 
   it('recria a janela se a bandeja for desligada com a janela destruida', () => {
-    // Sem bandeja e sem janela o app ficaria rodando inalcancavel.
+    // Sem bandeja e sem janela o app ficaria rodando inalcancavel — mas so
+    // quando a janela ja existiu (ver o teste seguinte).
     expect(source).toMatch(
-      /if \(!canFocus\(mainWindow\)\) \{[\s\S]{0,120}createWindow\('on-demand'\)/
+      /if \(!canFocus\(mainWindow\)\) \{[\s\S]{0,240}createWindow\('on-demand'\)/
     );
+  });
+
+  it('nao recria a janela no boot oculto, que era o --hidden virando janela aberta', () => {
+    // Antes a recriacao era incondicional: com autoClean desligado o autostart
+    // com --hidden abria a UI (~400 MB) em vez de ficar em segundo plano.
+    expect(source).toContain('shouldCreateMissingWindow({ startedHidden, windowWasCreated })');
+    expect(source).toMatch(/let windowWasCreated = false/);
+    expect(source).toMatch(/windowWasCreated = true/);
   });
 
   it('desliga o corretor ortografico sem tocar na sessao padrao', () => {

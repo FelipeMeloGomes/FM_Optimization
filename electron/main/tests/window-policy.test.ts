@@ -4,6 +4,7 @@ import {
   CHROMIUM_BACKGROUND_SWITCHES,
   canFocus,
   resolveCloseAction,
+  shouldCreateMissingWindow,
   shouldCreateWindowAtBoot,
   shouldShowWindow,
 } from '../window-policy';
@@ -62,6 +63,23 @@ describe('resolveCloseAction', () => {
 
   it('nao intercepta o fechamento quando o app esta encerrando', () => {
     expect(resolveCloseAction(true, true)).toBe('allow-close');
+  });
+});
+
+describe('shouldCreateMissingWindow', () => {
+  it('nao abre janela no boot oculto sem bandeja', () => {
+    // Era o bug: sem bandeja o app recriava a janela incondicionalmente e o
+    // `--hidden` do autostart abria a UI (~400 MB em vez de ~180 MB).
+    expect(shouldCreateMissingWindow({ startedHidden: true, windowWasCreated: false })).toBe(false);
+  });
+
+  it('recria a janela quando a bandeja e desligada com a janela ja fechada', () => {
+    // Sem bandeja e sem janela o app ficaria rodando inalcancavel.
+    expect(shouldCreateMissingWindow({ startedHidden: true, windowWasCreated: true })).toBe(true);
+  });
+
+  it('recria a janela num boot visivel', () => {
+    expect(shouldCreateMissingWindow({ startedHidden: false, windowWasCreated: false })).toBe(true);
   });
 });
 

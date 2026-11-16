@@ -76,6 +76,11 @@ export const SettingsSchema = z.object({
   toastDuration: z.enum(['short', 'medium', 'long']).default('medium'),
   adbPath: z.string().nullable().default(null),
   autoClean: AutoCleanSchema.default(() => AutoCleanSchema.parse({})),
+  // Sem esta chave o zod descartava o campo no `save-settings` e o toggle nunca
+  // era gravado. Padrao ligado: o app e residente na bandeja na maior parte do
+  // tempo e os switches (--disable-gpu, renderer-process-limit=1) cortam ~31% da
+  // RAM privada em repouso.
+  powerSaveMode: z.boolean().default(true),
 });
 
 export const VerifyPageLockPasswordSchema = z.object({

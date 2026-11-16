@@ -103,6 +103,25 @@ describe('SettingsSchema cpuVendorOverride', () => {
   });
 });
 
+describe('SettingsSchema powerSaveMode', () => {
+  it('defaults to enabled', () => {
+    expect(SettingsSchema.parse({}).powerSaveMode).toBe(true);
+  });
+
+  it('keeps an explicit false so the user can turn it off', () => {
+    expect(SettingsSchema.parse({ powerSaveMode: false }).powerSaveMode).toBe(false);
+  });
+
+  // Regressao: sem a chave no schema o zod faz strip e o toggle nunca persiste.
+  it('survives save-settings validation instead of being stripped', () => {
+    const result = validateIpcInput('save-settings', { powerSaveMode: false });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toMatchObject({ powerSaveMode: false });
+    }
+  });
+});
+
 describe('startup schemas', () => {
   it('accepts a valid toggle payload', () => {
     const result = IpcSchemas['startup:set-enabled'].safeParse({
