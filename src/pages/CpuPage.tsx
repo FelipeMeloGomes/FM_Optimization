@@ -2,8 +2,8 @@ import { AlertTriangle, Cpu } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
-import { ScriptSectionCard } from '../components/ScriptSectionCard';
 import { Badge, Button, Card, CardContent } from '../components/ui';
+import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useCpuContext, useMemoryContext } from '../contexts/SystemContext';
 import { useCpuVendor } from '../hooks/use-cpu-vendor';
 import { useScriptPage } from '../hooks/use-script-page';
@@ -291,7 +291,7 @@ export default function CpuPage() {
             {sections
               .filter(({ scripts }) => scripts.length > 0)
               .map(({ section, scripts }) => (
-                <ScriptSectionCard
+                <VirtualizedSectionCard
                   key={section.id}
                   section={section}
                   scripts={scripts}
