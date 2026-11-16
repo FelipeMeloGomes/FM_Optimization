@@ -1,7 +1,7 @@
 import { Palette } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
-import { ScriptSectionCard } from '../components/ScriptSectionCard';
+import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useScriptPage } from '../hooks/use-script-page';
 import { PERSONALIZATION_SECTIONS } from '../lib/personalization-sections';
 
@@ -66,7 +66,7 @@ export default function PersonalizationPage() {
 
       {/* Personalization Sections */}
       {PERSONALIZATION_SECTIONS.map((section) => (
-        <ScriptSectionCard
+        <VirtualizedSectionCard
           key={section.id}
           section={section}
           scripts={personalizationScripts}

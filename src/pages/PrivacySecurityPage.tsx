@@ -1,7 +1,7 @@
 import { ShieldCheck } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
-import { ScriptSectionCard } from '../components/ScriptSectionCard';
+import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useScriptPage } from '../hooks/use-script-page';
 import { PRIVACY_SECTIONS } from '../lib/privacy-sections';
 
@@ -66,7 +66,7 @@ export default function PrivacySecurityPage() {
 
       {/* Privacy Sections */}
       {PRIVACY_SECTIONS.map((section) => (
-        <ScriptSectionCard
+        <VirtualizedSectionCard
           key={section.id}
           section={section}
           scripts={privacyScripts}
