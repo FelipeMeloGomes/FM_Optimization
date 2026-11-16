@@ -5,6 +5,7 @@ import {
   Clock,
   History,
   MousePointerClick,
+  PauseCircle,
   XCircle,
   Zap,
 } from 'lucide-react';
@@ -86,6 +87,15 @@ function HistoryRow({
         {entry.exitCode === 0 && (
           <Badge variant="secondary" className="gap-1 text-emerald-400 bg-emerald-500/10">
             <CheckCircle className="size-3" /> Sucesso
+          </Badge>
+        )}
+        {entry.exitCode === -2 && (
+          <Badge
+            variant="secondary"
+            className="gap-1 text-amber-400 bg-amber-500/10"
+            title="O script pode ter concluído com sucesso antes de você fechar a janela. Verifique se o Spicetify foi instalado no Spotify."
+          >
+            <PauseCircle className="size-3" /> Interrompido pelo usuário
           </Badge>
         )}
         {entry.exitCode != null && entry.exitCode > 0 && (

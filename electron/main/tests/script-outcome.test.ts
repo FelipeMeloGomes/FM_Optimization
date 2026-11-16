@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   createHistoryEntry,
+  EXIT_INTERRUPTED_SENTINEL,
   EXIT_MENU_CLOSED_WITHOUT_APPLY,
   EXIT_UNKNOWN_HANDOFF,
+  EXIT_USER_INTERRUPTED,
   normalizeInteractiveExitCode,
 } from '../services/script-outcome';
 
@@ -46,5 +48,22 @@ describe('normalizeInteractiveExitCode', () => {
   it('nao confunde sucesso com os sentinelas', () => {
     expect(normalizeInteractiveExitCode('apps-6', 0)).toBe(0);
     expect(normalizeInteractiveExitCode('builtin-13', 0)).toBe(0);
+  });
+
+  it('trata Ctrl+C (fechar janela) como interrompido pelo usuário', () => {
+    for (const id of ['apps-6', 'apps-7']) {
+      expect(normalizeInteractiveExitCode(id, EXIT_USER_INTERRUPTED)).toBe(
+        EXIT_INTERRUPTED_SENTINEL
+      );
+    }
+  });
+
+  it('nao trata Ctrl+C como interrompido para outros scripts', () => {
+    expect(normalizeInteractiveExitCode('apps-2', EXIT_USER_INTERRUPTED)).toBe(
+      EXIT_USER_INTERRUPTED
+    );
+    expect(normalizeInteractiveExitCode('dns-1', EXIT_USER_INTERRUPTED)).toBe(
+      EXIT_USER_INTERRUPTED
+    );
   });
 });
