@@ -9,7 +9,8 @@ renderer-stats.html
 .env.local
 
 # Skills
-superpowers/
+/superpowers/
+.superpowers/
 
 # Runtime data (dev)
 data/removed-apps.json
