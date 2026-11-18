@@ -30,6 +30,8 @@ import type {
   ScriptEnded,
   ScriptEntry,
   SetPageLockPasswordResult,
+  SpeedProgress,
+  SpeedTestResult,
   StartupSnapshot,
   UpdateInfo,
   UpdateStatus,
@@ -56,6 +58,7 @@ const updateInfoCallbacks = new Set<(data: UpdateInfo) => void>();
 const downloadProgressCallbacks = new Set<(data: DownloadProgress) => void>();
 const benchmarkProgressCallbacks = new Set<(data: { current: number; total: number }) => void>();
 const benchmarkResultCallbacks = new Set<(data: BenchmarkResult) => void>();
+const speedProgressCallbacks = new Set<(data: SpeedProgress) => void>();
 const autoCleanStatusCallbacks = new Set<(status: AutoCleanStatus) => void>();
 const autoCleanFinishedCallbacks = new Set<(result: AutoCleanRunResult) => void>();
 const essentialInstallCallbacks = new Set<(data: EssentialInstallProgress) => void>();
@@ -101,6 +104,12 @@ function setupListeners(): void {
 
   ipcRenderer.on('benchmark-result', (_e: IpcRendererEvent, data: BenchmarkResult) => {
     benchmarkResultCallbacks.forEach((cb) => {
+      cb(data);
+    });
+  });
+
+  ipcRenderer.on('speed-progress', (_e: IpcRendererEvent, data: SpeedProgress) => {
+    speedProgressCallbacks.forEach((cb) => {
       cb(data);
     });
   });
@@ -184,6 +193,12 @@ const electronAPI: ElectronAPI = {
   },
   benchmarkDns: (providers: { primary: string; secondary: string }[]) =>
     ipc<BenchmarkResult[]>('benchmark-dns', { providers }),
+  measureSpeed: () => ipc<SpeedTestResult>('measure-speed'),
+  cancelSpeedTest: () => ipcVoid('cancel-speed-test'),
+  onSpeedProgress: (cb: (data: SpeedProgress) => void) => {
+    speedProgressCallbacks.add(cb);
+    return () => speedProgressCallbacks.delete(cb);
+  },
   applyDns: (interfaceIndex: number, addresses: string[]) =>
     ipcVoid('apply-dns', { interfaceIndex, addresses }),
   minimizeWindow: () => ipcVoid('window-minimize'),

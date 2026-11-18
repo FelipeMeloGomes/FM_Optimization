@@ -58,6 +58,7 @@ import {
 } from './services/restore-points';
 import { cancelExecution, executeScript } from './services/script-executor';
 import { loadScripts } from './services/script-registry';
+import { cancelSpeedTest, runSpeedTest } from './services/speed-test';
 import { createStartupManager } from './services/startup-manager';
 import {
   getCpuInfo,
@@ -361,6 +362,16 @@ export function registerIpcHandlers(): void {
       return results;
     });
   });
+
+  ipcMain.handle('measure-speed', (event) =>
+    handleIpcNoInput('measure-speed', () =>
+      runSpeedTest((progress) => event.sender.send('speed-progress', progress))
+    )
+  );
+
+  ipcMain.handle('cancel-speed-test', () =>
+    handleIpcNoInput('cancel-speed-test', () => cancelSpeedTest())
+  );
 
   ipcMain.handle('apply-dns', async (_e, payload: unknown) => {
     return handleIpc('apply-dns', payload, async (validated) => {

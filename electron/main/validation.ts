@@ -214,6 +214,8 @@ export const IpcSchemas: Record<string, z.ZodSchema> = {
   'install-update': z.undefined(),
   'get-network-info': z.undefined(),
   'benchmark-dns': benchmarkDnsSchema,
+  'measure-speed': z.undefined(),
+  'cancel-speed-test': z.undefined(),
   'apply-dns': applyDnsSchema,
   'elevate-app': elevateAppSchema,
   'get-auto-clean-status': z.undefined(),

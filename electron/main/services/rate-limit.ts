@@ -17,6 +17,8 @@ const DEFAULT_CONFIG: RateLimitConfig = {
 // Canais que executam comandos pesados ou elevados ganham limite mais restrito.
 const CHANNEL_CONFIG: Record<string, RateLimitConfig> = {
   'benchmark-dns': { windowMs: 5000, maxRequests: 3 },
+  'measure-speed': { windowMs: 60_000, maxRequests: 3 },
+  'cancel-speed-test': { windowMs: 1000, maxRequests: 10 },
   'apply-dns': { windowMs: 3000, maxRequests: 5 },
   'elevate-app': { windowMs: 10000, maxRequests: 2 },
   'create-restore-point': { windowMs: 5000, maxRequests: 2 },

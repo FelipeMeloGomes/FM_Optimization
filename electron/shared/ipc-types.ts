@@ -500,6 +500,9 @@ export interface ElectronAPI {
   onBenchmarkResult(cb: (data: BenchmarkResult) => void): () => void;
   getNetworkInfo(): Promise<NetworkInfo>;
   benchmarkDns(providers: { primary: string; secondary: string }[]): Promise<BenchmarkResult[]>;
+  measureSpeed(): Promise<SpeedTestResult>;
+  cancelSpeedTest(): Promise<void>;
+  onSpeedProgress(cb: (data: SpeedProgress) => void): () => void;
   applyDns(interfaceIndex: number, addresses: string[]): Promise<void>;
   minimizeWindow(): Promise<void>;
   closeWindow(): Promise<void>;
