@@ -14,26 +14,26 @@ import { cn } from '../lib/utils';
 
 // Neutral amber for the unidentified case: a blue "Intel" hero would mislabel a
 // page that is listing both sets.
-const TONE_TEXT = { red: 'text-red-400', blue: 'text-blue-400', amber: 'text-yellow-400' } as const;
+const TONE_TEXT = { red: 'text-destructive', blue: 'text-info', amber: 'text-warning' } as const;
 const TONE_BG = {
-  red: 'bg-red-500/10',
-  blue: 'bg-blue-500/10',
-  amber: 'bg-yellow-500/10',
+  red: 'bg-destructive/10',
+  blue: 'bg-info/10',
+  amber: 'bg-warning/10',
 } as const;
 const TONE_BG_FAINT = {
-  red: 'from-red-500/10',
-  blue: 'from-blue-500/10',
-  amber: 'from-yellow-500/10',
+  red: 'from-destructive/10',
+  blue: 'from-info/10',
+  amber: 'from-warning/10',
 } as const;
 const TONE_BORDER = {
-  red: 'border-red-500/20',
-  blue: 'border-blue-500/20',
-  amber: 'border-yellow-500/20',
+  red: 'border-destructive/20',
+  blue: 'border-info/20',
+  amber: 'border-warning/20',
 } as const;
 const TONE_BADGE = {
-  red: 'bg-red-500/10 text-red-400',
-  blue: 'bg-blue-500/10 text-blue-400',
-  amber: 'bg-yellow-500/10 text-yellow-400',
+  red: 'bg-destructive/10 text-destructive',
+  blue: 'bg-info/10 text-info',
+  amber: 'bg-warning/10 text-warning',
 } as const;
 
 export default function CpuPage() {
@@ -210,10 +210,10 @@ export default function CpuPage() {
                 className={cn(
                   'text-sm font-medium',
                   cpuState.status === 'success' && cpuState.data.usage > 80
-                    ? 'text-red-400'
+                    ? 'text-destructive'
                     : cpuState.status === 'success' && cpuState.data.usage > 50
-                      ? 'text-amber-400'
-                      : 'text-emerald-400'
+                      ? 'text-warning'
+                      : 'text-success'
                 )}
               >
                 {cpuState.status === 'success'
@@ -233,9 +233,9 @@ export default function CpuPage() {
 
       {/* Vendor notice: unidentified CPU, or a manual override in effect */}
       {isUnidentified && (
-        <Card className="border-yellow-500/30 bg-yellow-500/5">
+        <Card className="border-warning/30 bg-warning/5">
           <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-            <AlertTriangle className="size-5 shrink-0 text-yellow-400" />
+            <AlertTriangle className="size-5 shrink-0 text-warning" />
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">Processador não identificado</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
@@ -275,7 +275,7 @@ export default function CpuPage() {
           <div
             className={cn(
               'size-1.5 rounded-full',
-              tone === 'red' ? 'bg-red-400' : tone === 'blue' ? 'bg-blue-400' : 'bg-yellow-400'
+              tone === 'red' ? 'bg-destructive' : tone === 'blue' ? 'bg-info' : 'bg-warning'
             )}
           />
           <h3 className="text-sm font-semibold text-foreground">Scripts Disponíveis</h3>

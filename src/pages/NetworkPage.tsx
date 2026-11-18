@@ -22,17 +22,17 @@ import { cn } from '../lib/utils';
 const DNS_SCRIPT_IDS = new Set(['internet-6', 'internet-8', 'internet-9']);
 
 function getLatencyColor(ms: number): string {
-  if (ms < 15) return 'text-emerald-400';
-  if (ms < 30) return 'text-green-400';
-  if (ms < 50) return 'text-yellow-400';
-  return 'text-orange-400';
+  if (ms < 15) return 'text-success';
+  if (ms < 30) return 'text-info';
+  if (ms < 50) return 'text-warning';
+  return 'text-destructive';
 }
 
 function getLatencyBg(ms: number): string {
-  if (ms < 15) return 'bg-emerald-500/10 border-emerald-500/30';
-  if (ms < 30) return 'bg-green-500/10 border-green-500/30';
-  if (ms < 50) return 'bg-yellow-500/10 border-yellow-500/30';
-  return 'bg-orange-500/10 border-orange-500/30';
+  if (ms < 15) return 'bg-success/10 border-success/30';
+  if (ms < 30) return 'bg-info/10 border-info/30';
+  if (ms < 50) return 'bg-warning/10 border-warning/30';
+  return 'bg-destructive/10 border-destructive/30';
 }
 
 function getLatencyLabel(ms: number): string {
@@ -213,17 +213,17 @@ function NetworkPageContent() {
         )}
 
         {fastest && fastestLatency !== null && benchmarkStatus === 'done' && (
-          <div className="mt-4 relative overflow-hidden rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent">
+          <div className="mt-4 relative overflow-hidden rounded-xl border border-success/30 bg-gradient-to-br from-success/10 via-success/5 to-transparent">
             <div className="absolute right-4 top-4">
-              <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1">
-                <Trophy className="size-3 text-emerald-400" />
-                <span className="text-[11px] font-semibold text-emerald-400">Mais rápido</span>
+              <div className="flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1">
+                <Trophy className="size-3 text-success" />
+                <span className="text-[11px] font-semibold text-success">Mais rápido</span>
               </div>
             </div>
             <div className="p-6">
               <div className="flex items-center gap-4">
-                <div className="flex size-14 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10">
-                  <fastest.icon className="size-7 text-emerald-400" />
+                <div className="flex size-14 items-center justify-center rounded-xl border border-success/30 bg-success/10">
+                  <fastest.icon className="size-7 text-success" />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-lg font-bold">{fastest.name}</h2>
@@ -302,7 +302,7 @@ function NetworkPageContent() {
                 className={cn(
                   'transition-all duration-200',
                   active && 'border-primary/50 shadow-[0_0_15px_rgba(0,68,255,0.15)]',
-                  isFastest && benchmarkStatus === 'done' && 'border-emerald-500/20'
+                  isFastest && benchmarkStatus === 'done' && 'border-success/20'
                 )}
               >
                 <CardContent className="p-3">

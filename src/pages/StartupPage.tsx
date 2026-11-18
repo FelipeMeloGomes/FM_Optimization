@@ -184,7 +184,7 @@ export default function StartupPage() {
   if (state.status === 'error') {
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-20 text-center text-muted-foreground">
-        <AlertTriangle className="size-8 text-amber-400" />
+        <AlertTriangle className="size-8 text-warning" />
         <p className="text-sm">Erro ao ler a inicialização do Windows</p>
         <p className="max-w-md text-xs text-destructive">{state.error}</p>
         <Button variant="outline" size="sm" onClick={reload} className="mt-2 gap-1.5">
@@ -289,10 +289,10 @@ export default function StartupPage() {
 
       {/* Admin notice */}
       {!data.isAdmin && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-          <ShieldAlert className="size-5 shrink-0 text-amber-400" />
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-warning/20 bg-warning/5 p-4">
+          <ShieldAlert className="size-5 shrink-0 text-warning" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-amber-300">Sem permissão de administrador</p>
+            <p className="text-sm font-medium text-warning">Sem permissão de administrador</p>
             <p className="text-xs text-muted-foreground">
               Itens do sistema (HKLM, pastas de todos os usuários, tarefas e serviços) aparecem, mas
               não podem ser alterados. Reinicie o app elevado para controlá-los.
@@ -382,7 +382,7 @@ export default function StartupPage() {
                           {app.requiresAdmin && (
                             <Badge
                               variant="outline"
-                              className="shrink-0 border-amber-500/40 text-[10px] text-amber-400"
+                              className="shrink-0 border-warning/40 text-[10px] text-warning"
                             >
                               Admin
                             </Badge>
@@ -497,7 +497,7 @@ export default function StartupPage() {
                           {locked && (
                             <Badge
                               variant="outline"
-                              className="shrink-0 border-amber-500/40 text-[10px] text-amber-400"
+                              className="shrink-0 border-warning/40 text-[10px] text-warning"
                             >
                               Admin
                             </Badge>
@@ -609,7 +609,7 @@ export default function StartupPage() {
                           {service.protected && (
                             <Badge
                               variant="outline"
-                              className="shrink-0 gap-1 border-emerald-500/40 text-[10px] text-emerald-400"
+                              className="shrink-0 gap-1 border-success/40 text-[10px] text-success"
                             >
                               <ShieldCheck className="size-3" />
                               Protegido
@@ -618,7 +618,7 @@ export default function StartupPage() {
                           {!service.protected && !data.isAdmin && (
                             <Badge
                               variant="outline"
-                              className="shrink-0 border-amber-500/40 text-[10px] text-amber-400"
+                              className="shrink-0 border-warning/40 text-[10px] text-warning"
                             >
                               Admin
                             </Badge>
@@ -643,15 +643,13 @@ export default function StartupPage() {
                         <span
                           className={cn(
                             'inline-flex items-center gap-1.5 whitespace-nowrap text-[11px]',
-                            service.state === 'Running'
-                              ? 'text-emerald-400'
-                              : 'text-muted-foreground'
+                            service.state === 'Running' ? 'text-success' : 'text-muted-foreground'
                           )}
                         >
                           <span
                             className={cn(
                               'size-1.5 shrink-0 rounded-full',
-                              service.state === 'Running' ? 'bg-emerald-400' : 'bg-muted-foreground'
+                              service.state === 'Running' ? 'bg-success' : 'bg-muted-foreground'
                             )}
                           />
                           {SERVICE_STATE_LABELS[service.state]}
@@ -725,8 +723,8 @@ export default function StartupPage() {
       <Dialog open={pending !== null} onOpenChange={(open) => !open && setPending(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <div className="mb-1 flex size-10 items-center justify-center rounded-xl bg-amber-500/10">
-              <AlertTriangle className="size-5 text-amber-400" />
+            <div className="mb-1 flex size-10 items-center justify-center rounded-xl bg-warning/10">
+              <AlertTriangle className="size-5 text-warning" />
             </div>
             <DialogTitle>{copy?.title}</DialogTitle>
             <DialogDescription>{copy?.description}</DialogDescription>

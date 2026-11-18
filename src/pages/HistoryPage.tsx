@@ -65,7 +65,7 @@ function HistoryRow({
             <Clock className="size-3" /> Automática
           </Badge>
         ) : (
-          <Badge variant="secondary" className="gap-1 text-violet-400 bg-violet-500/10">
+          <Badge variant="secondary" className="gap-1 text-primary bg-primary/10">
             <MousePointerClick className="size-3" /> Manual
           </Badge>
         )}
@@ -81,19 +81,19 @@ function HistoryRow({
       </TableCell>
       <TableCell>
         {entry.wasCancelled && (
-          <Badge variant="secondary" className="gap-1 text-amber-400 bg-amber-500/10">
+          <Badge variant="secondary" className="gap-1 text-warning bg-warning/10">
             <XCircle className="size-3" /> Cancelado
           </Badge>
         )}
         {entry.exitCode === 0 && (
-          <Badge variant="secondary" className="gap-1 text-emerald-400 bg-emerald-500/10">
+          <Badge variant="secondary" className="gap-1 text-success bg-success/10">
             <CheckCircle className="size-3" /> Sucesso
           </Badge>
         )}
         {entry.exitCode === EXIT_INTERRUPTED_SENTINEL && (
           <Badge
             variant="secondary"
-            className="gap-1 text-amber-400 bg-amber-500/10"
+            className="gap-1 text-warning bg-warning/10"
             title="O script pode ter concluído com sucesso antes de você fechar a janela. Verifique se o Spicetify foi instalado no Spotify."
           >
             <PauseCircle className="size-3" /> Interrompido pelo usuário
@@ -204,34 +204,34 @@ export default function HistoryPage() {
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-500/10">
-                <CheckCircle className="size-3.5 text-emerald-400" />
+              <div className="flex size-7 items-center justify-center rounded-lg bg-success/10">
+                <CheckCircle className="size-3.5 text-success" />
               </div>
               <span className="text-[10px] font-medium text-muted-foreground uppercase">
                 Sucesso
               </span>
             </div>
-            <p className="text-xl font-bold text-emerald-400">{stats.success}</p>
+            <p className="text-xl font-bold text-success">{stats.success}</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-red-500/10">
-                <AlertOctagon className="size-3.5 text-red-400" />
+              <div className="flex size-7 items-center justify-center rounded-lg bg-destructive/10">
+                <AlertOctagon className="size-3.5 text-destructive" />
               </div>
               <span className="text-[10px] font-medium text-muted-foreground uppercase">Erros</span>
             </div>
-            <p className="text-xl font-bold text-red-400">{stats.failed}</p>
+            <p className="text-xl font-bold text-destructive">{stats.failed}</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-amber-500/10">
-                <XCircle className="size-3.5 text-amber-400" />
+              <div className="flex size-7 items-center justify-center rounded-lg bg-warning/10">
+                <XCircle className="size-3.5 text-warning" />
               </div>
               <span className="text-[10px] font-medium text-muted-foreground uppercase">
                 Cancelados
               </span>
             </div>
-            <p className="text-xl font-bold text-amber-400">{stats.cancelled}</p>
+            <p className="text-xl font-bold text-warning">{stats.cancelled}</p>
           </div>
         </div>
       )}

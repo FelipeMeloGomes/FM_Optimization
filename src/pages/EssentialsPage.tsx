@@ -35,57 +35,57 @@ interface ProgramStyle {
 const PROGRAM_STYLES: Record<string, ProgramStyle> = {
   'cpu-z': {
     icon: Cpu,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/20',
   },
   hwmonitor: {
     icon: Thermometer,
-    color: 'text-amber-400',
-    bgColor: 'bg-amber-500/10',
-    borderColor: 'border-amber-500/20',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/20',
   },
   'msi-afterburner': {
     icon: Gauge,
-    color: 'text-rose-400',
-    bgColor: 'bg-rose-500/10',
-    borderColor: 'border-rose-500/20',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
+    borderColor: 'border-destructive/20',
   },
   '7-zip': {
     icon: FolderArchive,
-    color: 'text-emerald-400',
-    bgColor: 'bg-emerald-500/10',
-    borderColor: 'border-emerald-500/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/20',
   },
   winrar: {
     icon: FileArchive,
-    color: 'text-violet-400',
-    bgColor: 'bg-violet-500/10',
-    borderColor: 'border-violet-500/20',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    borderColor: 'border-primary/20',
   },
   brave: {
     icon: Compass,
-    color: 'text-orange-400',
-    bgColor: 'bg-orange-500/10',
-    borderColor: 'border-orange-500/20',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
+    borderColor: 'border-destructive/20',
   },
   qbittorrent: {
     icon: Download,
-    color: 'text-sky-400',
-    bgColor: 'bg-sky-500/10',
-    borderColor: 'border-sky-500/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/20',
   },
   directx: {
     icon: Gamepad2,
-    color: 'text-indigo-400',
-    bgColor: 'bg-indigo-500/10',
-    borderColor: 'border-indigo-500/20',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    borderColor: 'border-primary/20',
   },
   bcuninstaller: {
     icon: PackageX,
-    color: 'text-cyan-400',
-    bgColor: 'bg-cyan-500/10',
-    borderColor: 'border-cyan-500/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/20',
   },
 };
 
@@ -152,9 +152,9 @@ function EssentialCard({
         </div>
 
         {item.warning && (
-          <div className="mt-4 flex items-start gap-2 rounded-lg border border-amber-500/10 bg-amber-500/5 p-3">
-            <AlertTriangle className="size-3.5 text-amber-400 mt-0.5 shrink-0" />
-            <p className="text-[11px] text-amber-400/80 leading-relaxed">{item.warning}</p>
+          <div className="mt-4 flex items-start gap-2 rounded-lg border border-warning/10 bg-warning/5 p-3">
+            <AlertTriangle className="size-3.5 text-warning mt-0.5 shrink-0" />
+            <p className="text-[11px] text-warning leading-relaxed">{item.warning}</p>
           </div>
         )}
 
@@ -178,9 +178,9 @@ function EssentialCard({
         )}
 
         {installed && !isRunning && (
-          <div className="mt-4 flex items-start gap-2 rounded-lg border border-emerald-500/10 bg-emerald-500/5 p-3">
-            <PackageCheck className="size-3.5 text-emerald-400 mt-0.5 shrink-0" />
-            <p className="text-[11px] text-emerald-400/80 leading-relaxed">
+          <div className="mt-4 flex items-start gap-2 rounded-lg border border-success/10 bg-success/5 p-3">
+            <PackageCheck className="size-3.5 text-success mt-0.5 shrink-0" />
+            <p className="text-[11px] text-success leading-relaxed">
               {installed.alreadyInstalled
                 ? 'O winget confirmou que este programa já está instalado.'
                 : 'Instalado pelo winget neste PC.'}
@@ -189,9 +189,9 @@ function EssentialCard({
         )}
 
         {error && (
-          <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-500/10 bg-red-500/5 p-3">
-            <AlertTriangle className="size-3.5 text-red-400 mt-0.5 shrink-0" />
-            <p className="text-[11px] text-red-400/80 leading-relaxed">{error}</p>
+          <div className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/10 bg-destructive/5 p-3">
+            <AlertTriangle className="size-3.5 text-destructive mt-0.5 shrink-0" />
+            <p className="text-[11px] text-destructive leading-relaxed">{error}</p>
           </div>
         )}
 

@@ -143,9 +143,9 @@ export default function DashboardPage() {
       return { label: 'Nenhum ajuste aplicado', color: 'text-muted-foreground', Icon: Shield };
     }
     if (tweakRatio < OPTIMIZED_RATIO_THRESHOLD) {
-      return { label: 'Parcialmente Otimizado', color: 'text-amber-400', Icon: ShieldAlert };
+      return { label: 'Parcialmente Otimizado', color: 'text-warning', Icon: ShieldAlert };
     }
-    return { label: 'Sistema Otimizado', color: 'text-emerald-400', Icon: Shield };
+    return { label: 'Sistema Otimizado', color: 'text-success', Icon: Shield };
   })();
   const FooterIcon = footerStatus.Icon;
 
@@ -177,10 +177,10 @@ export default function DashboardPage() {
                     className={cn(
                       'text-3xl font-bold tabular-nums',
                       systemHealth.health >= 80
-                        ? 'text-emerald-400'
+                        ? 'text-success'
                         : systemHealth.health >= 50
-                          ? 'text-amber-400'
-                          : 'text-red-400'
+                          ? 'text-warning'
+                          : 'text-destructive'
                     )}
                   >
                     {systemHealth.health}%
@@ -257,7 +257,7 @@ export default function DashboardPage() {
       {/* Storage Section */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <div className="size-1.5 rounded-full bg-emerald-400" />
+          <div className="size-1.5 rounded-full bg-success" />
           <h3 className="text-sm font-semibold text-foreground">Armazenamento</h3>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
