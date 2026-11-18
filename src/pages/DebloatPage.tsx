@@ -8,16 +8,18 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppxPackageInfo } from '../../electron/shared/ipc-types';
 import { ConfirmRemoveAppsDialog } from '../components/ConfirmRemoveAppsDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { Button, Input, Tabs } from '../components/ui';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { useAppxInventory } from '../hooks/use-appx-inventory';
+import { useVirtualRows } from '../hooks/use-virtual-rows';
 import { cn } from '../lib/utils';
 
 const SKELETON_ROWS = 7;
+const APP_ROW_HEIGHT = 69;
 
 type TabId = 'all' | 'recommended' | 'protected';
 
@@ -86,6 +88,14 @@ export default function DebloatPage() {
     [packages, query]
   );
   const visible = useMemo(() => searched.filter((app) => isInTab(app, tab)), [searched, tab]);
+
+  const listRef = useRef<HTMLUListElement>(null);
+  const { virtualItems, paddingTop, paddingBottom, measureElement } = useVirtualRows(
+    visible,
+    null,
+    APP_ROW_HEIGHT,
+    listRef
+  );
 
   const counts = useMemo(
     () => ({
@@ -376,91 +386,111 @@ export default function DebloatPage() {
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-            {visible.map((app) => {
-              const locked = !app.removable;
-              const checked = selected.has(app.familyName);
-              const checkboxId = `appx-${app.familyName}`;
+          <div
+            data-testid="apps-list"
+            className="relative overflow-hidden rounded-xl border border-border bg-card"
+          >
+            {paddingTop > 0 && (
+              <div
+                data-testid="virtual-spacer-top"
+                style={{ height: paddingTop }}
+                aria-hidden="true"
+              />
+            )}
+            <ul ref={listRef} className="divide-y divide-border">
+              {virtualItems.map((virtualRow) => {
+                const app = visible[virtualRow.index];
+                const locked = !app.removable;
+                const checked = selected.has(app.familyName);
+                const checkboxId = `appx-${app.familyName}`;
 
-              const rowContent = (
-                <>
-                  {locked ? (
-                    <span
-                      title={app.protectionReason ?? 'App protegido'}
-                      className="flex size-4 shrink-0 items-center justify-center"
-                    >
-                      <Lock className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                    </span>
-                  ) : (
-                    <input
-                      id={checkboxId}
-                      type="checkbox"
-                      className="size-4 shrink-0 accent-primary"
-                      checked={checked}
-                      onChange={() => toggle(app.familyName)}
-                      disabled={removing}
-                      aria-label={`Selecionar ${app.displayName}`}
-                    />
-                  )}
-
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <Package className="size-4 text-muted-foreground" aria-hidden="true" />
-                  </span>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="truncate text-sm font-medium text-foreground">
-                        {app.displayName}
+                const rowContent = (
+                  <>
+                    {locked ? (
+                      <span
+                        title={app.protectionReason ?? 'App protegido'}
+                        className="flex size-4 shrink-0 items-center justify-center"
+                      >
+                        <Lock className="size-3.5 text-muted-foreground" aria-hidden="true" />
                       </span>
-                      {app.recommended && (
-                        <span className="shrink-0 rounded bg-primary/15 px-1.5 py-0.5 text-[9px] font-medium text-primary">
-                          Recomendado
-                        </span>
-                      )}
-                      {app.isProvisioned && (
-                        <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
-                          Provisão
-                        </span>
-                      )}
-                      {locked && (
-                        <span className="shrink-0 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-400">
-                          Protegido
-                        </span>
-                      )}
-                    </div>
-                    <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
-                      {app.packageName}
+                    ) : (
+                      <input
+                        id={checkboxId}
+                        type="checkbox"
+                        className="size-4 shrink-0 accent-primary"
+                        checked={checked}
+                        onChange={() => toggle(app.familyName)}
+                        disabled={removing}
+                        aria-label={`Selecionar ${app.displayName}`}
+                      />
+                    )}
+
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <Package className="size-4 text-muted-foreground" aria-hidden="true" />
                     </span>
-                  </div>
 
-                  <span className="shrink-0 text-right text-[11px] text-muted-foreground tabular-nums">
-                    {app.version || '—'}
-                  </span>
-                </>
-              );
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="truncate text-sm font-medium text-foreground">
+                          {app.displayName}
+                        </span>
+                        {app.recommended && (
+                          <span className="shrink-0 rounded bg-primary/15 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                            Recomendado
+                          </span>
+                        )}
+                        {app.isProvisioned && (
+                          <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
+                            Provisão
+                          </span>
+                        )}
+                        {locked && (
+                          <span className="shrink-0 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-400">
+                            Protegido
+                          </span>
+                        )}
+                      </div>
+                      <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+                        {app.packageName}
+                      </span>
+                    </div>
 
-              const rowClass = cn(
-                'flex w-full items-center gap-3 px-4 py-3 transition-colors',
-                !locked && !removing && 'cursor-pointer hover:bg-muted/40',
-                locked && 'opacity-70',
-                checked && 'bg-primary/5'
-              );
+                    <span className="shrink-0 text-right text-[11px] text-muted-foreground tabular-nums">
+                      {app.version || '—'}
+                    </span>
+                  </>
+                );
 
-              // Label associa a linha inteira ao checkbox: clicar no nome ou no
-              // ícone seleciona, e o clique no próprio checkbox não duplica.
-              return (
-                <li key={app.familyName}>
-                  {locked ? (
-                    <div className={rowClass}>{rowContent}</div>
-                  ) : (
-                    <label htmlFor={checkboxId} className={rowClass}>
-                      {rowContent}
-                    </label>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+                const rowClass = cn(
+                  'flex w-full items-center gap-3 px-4 py-3 transition-colors',
+                  !locked && !removing && 'cursor-pointer hover:bg-muted/40',
+                  locked && 'opacity-70',
+                  checked && 'bg-primary/5'
+                );
+
+                // Label associa a linha inteira ao checkbox: clicar no nome ou no
+                // ícone seleciona, e o clique no próprio checkbox não duplica.
+                return (
+                  <li key={app.familyName} ref={measureElement}>
+                    {locked ? (
+                      <div className={rowClass}>{rowContent}</div>
+                    ) : (
+                      <label htmlFor={checkboxId} className={rowClass}>
+                        {rowContent}
+                      </label>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            {paddingBottom > 0 && (
+              <div
+                data-testid="virtual-spacer-bottom"
+                style={{ height: paddingBottom }}
+                aria-hidden="true"
+              />
+            )}
+          </div>
         )}
       </section>
 

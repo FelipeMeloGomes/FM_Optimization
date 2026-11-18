@@ -76,7 +76,7 @@ const SERVICE_STATE_LABELS: Record<StartupServiceEntry['state'], string> = {
   Unknown: 'Desconhecido',
 };
 
-const LIST_MAX_HEIGHT = 'max-h-[calc(100vh-420px)] min-h-[320px]';
+const TABLE_ROW_HEIGHT = 69;
 
 function normalize(value: string): string {
   return value.toLocaleLowerCase('pt-BR');
@@ -161,13 +161,15 @@ export default function StartupPage() {
     );
   }, [snapshot, onlyEnabled, query]);
 
-  const appsScrollRef = useRef<HTMLDivElement>(null);
-  const tasksScrollRef = useRef<HTMLDivElement>(null);
-  const servicesScrollRef = useRef<HTMLDivElement>(null);
+  // null = usa a rolagem da própria página (#main-content). O ref da tabela
+  // é necessário para descontar a distância até o início da lista.
+  const appsListRef = useRef<HTMLTableSectionElement>(null);
+  const tasksListRef = useRef<HTMLTableSectionElement>(null);
+  const servicesListRef = useRef<HTMLTableSectionElement>(null);
 
-  const appsV = useVirtualRows(apps, appsScrollRef);
-  const tasksV = useVirtualRows(tasks, tasksScrollRef);
-  const servicesV = useVirtualRows(services, servicesScrollRef);
+  const appsV = useVirtualRows(apps, null, TABLE_ROW_HEIGHT, appsListRef);
+  const tasksV = useVirtualRows(tasks, null, TABLE_ROW_HEIGHT, tasksListRef);
+  const servicesV = useVirtualRows(services, null, TABLE_ROW_HEIGHT, servicesListRef);
 
   if (state.status === 'loading') {
     return (
@@ -339,7 +341,7 @@ export default function StartupPage() {
 
       {/* Apps */}
       {tab === 'apps' && (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="rounded-xl border border-border bg-card">
           {apps.length === 0 ? (
             <EmptyState
               icon={<Rocket className="size-8" />}
@@ -351,11 +353,7 @@ export default function StartupPage() {
               }
             />
           ) : (
-            <Table
-              className="table-fixed"
-              containerRef={appsScrollRef}
-              containerClassName={LIST_MAX_HEIGHT}
-            >
+            <Table className="table-fixed" containerClassName="overflow-visible">
               <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow>
                   <TableHead>Aplicativo</TableHead>
@@ -364,7 +362,7 @@ export default function StartupPage() {
                   <TableHead className="w-20 text-right sm:w-28">Ações</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody ref={appsListRef}>
                 {appsV.paddingTop > 0 && (
                   <tr style={{ height: appsV.paddingTop }}>
                     <td colSpan={4} />
@@ -449,7 +447,7 @@ export default function StartupPage() {
 
       {/* Scheduled tasks */}
       {tab === 'tasks' && (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="rounded-xl border border-border bg-card">
           {tasks.length === 0 ? (
             <EmptyState
               icon={<CalendarClock className="size-8" />}
@@ -461,11 +459,7 @@ export default function StartupPage() {
               }
             />
           ) : (
-            <Table
-              className="table-fixed"
-              containerRef={tasksScrollRef}
-              containerClassName={LIST_MAX_HEIGHT}
-            >
+            <Table className="table-fixed" containerClassName="overflow-visible">
               <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow>
                   <TableHead>Tarefa</TableHead>
@@ -474,7 +468,7 @@ export default function StartupPage() {
                   <TableHead className="w-28 sm:w-36">Status</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody ref={tasksListRef}>
                 {tasksV.paddingTop > 0 && (
                   <tr style={{ height: tasksV.paddingTop }}>
                     <td colSpan={4} />
@@ -566,7 +560,7 @@ export default function StartupPage() {
 
       {/* Services */}
       {tab === 'services' && (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="rounded-xl border border-border bg-card">
           {services.length === 0 ? (
             <EmptyState
               icon={<Server className="size-8" />}
@@ -578,11 +572,7 @@ export default function StartupPage() {
               }
             />
           ) : (
-            <Table
-              className="table-fixed"
-              containerRef={servicesScrollRef}
-              containerClassName={LIST_MAX_HEIGHT}
-            >
+            <Table className="table-fixed" containerClassName="overflow-visible">
               <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow>
                   <TableHead>Serviço</TableHead>
@@ -592,7 +582,7 @@ export default function StartupPage() {
                   <TableHead className="w-20 text-right sm:w-28">Ações</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody ref={servicesListRef}>
                 {servicesV.paddingTop > 0 && (
                   <tr style={{ height: servicesV.paddingTop }}>
                     <td colSpan={5} />

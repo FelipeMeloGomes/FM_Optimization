@@ -19,6 +19,29 @@ vi.mock('../hooks/use-startup', () => ({
   useStartup: () => store.startup,
 }));
 
+const virtual = vi.hoisted(() => ({
+  calls: [] as { scrollRef: unknown; listRef: unknown }[],
+}));
+
+vi.mock('../hooks/use-virtual-rows', () => ({
+  useVirtualRows: <T,>(items: T[], scrollRef: unknown, _rowHeight?: unknown, listRef?: unknown) => {
+    virtual.calls.push({ scrollRef, listRef });
+    return {
+      virtualItems: items.map((_, index) => ({
+        index,
+        key: index,
+        start: index * 69,
+        end: (index + 1) * 69,
+        size: 69,
+        lane: 0,
+      })),
+      paddingTop: 0,
+      paddingBottom: 0,
+      measureElement: () => {},
+    };
+  },
+}));
+
 import { mockElementSize } from '@/tests/mock-element-size';
 import StartupPage from './StartupPage';
 
@@ -117,6 +140,7 @@ function renderPage() {
 beforeEach(() => {
   mockElementSize();
   startup();
+  virtual.calls = [];
 });
 
 afterEach(() => {
@@ -215,5 +239,30 @@ describe('StartupPage — conteúdo', () => {
 
     expect(screen.getByText('Sem permissão de administrador')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Reiniciar como admin' })).toBeDefined();
+  });
+});
+
+describe('StartupPage — rolagem da página', () => {
+  it('usa a rolagem da página nas três abas, sem container de scroll próprio', () => {
+    renderPage();
+
+    const tabs = screen.getAllByRole('tab');
+    act(() => fireEvent.click(tabs.find((t) => (t.textContent ?? '').includes('Tarefas'))!));
+    act(() => fireEvent.click(tabs.find((t) => (t.textContent ?? '').includes('Serviços'))!));
+
+    expect(virtual.calls.length).toBeGreaterThanOrEqual(3);
+    expect(virtual.calls.every((call) => call.scrollRef === null && call.listRef != null)).toBe(
+      true
+    );
+
+    const table = document.querySelector('table') as HTMLTableElement;
+    const tableWrapper = table.parentElement as HTMLElement;
+    expect(tableWrapper.className).not.toContain('overflow-auto');
+    expect(tableWrapper.className).not.toContain('max-h-');
+
+    // O card não pode criar scrollport, senão o cabeçalho sticky cola nele
+    // em vez de acompanhar a rolagem da página.
+    const card = tableWrapper.parentElement as HTMLElement;
+    expect(card.className).not.toContain('overflow-hidden');
   });
 });

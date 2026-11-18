@@ -9,11 +9,12 @@ import {
   RefreshCw,
   ShieldAlert,
   ShieldCheck,
+  Sparkles,
   Trash2,
   X,
   Zap,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CleanerItemId } from '../../electron/shared/cleaner-items';
 import type { CleanerItemStats } from '../../electron/shared/ipc-types';
 import { ConfirmCleanDialog } from '../components/ConfirmCleanDialog';
@@ -22,12 +23,25 @@ import { Button } from '../components/ui';
 import { useAutoCleanContext } from '../contexts/AutoCleanContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { useCleanerItems } from '../hooks/use-cleaner-items';
+import { useVirtualRows } from '../hooks/use-virtual-rows';
 import { cleanerName } from '../lib/cleaner-options';
 import { cn } from '../lib/utils';
 import { formatBytes } from '../utils/format';
 
 const LARGE_CLEANUP_THRESHOLD_BYTES = 1024 * 1024 * 1024;
 const SKELETON_ROWS = 6;
+const CLEANER_ROW_HEIGHT = 72;
+
+/** Limpezas seguras e reversíveis: temporários, prefetch e cache de navegador. */
+const RECOMMENDED_ITEM_IDS: ReadonlySet<CleanerItemId> = new Set([
+  'temp-user',
+  'temp-windows',
+  'prefetch',
+  'chrome',
+  'edge',
+  'firefox',
+  'brave',
+]);
 
 const ITEM_ICONS: Record<CleanerItemId, LucideIcon> = {
   'temp-user': FolderOpen,
@@ -88,6 +102,14 @@ export default function CleanerPage() {
   const [cleaning, setCleaning] = useState(false);
   const [cleaningIds, setCleaningIds] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const listRef = useRef<HTMLUListElement>(null);
+  const { virtualItems, paddingTop, paddingBottom, measureElement } = useVirtualRows(
+    items,
+    null,
+    CLEANER_ROW_HEIGHT,
+    listRef
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -171,6 +193,21 @@ export default function CleanerPage() {
       return new Set(selectableItems.map((item) => item.id));
     });
   }, [selectableItems]);
+
+  const selectRecommended = useCallback(() => {
+    const recommended = selectableItems.filter((item) => RECOMMENDED_ITEM_IDS.has(item.id));
+    if (recommended.length === 0) {
+      showEnhancedToast({
+        type: 'info',
+        title: 'Nenhum item recomendado',
+        description: 'Os itens recomendados não têm dados para limpar neste Windows.',
+        duration: 'medium',
+        sound: settings.soundEnabled,
+      });
+      return;
+    }
+    setSelected(new Set(recommended.map((item) => item.id)));
+  }, [selectableItems, settings.soundEnabled]);
 
   const runClean = useCallback(
     async (ids: CleanerItemId[]) => {
@@ -438,19 +475,25 @@ export default function CleanerPage() {
 
       <section aria-label="Itens de limpeza" className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
-          <label className="flex items-center gap-2 text-sm text-foreground">
-            <input
-              type="checkbox"
-              className="size-4 accent-primary"
-              checked={allSelected}
-              onChange={toggleAll}
-              disabled={!hasSelectableItems || cleaning}
-            />
-            Selecionar todos
-            <span className="text-xs text-muted-foreground">
-              {selected.size} de {selectableItems.length} selecionados
-            </span>
-          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              <input
+                type="checkbox"
+                className="size-4 accent-primary"
+                checked={allSelected}
+                onChange={toggleAll}
+                disabled={!hasSelectableItems || cleaning}
+              />
+              Selecionar todos
+              <span className="text-xs text-muted-foreground">
+                {selected.size} de {selectableItems.length} selecionados
+              </span>
+            </label>
+            <Button variant="outline" size="sm" onClick={selectRecommended} className="gap-1.5">
+              <Sparkles className="size-3.5" aria-hidden="true" />
+              Selecionar recomendados
+            </Button>
+          </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs text-muted-foreground tabular-nums">
@@ -477,100 +520,121 @@ export default function CleanerPage() {
           </div>
         </div>
 
-        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-          {items.map((item) => {
-            const Icon = iconFor(item);
-            const hasData = item.fileCount > 0;
-            const canSelect = canCleanItem(item);
-            const locked = item.requiresAdmin && !isAdmin;
-            const isWorking = cleaningIds.includes(item.id);
-            const isLarge = item.totalSizeBytes > LARGE_CLEANUP_THRESHOLD_BYTES;
-            const checkboxId = `clean-item-${item.id}`;
+        <div
+          data-testid="cleaner-list"
+          className="relative overflow-hidden rounded-xl border border-border bg-card"
+        >
+          {paddingTop > 0 && (
+            <div
+              data-testid="virtual-spacer-top"
+              style={{ height: paddingTop }}
+              aria-hidden="true"
+            />
+          )}
+          <ul ref={listRef} className="divide-y divide-border">
+            {virtualItems.map((virtualRow) => {
+              const item = items[virtualRow.index];
+              const Icon = iconFor(item);
+              const hasData = item.fileCount > 0;
+              const canSelect = canCleanItem(item);
+              const locked = item.requiresAdmin && !isAdmin;
+              const isWorking = cleaningIds.includes(item.id);
+              const isLarge = item.totalSizeBytes > LARGE_CLEANUP_THRESHOLD_BYTES;
+              const checkboxId = `clean-item-${item.id}`;
 
-            return (
-              <li
-                key={item.id}
-                className={cn(
-                  'flex items-center gap-3 px-4 py-3 transition-colors',
-                  canSelect && !cleaning && 'hover:bg-muted/40',
-                  !canSelect && 'opacity-60',
-                  isWorking && 'bg-primary/5'
-                )}
-              >
-                <input
-                  id={checkboxId}
-                  type="checkbox"
-                  className="size-4 shrink-0 accent-primary"
-                  checked={selected.has(item.id)}
-                  onChange={() => toggleItem(item.id)}
-                  disabled={!canSelect || cleaning}
-                  aria-label={`Selecionar ${item.label}`}
-                />
-
-                <label
-                  htmlFor={checkboxId}
+              return (
+                <li
+                  key={item.id}
+                  ref={measureElement}
                   className={cn(
-                    'flex min-w-0 flex-1 items-center gap-3',
-                    canSelect && 'cursor-pointer'
+                    'flex items-center gap-3 px-4 py-3 transition-colors',
+                    canSelect && !cleaning && 'hover:bg-muted/40',
+                    !canSelect && 'opacity-60',
+                    isWorking && 'bg-primary/5'
                   )}
                 >
-                  <span
+                  <input
+                    id={checkboxId}
+                    type="checkbox"
+                    className="size-4 shrink-0 accent-primary"
+                    checked={selected.has(item.id)}
+                    onChange={() => toggleItem(item.id)}
+                    disabled={!canSelect || cleaning}
+                    aria-label={`Selecionar ${item.label}`}
+                  />
+
+                  <label
+                    htmlFor={checkboxId}
                     className={cn(
-                      'flex size-8 shrink-0 items-center justify-center rounded-lg',
-                      item.error ? 'bg-destructive/10' : 'bg-muted'
+                      'flex min-w-0 flex-1 items-center gap-3',
+                      canSelect && 'cursor-pointer'
                     )}
                   >
-                    {isWorking ? (
-                      <Loader2 className="size-4 animate-spin text-primary" aria-hidden="true" />
-                    ) : (
-                      <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
-                    )}
-                  </span>
+                    <span
+                      className={cn(
+                        'flex size-8 shrink-0 items-center justify-center rounded-lg',
+                        item.error ? 'bg-destructive/10' : 'bg-muted'
+                      )}
+                    >
+                      {isWorking ? (
+                        <Loader2 className="size-4 animate-spin text-primary" aria-hidden="true" />
+                      ) : (
+                        <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+                      )}
+                    </span>
 
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium text-foreground">
-                        {item.label}
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center gap-2">
+                        <span className="truncate text-sm font-medium text-foreground">
+                          {item.label}
+                        </span>
+                        {isLarge && (
+                          <span className="shrink-0 rounded bg-yellow-500/15 px-1.5 py-0.5 text-[9px] font-medium text-yellow-400">
+                            Grande
+                          </span>
+                        )}
+                        {locked && (
+                          <span
+                            title="Requer administrador"
+                            className="inline-flex shrink-0 items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-400"
+                          >
+                            <Lock className="size-2.5" aria-hidden="true" />
+                            Admin
+                          </span>
+                        )}
                       </span>
-                      {isLarge && (
-                        <span className="shrink-0 rounded bg-yellow-500/15 px-1.5 py-0.5 text-[9px] font-medium text-yellow-400">
-                          Grande
-                        </span>
-                      )}
-                      {locked && (
-                        <span
-                          title="Requer administrador"
-                          className="inline-flex shrink-0 items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-400"
-                        >
-                          <Lock className="size-2.5" aria-hidden="true" />
-                          Admin
-                        </span>
-                      )}
+                      <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+                        {item.error ? 'Não foi possível medir este item' : item.description}
+                      </span>
                     </span>
-                    <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
-                      {item.error ? 'Não foi possível medir este item' : item.description}
-                    </span>
-                  </span>
-                </label>
+                  </label>
 
-                <span className="shrink-0 text-right">
-                  <span className="block text-sm font-medium tabular-nums text-foreground">
-                    {hasData ? formatBytes(item.totalSizeBytes) : '—'}
+                  <span className="shrink-0 text-right">
+                    <span className="block text-sm font-medium tabular-nums text-foreground">
+                      {hasData ? formatBytes(item.totalSizeBytes) : '—'}
+                    </span>
+                    <span className="block text-[11px] text-muted-foreground tabular-nums">
+                      {item.error
+                        ? 'Erro na leitura'
+                        : hasData
+                          ? `${item.fileCount.toLocaleString('pt-BR')} ${
+                              item.fileCount === 1 ? 'arquivo' : 'arquivos'
+                            }`
+                          : 'Nada para limpar'}
+                    </span>
                   </span>
-                  <span className="block text-[11px] text-muted-foreground tabular-nums">
-                    {item.error
-                      ? 'Erro na leitura'
-                      : hasData
-                        ? `${item.fileCount.toLocaleString('pt-BR')} ${
-                            item.fileCount === 1 ? 'arquivo' : 'arquivos'
-                          }`
-                        : 'Nada para limpar'}
-                  </span>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+                </li>
+              );
+            })}
+          </ul>
+          {paddingBottom > 0 && (
+            <div
+              data-testid="virtual-spacer-bottom"
+              style={{ height: paddingBottom }}
+              aria-hidden="true"
+            />
+          )}
+        </div>
       </section>
 
       <ConfirmCleanDialog

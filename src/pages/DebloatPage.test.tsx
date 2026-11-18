@@ -28,6 +28,29 @@ const state = vi.hoisted(() => ({
   toasts: [] as { type: string; title: string; description?: string }[],
   confirmOnExecute: true,
   elevate: vi.fn(async () => ({ launched: true, cancelled: false })),
+  virtual: null as null | { indices: number[]; paddingTop: number; paddingBottom: number },
+  virtualCalls: [] as { scrollRef: unknown; rowHeight: unknown; listRef: unknown }[],
+}));
+
+vi.mock('../hooks/use-virtual-rows', () => ({
+  useVirtualRows: <T,>(items: T[], scrollRef: unknown, rowHeight: unknown, listRef?: unknown) => {
+    state.virtualCalls.push({ scrollRef, rowHeight, listRef });
+    const config = state.virtual;
+    const indices = config ? config.indices : items.map((_, index) => index);
+    return {
+      virtualItems: indices.map((index) => ({
+        index,
+        key: index,
+        start: index * 69,
+        end: (index + 1) * 69,
+        size: 69,
+        lane: 0,
+      })),
+      paddingTop: config?.paddingTop ?? 0,
+      paddingBottom: config?.paddingBottom ?? 0,
+      measureElement: () => {},
+    };
+  },
 }));
 
 vi.mock('../hooks/use-appx-inventory', () => ({
@@ -110,6 +133,8 @@ beforeEach(() => {
   state.remove.mockReset();
   state.remove.mockResolvedValue({ removed: [XBOX], failed: [] });
   state.elevate.mockClear();
+  state.virtual = null;
+  state.virtualCalls = [];
   (window as unknown as { electronAPI: unknown }).electronAPI = {
     elevateApp: state.elevate,
   };
@@ -316,5 +341,50 @@ describe('DebloatPage — sem administrador', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Reiniciar como admin' }));
     expect(state.elevate).toHaveBeenCalledWith(undefined, undefined, undefined, true);
+  });
+});
+
+describe('DebloatPage — virtualização', () => {
+  it('renderiza só as linhas visíveis devolvidas pelo virtualizador', () => {
+    // A ordem padrão do beforeEach é: Xbox(0), Store(1), Paciência(2), Fotos(3).
+    state.virtual = { indices: [2], paddingTop: 138, paddingBottom: 69 };
+    render(<DebloatPage />);
+
+    expect(screen.getByText('Paciência')).not.toBeNull();
+    expect(screen.queryByText('Xbox Game Bar')).toBeNull();
+    expect(screen.queryByText('Microsoft Store')).toBeNull();
+    expect(screen.queryByText('Fotos')).toBeNull();
+  });
+
+  it('mantém a altura total com espaçadores acima e abaixo das linhas visíveis', () => {
+    state.virtual = { indices: [1, 2], paddingTop: 69, paddingBottom: 138 };
+    const { container } = render(<DebloatPage />);
+
+    const top = container.querySelector('[data-testid="virtual-spacer-top"]');
+    const bottom = container.querySelector('[data-testid="virtual-spacer-bottom"]');
+    expect((top as HTMLElement).style.height).toBe('69px');
+    expect((bottom as HTMLElement).style.height).toBe('138px');
+  });
+
+  it('a lista virtualizada continua permitindo selecionar a linha visível', () => {
+    state.virtual = { indices: [2], paddingTop: 138, paddingBottom: 69 };
+    render(<DebloatPage />);
+
+    fireEvent.click(screen.getByText('Paciência'));
+
+    expect(screen.getByLabelText('Selecionar Paciência')).toHaveProperty('checked', true);
+    expect(screen.getByText('1 selecionado')).not.toBeNull();
+  });
+
+  it('usa a rolagem da página, sem container de scroll próprio', () => {
+    const { container } = render(<DebloatPage />);
+
+    expect(state.virtualCalls[0]?.scrollRef).toBeNull();
+    expect(state.virtualCalls[0]?.listRef).not.toBeNull();
+
+    const list = container.querySelector('[data-testid="apps-list"]');
+    expect(list).not.toBeNull();
+    expect(list?.className).not.toContain('overflow-y-auto');
+    expect(list?.className).not.toContain('max-h-');
   });
 });
