@@ -106,12 +106,14 @@ describe('UpdatesSection — estado inicial', () => {
     expect(screen.queryByRole('button', { name: /Pagina de download/ })).toBeNull();
   });
 
-  it('mostra a página de download quando não está empacotado', () => {
+  it('mostra a página de download como link quando não está empacotado', () => {
     render(<UpdatesSection appVersion="2.19.0" packaged={false} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Pagina de download/ }));
-
-    expect(openSpy).toHaveBeenCalledWith('https://fmoptimize.vercel.app', '_blank');
+    const link = screen.getByRole('link', { name: /Pagina de download/ });
+    expect(link.getAttribute('href')).toBe('https://fmoptimize.vercel.app');
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(openSpy).not.toHaveBeenCalled();
   });
 
   it('mostra reticências quando a versão não foi informada', () => {

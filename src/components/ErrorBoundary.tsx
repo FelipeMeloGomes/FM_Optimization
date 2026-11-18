@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center gap-4 py-20">
+        <div role="alert" className="flex flex-col items-center justify-center gap-4 py-20">
           <AlertTriangle className="size-8 text-destructive" />
           <p className="text-sm font-medium text-foreground">Algo deu errado</p>
           <p className="max-w-md text-center text-xs text-muted-foreground">

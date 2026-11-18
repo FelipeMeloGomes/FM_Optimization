@@ -93,6 +93,9 @@ describe('VirtualizedSectionCard — filtro por scriptIds', () => {
     expect(screen.getByText('Remover Apps de Terceiros')).not.toBeNull();
     expect(screen.getByText('Remover Apps Nativos')).not.toBeNull();
     expect(screen.queryByText('Instalar Equicord')).toBeNull();
+
+    const name = screen.getByText('Remover Apps de Terceiros');
+    expect(name.getAttribute('title')).toBe('Remover Apps de Terceiros');
   });
 
   it('conta os tweaks pelo filtro, não pelo catálogo inteiro', () => {

@@ -79,6 +79,15 @@ describe('PageLockSection — cadastro de senha', () => {
     expect(screen.getByText(/Paginas bloqueadas:/).textContent).toContain('emuladores');
   });
 
+  it('nomeia os campos de senha para leitores de tela', () => {
+    renderWith();
+
+    expect(screen.getByLabelText('Nova senha')).toBe(screen.getByPlaceholderText('Nova senha'));
+    expect(screen.getByLabelText('Confirmar senha')).toBe(
+      screen.getByPlaceholderText('Confirmar senha')
+    );
+  });
+
   it('recusa senha com menos de quatro caracteres sem chamar o main', async () => {
     renderWith();
 

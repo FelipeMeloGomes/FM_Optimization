@@ -148,7 +148,7 @@ export function Sidebar({ openCommandPalette, defaultCollapsed = false }: Sideba
         </button>
         <nav
           className={cn(
-            'flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto',
+            'flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain',
             collapsed
               ? 'items-center pr-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
               : 'pr-1'

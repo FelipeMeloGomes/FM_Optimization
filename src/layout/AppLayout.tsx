@@ -47,7 +47,11 @@ export function AppLayout() {
       <div className="relative flex flex-1 overflow-hidden">
         <Sidebar openCommandPalette={open} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <main ref={mainRef} id="main-content" className="flex-1 overflow-y-auto p-6">
+          <main
+            ref={mainRef}
+            id="main-content"
+            className="flex-1 overflow-y-auto overscroll-contain p-6"
+          >
             <Outlet />
           </main>
         </div>

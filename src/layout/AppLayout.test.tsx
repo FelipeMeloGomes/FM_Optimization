@@ -41,6 +41,7 @@ describe('AppLayout', () => {
     expect(html).toContain('conteudo');
     expect(html).not.toMatch(/<canvas/);
     expect(html).not.toContain('backgroundComponent');
+    expect(html).toContain('overscroll-contain');
   });
 
   it('usa o tema do Toaster conforme o tema configurado', () => {

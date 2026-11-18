@@ -82,6 +82,10 @@ describe('ScriptCard — informações do script', () => {
     expect(screen.getByText('Tweak de CPU')).not.toBeNull();
     expect(screen.getByText('.ps1')).not.toBeNull();
     expect(screen.getByText('Ajusta o agendamento de threads.')).not.toBeNull();
+
+    const name = screen.getByText('Tweak de CPU');
+    expect(name.getAttribute('title')).toBe('Tweak de CPU');
+    expect(screen.getByText('.ps1').parentElement?.className).toContain('flex-wrap');
   });
 
   it('mostra o aviso de administrador apenas quando exigido', () => {

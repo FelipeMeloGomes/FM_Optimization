@@ -30,11 +30,13 @@ export function ConfirmRemoveAppsDialog({
         </div>
 
         <div className="space-y-3 p-6">
-          <ul className="max-h-48 space-y-1.5 overflow-y-auto rounded-lg bg-muted/50 p-3">
+          <ul className="max-h-48 space-y-1.5 overflow-y-auto overscroll-contain rounded-lg bg-muted/50 p-3">
             {apps.map((app) => (
               <li key={app.familyName} className="space-y-0.5">
                 <p className="text-xs font-medium text-foreground">{app.displayName}</p>
-                <p className="truncate text-[10px] text-muted-foreground">{app.familyName}</p>
+                <p title={app.familyName} className="truncate text-[10px] text-muted-foreground">
+                  {app.familyName}
+                </p>
               </li>
             ))}
           </ul>

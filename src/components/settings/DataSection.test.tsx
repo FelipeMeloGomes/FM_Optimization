@@ -45,6 +45,14 @@ describe('DataSection', () => {
     expect(screen.getByText('Importar Dados')).not.toBeNull();
   });
 
+  it('mantém o input de arquivo alcançável por teclado', () => {
+    render(<DataSection />);
+
+    const input = screen.getByLabelText('Importar Dados');
+    expect(input.classList.contains('sr-only')).toBe(true);
+    expect(input.closest('label')?.className).toContain('focus-within:ring-2');
+  });
+
   it('chama exportData ao clicar em exportar', () => {
     render(<DataSection />);
 

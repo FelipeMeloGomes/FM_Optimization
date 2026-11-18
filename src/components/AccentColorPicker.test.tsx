@@ -83,6 +83,20 @@ describe('AccentColorPicker', () => {
     expect(inactive.querySelector('svg')).toBeNull();
   });
 
+  it('expõe o estado do swatch e calcula o contraste do check', () => {
+    // Regressão: `text-white` fixo ficava ~2:1 sobre o âmbar e `ringColor`
+    // não é propriedade CSS — o anel não acompanhava a cor escolhida.
+    setAccent('#f59e0b');
+    render(<AccentColorPicker />);
+
+    const active = screen.getByLabelText('Cor Ambar');
+    expect(active.getAttribute('aria-pressed')).toBe('true');
+    expect(active.style.color).toBe('rgb(10, 11, 16)');
+    expect(active.style.getPropertyValue('--tw-ring-color')).toBe('#f59e0b');
+
+    expect(screen.getByLabelText('Cor Indigo').getAttribute('aria-pressed')).toBe('false');
+  });
+
   it('mostra a cor atual em maiúsculas', () => {
     setAccent('#ff8800');
     render(<AccentColorPicker />);

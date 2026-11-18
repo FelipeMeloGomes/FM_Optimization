@@ -97,31 +97,59 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]">
-      <div className="fixed inset-0 bg-black/50" aria-hidden="true" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl">
+      <button
+        type="button"
+        aria-label="Fechar busca"
+        onClick={onClose}
+        className="fixed inset-0 bg-black/50"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Busca rápida"
+        className="relative z-10 w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl"
+      >
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-          <Search className="h-4 w-4 text-muted-foreground" />
+          <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <input
             ref={inputRef}
             type="text"
+            role="combobox"
+            aria-label="Buscar tweaks"
+            aria-expanded="true"
+            aria-controls="command-palette-results"
+            aria-activedescendant={
+              filtered.length > 0 ? `command-palette-option-${selectedIndex}` : undefined
+            }
             placeholder="Buscar tweaks..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           />
           <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
             ESC
           </kbd>
         </div>
-        <div className="max-h-[60vh] overflow-y-auto p-2">
+        <p aria-live="polite" className="sr-only">
+          {filtered.length} resultado{filtered.length === 1 ? '' : 's'}
+        </p>
+        <div
+          id="command-palette-results"
+          role="listbox"
+          aria-label="Resultados da busca"
+          className="max-h-[60vh] overflow-y-auto overscroll-contain p-2"
+        >
           {filtered.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
+            <div className="py-8 text-center text-sm text-muted-foreground" role="status">
               Nenhum resultado encontrado
             </div>
           ) : (
             filtered.map((script, index) => (
               <button
                 type="button"
+                role="option"
+                id={`command-palette-option-${index}`}
+                aria-selected={index === selectedIndex}
                 key={script.id}
                 className={cn(
                   'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors',
@@ -135,10 +163,14 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 }}
                 onMouseEnter={() => setSelectedIndex(index)}
               >
-                <Terminal className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="flex-1 min-w-0">
-                  <div className="truncate font-medium">{script.name}</div>
-                  <div className="truncate text-xs text-muted-foreground">{script.category}</div>
+                <Terminal className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <div className="min-w-0 flex-1">
+                  <div title={script.name} className="truncate font-medium">
+                    {script.name}
+                  </div>
+                  <div title={script.category} className="truncate text-xs text-muted-foreground">
+                    {script.category}
+                  </div>
                 </div>
                 <ScriptBadge script={script} />
               </button>

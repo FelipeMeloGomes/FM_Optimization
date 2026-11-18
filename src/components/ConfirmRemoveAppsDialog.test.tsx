@@ -43,6 +43,11 @@ describe('ConfirmRemoveAppsDialog', () => {
     expect(screen.getByText('Skype')).not.toBeNull();
     expect(screen.getByText(/não pode ser desfeita/i)).not.toBeNull();
     expect(screen.getByText(/podem ser reinstalados/i)).not.toBeNull();
+
+    const list = screen.getByRole('list');
+    expect(list.className).toContain('overscroll-contain');
+    const familyName = screen.getByText('Microsoft.XboxGamingOverlay_8wekyb3d8bbwe');
+    expect(familyName.getAttribute('title')).toBe('Microsoft.XboxGamingOverlay_8wekyb3d8bbwe');
   });
 
   it('usa singular para um único app', () => {

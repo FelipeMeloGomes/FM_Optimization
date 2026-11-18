@@ -70,7 +70,9 @@ export const DashboardWidget = memo(function DashboardWidget({
             {value || '—'}
           </div>
           {detail && (
-            <div className="mt-1 text-xs text-muted-foreground leading-relaxed">{detail}</div>
+            <div title={detail} className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {detail}
+            </div>
           )}
         </div>
         {progress !== undefined && (

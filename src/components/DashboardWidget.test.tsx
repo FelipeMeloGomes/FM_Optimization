@@ -38,6 +38,9 @@ describe('DashboardWidget — conteúdo', () => {
     expect(html).toContain('CPU');
     expect(html).toContain('12%');
     expect(html).toContain('8 núcleos · 16 threads');
+    expect(render({ detail: '8 núcleos · 16 threads' })).toContain(
+      'title="8 núcleos · 16 threads"'
+    );
   });
 
   it('usa "—" quando o valor vem vazio', () => {

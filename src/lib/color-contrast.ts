@@ -51,6 +51,24 @@ export function formatHsl({ h, s, l }: Hsl): string {
   return `hsl(${h}, ${s}%, ${l}%)`;
 }
 
+export function hexToRgb(hex: string): Rgb {
+  const raw = hex.replace('#', '');
+  const full = raw.length === 3 ? raw.replace(/./g, (c) => c + c) : raw;
+  return {
+    r: parseInt(full.slice(0, 2), 16),
+    g: parseInt(full.slice(2, 4), 16),
+    b: parseInt(full.slice(4, 6), 16),
+  };
+}
+
+/** Escolhe o foreground de maior contraste sobre uma cor hexadecimal. */
+export function readableForegroundForHex(hex: string): string {
+  const rgb = hexToRgb(hex);
+  return contrastRatio(rgb, DARK_RGB) >= contrastRatio(rgb, LIGHT_RGB)
+    ? DARK_FOREGROUND
+    : LIGHT_FOREGROUND;
+}
+
 /**
  * Escolhe o foreground com maior contraste sobre a cor de fundo. Quando nem
  * texto escuro nem claro atinge 4,5:1, ajusta a luminosidade do fundo no

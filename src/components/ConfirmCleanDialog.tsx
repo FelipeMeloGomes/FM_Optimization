@@ -34,7 +34,7 @@ export function ConfirmCleanDialog({
         </div>
 
         <div className="space-y-3 p-6">
-          <ul className="space-y-1.5 rounded-lg bg-muted/50 p-3">
+          <ul className="max-h-48 space-y-1.5 overflow-y-auto overscroll-contain rounded-lg bg-muted/50 p-3">
             {items.map((item) => (
               <li key={item.id} className="flex items-center justify-between gap-4 text-xs">
                 <span className="text-muted-foreground">{item.label}</span>

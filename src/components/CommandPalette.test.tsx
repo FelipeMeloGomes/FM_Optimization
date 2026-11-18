@@ -96,7 +96,7 @@ function type(value: string) {
 }
 
 function results(): string[] {
-  return screen.queryAllByRole('button').map((button) => button.textContent ?? '');
+  return screen.queryAllByRole('option').map((option) => option.textContent ?? '');
 }
 
 const DASHBOARD: DashboardData = {
@@ -250,7 +250,7 @@ describe('CommandPalette — navegação', () => {
   it('navega para a rota do script e fecha ao clicar', () => {
     const { onClose } = openPalette();
 
-    fireEvent.click(screen.getByRole('button', { name: /Limpar Cache/ }));
+    fireEvent.click(screen.getByRole('option', { name: /Limpar Cache/ }));
 
     expect(store.navigate).toHaveBeenCalledWith('/cleaner');
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -292,11 +292,9 @@ describe('CommandPalette — navegação', () => {
   });
 
   it('fecha ao clicar no fundo', () => {
-    const { onClose, container } = openPalette();
+    const { onClose } = openPalette();
 
-    const backdrop = container.querySelector('[aria-hidden="true"]');
-    if (!backdrop) throw new Error('fundo da paleta não encontrado');
-    fireEvent.click(backdrop);
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar busca' }));
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });

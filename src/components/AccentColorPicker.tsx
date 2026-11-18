@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react';
 import { useSettingsContext } from '../contexts/SettingsContext';
+import { readableForegroundForHex } from '../lib/color-contrast';
 
 const PRESET_COLORS = [
   { name: 'Azul', hex: '#3b82f6' },
@@ -26,6 +27,7 @@ export function AccentColorPicker() {
               key={color.hex}
               type="button"
               aria-label={`Cor ${color.name}`}
+              aria-pressed={isActive}
               onClick={() => update({ accentColor: color.hex })}
               className={`group relative size-8 rounded-full transition-[transform,box-shadow] duration-200 ${
                 isActive
@@ -34,13 +36,12 @@ export function AccentColorPicker() {
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
               style={{
                 backgroundColor: color.hex,
-                ...(isActive && { ringColor: color.hex }),
+                color: readableForegroundForHex(color.hex),
+                ...(isActive && { '--tw-ring-color': color.hex }),
               }}
               title={color.name}
             >
-              {isActive && (
-                <Check className="size-4 absolute inset-0 m-auto text-white" strokeWidth={3} />
-              )}
+              {isActive && <Check className="size-4 absolute inset-0 m-auto" strokeWidth={3} />}
             </button>
           );
         })}

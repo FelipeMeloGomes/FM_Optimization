@@ -69,10 +69,6 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
     window.electronAPI.installUpdate();
   }
 
-  function handleOpenDownloadPage() {
-    window.open(DOWNLOAD_PAGE_URL, '_blank');
-  }
-
   return (
     <div>
       <div className="mb-4 flex items-center gap-2">
@@ -189,14 +185,11 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
               Verificar atualizacoes
             </Button>
             {!packaged && (
-              <Button
-                onClick={handleOpenDownloadPage}
-                variant="outline"
-                size="sm"
-                className="gap-1.5"
-              >
-                <ExternalLink className="size-3.5" />
-                Pagina de download
+              <Button asChild variant="outline" size="sm" className="gap-1.5">
+                <a href={DOWNLOAD_PAGE_URL} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="size-3.5" />
+                  Pagina de download
+                </a>
               </Button>
             )}
           </div>
@@ -209,14 +202,11 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
               Verificar novamente
             </Button>
             {!packaged && (
-              <Button
-                onClick={handleOpenDownloadPage}
-                variant="ghost"
-                size="sm"
-                className="gap-1.5"
-              >
-                <ExternalLink className="size-3.5" />
-                Pagina de download
+              <Button asChild variant="ghost" size="sm" className="gap-1.5">
+                <a href={DOWNLOAD_PAGE_URL} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="size-3.5" />
+                  Pagina de download
+                </a>
               </Button>
             )}
           </div>

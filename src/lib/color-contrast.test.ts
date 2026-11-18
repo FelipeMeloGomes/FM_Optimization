@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, hslToRgb, readableForeground, relativeLuminance } from './color-contrast';
+import {
+  contrastRatio,
+  hexToRgb,
+  hslToRgb,
+  readableForeground,
+  readableForegroundForHex,
+  relativeLuminance,
+} from './color-contrast';
 
 const DARK = { r: 10, g: 11, b: 16 };
 const WHITE = { r: 255, g: 255, b: 255 };
@@ -29,5 +36,22 @@ describe('readableForeground', () => {
   it('mantém a luminância de preto e branco nos extremos', () => {
     expect(relativeLuminance(DARK)).toBeLessThan(0.01);
     expect(relativeLuminance(WHITE)).toBe(1);
+  });
+
+  it('converte hex de 3 e 6 dígitos para RGB', () => {
+    expect(hexToRgb('#fff')).toEqual(WHITE);
+    expect(hexToRgb('#22d3ee')).toEqual({ r: 34, g: 211, b: 238 });
+  });
+
+  it.each(['#22d3ee', '#facc15', '#a78bfa', '#000000', '#ffffff'])(
+    'escolhe foreground legível sobre %s',
+    (hex) => {
+      expect(readableForegroundForHex(hex)).toMatch(/^#(?:0a0b10|ffffff)$/);
+    }
+  );
+
+  it('usa texto escuro sobre amarelo e claro sobre preto', () => {
+    expect(readableForegroundForHex('#facc15')).toBe('#0a0b10');
+    expect(readableForegroundForHex('#000000')).toBe('#ffffff');
   });
 });

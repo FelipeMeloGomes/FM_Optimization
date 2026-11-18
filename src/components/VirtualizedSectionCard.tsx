@@ -63,10 +63,14 @@ function ScriptRow({
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium truncate">{script.name}</p>
+          <p title={script.name} className="truncate text-sm font-medium">
+            {script.name}
+          </p>
           <ScriptBadge script={script} />
         </div>
-        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{script.description}</p>
+        <p title={script.description} className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+          {script.description}
+        </p>
       </div>
       <Button
         variant={isScriptExecuting ? 'destructive' : 'secondary'}

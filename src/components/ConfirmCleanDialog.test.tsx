@@ -48,6 +48,10 @@ describe('ConfirmCleanDialog', () => {
     expect(screen.getByText('2 GB')).not.toBeNull();
     expect(screen.getByText('512 MB')).not.toBeNull();
     expect(screen.getByText('2.5 GB')).not.toBeNull();
+
+    const list = screen.getByRole('list');
+    expect(list.className).toContain('max-h-48');
+    expect(list.className).toContain('overscroll-contain');
   });
 
   it('usa singular para um único item', () => {
