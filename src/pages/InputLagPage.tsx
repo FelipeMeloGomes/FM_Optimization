@@ -163,7 +163,7 @@ function DeviceSection({
   return (
     <div
       className={cn(
-        'rounded-xl border bg-card transition-all duration-300 hover:shadow-lg overflow-hidden',
+        'rounded-xl border bg-card transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg overflow-hidden',
         card.borderColor,
         isAnyExecuting && 'ring-2 ring-primary/50'
       )}
@@ -252,7 +252,7 @@ function DeviceSection({
               <div
                 key={script.id}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg border bg-card p-3 transition-all',
+                  'flex items-center gap-3 rounded-lg border bg-card p-3 transition-[color,background-color,border-color,box-shadow,opacity]',
                   script.requiresAdmin && 'border-warning/20',
                   isScriptExecuting && 'ring-2 ring-primary/50'
                 )}
@@ -422,7 +422,7 @@ export default function InputLagPage() {
               <div
                 key={item.id}
                 className={cn(
-                  'group relative rounded-xl border bg-card p-4 transition-all duration-300 hover:shadow-lg',
+                  'group relative rounded-xl border bg-card p-4 transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg',
                   script.requiresAdmin ? 'border-warning/20' : 'border-border',
                   isExecuting && 'ring-2 ring-primary/50'
                 )}

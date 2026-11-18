@@ -120,7 +120,7 @@ export function ConfirmDialog({
             <div>
               <DialogTitle className="text-base">
                 {phase === 'executing'
-                  ? 'Executando...'
+                  ? 'Executando…'
                   : phase === 'done'
                     ? 'Concluído'
                     : 'Confirmar Execução'}

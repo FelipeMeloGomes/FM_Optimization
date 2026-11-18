@@ -283,7 +283,7 @@ export default function DebloatPage() {
                 className={cn('size-3.5', isRefreshing && 'animate-spin')}
                 aria-hidden="true"
               />
-              <span className="text-xs">{isRefreshing ? 'Varrendo...' : 'Atualizar'}</span>
+              <span className="text-xs">{isRefreshing ? 'Varrendo…' : 'Atualizar'}</span>
             </Button>
           </div>
           {lastRefreshed > 0 && (
@@ -372,7 +372,7 @@ export default function DebloatPage() {
             {removing ? (
               <>
                 <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-                Removendo...
+                Removendo…
               </>
             ) : (
               <>

@@ -414,7 +414,7 @@ export default function CleanerPage() {
                 className={cn('size-3.5', isRefreshing && 'animate-spin')}
                 aria-hidden="true"
               />
-              <span className="text-xs">{isRefreshing ? 'Atualizando...' : 'Atualizar'}</span>
+              <span className="text-xs">{isRefreshing ? 'Atualizando…' : 'Atualizar'}</span>
             </Button>
           </div>
           {lastRefreshed > 0 && (
@@ -433,9 +433,9 @@ export default function CleanerPage() {
 
       <div aria-live="polite" className="sr-only">
         {cleaning
-          ? 'Limpando itens selecionados...'
+          ? 'Limpando itens selecionados…'
           : isRefreshing
-            ? 'Atualizando estatísticas...'
+            ? 'Atualizando estatísticas…'
             : lastRefreshed > 0
               ? 'Estatísticas atualizadas'
               : ''}
@@ -508,7 +508,7 @@ export default function CleanerPage() {
               {cleaning ? (
                 <>
                   <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-                  Limpando...
+                  Limpando…
                 </>
               ) : (
                 <>

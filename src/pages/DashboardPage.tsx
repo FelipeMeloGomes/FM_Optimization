@@ -213,7 +213,7 @@ export default function DashboardPage() {
                 ) : (
                   <Activity className="size-3.5" />
                 )}
-                {refreshing ? 'Atualizando...' : 'Atualizar'}
+                {refreshing ? 'Atualizando…' : 'Atualizar'}
               </Button>
             </div>
           </div>

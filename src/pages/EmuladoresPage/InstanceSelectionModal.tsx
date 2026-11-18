@@ -33,9 +33,7 @@ export function InstanceSelectionModal({
         </DialogHeader>
         <div className="grid gap-3 pt-2">
           {loading ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Detectando instâncias...
-            </p>
+            <p className="text-sm text-muted-foreground text-center py-4">Detectando instâncias…</p>
           ) : instances.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
               Nenhuma instância encontrada. Crie uma instância no gerenciador do BlueStacks.
@@ -47,7 +45,7 @@ export function InstanceSelectionModal({
                 variant="outline"
                 className={cn(
                   'flex items-center justify-start gap-3 h-auto py-4 px-4',
-                  'hover:border-primary/50 hover:bg-primary/5 transition-all duration-200'
+                  'hover:border-primary/50 hover:bg-primary/5 transition-[color,background-color,border-color,box-shadow,opacity] duration-200'
                 )}
                 onClick={() => {
                   onSelect(instance);

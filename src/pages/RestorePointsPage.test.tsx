@@ -138,7 +138,7 @@ describe('RestorePointsPage — conteúdo', () => {
   it('filtra pontos pela busca', () => {
     renderPage();
 
-    fireEvent.change(screen.getByPlaceholderText('Buscar pontos de restauração...'), {
+    fireEvent.change(screen.getByPlaceholderText('Buscar pontos de restauração…'), {
       target: { value: 'inexistente' },
     });
 
@@ -150,7 +150,7 @@ describe('RestorePointsPage — conteúdo', () => {
 
     renderPage();
 
-    const input = screen.getByPlaceholderText('Nome do ponto de restauração...');
+    const input = screen.getByPlaceholderText('Nome do ponto de restauração…');
     act(() => fireEvent.change(input, { target: { value: 'Meu ponto' } }));
     act(() => fireEvent.click(screen.getByRole('button', { name: 'Criar' })));
 

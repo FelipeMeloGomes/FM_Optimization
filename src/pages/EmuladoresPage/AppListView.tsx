@@ -354,7 +354,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
-          placeholder="Buscar apps..."
+          placeholder="Buscar apps…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -455,7 +455,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
         {carregando ? (
           <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground">
             <Loader2 className="size-5 animate-spin mb-2" />
-            <p className="text-sm">Carregando apps...</p>
+            <p className="text-sm">Carregando apps…</p>
           </div>
         ) : filteredApps.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground">
@@ -470,7 +470,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
             <Card
               key={app.packageName}
               className={cn(
-                'transition-all duration-150 cursor-pointer',
+                'transition-[color,background-color,border-color,box-shadow,opacity] duration-150 cursor-pointer',
                 appsSelecionados.has(app.packageName) && 'border-primary/50 bg-primary/5'
               )}
               onClick={() => toggleAppSelection(app.packageName)}
@@ -535,7 +535,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
         <div className="space-y-2 pt-2 border-t border-border">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">
-              Processando {removalProgress.current} de {removalProgress.total}...
+              Processando {removalProgress.current} de {removalProgress.total}…
             </span>
             <span className="text-xs text-muted-foreground">
               {Math.round((removalProgress.current / removalProgress.total) * 100)}%
@@ -579,7 +579,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
               {appsSelecionados.size > 0 && (
                 <span className="block mt-1 text-xs text-muted-foreground">
                   {Array.from(appsSelecionados).slice(0, 5).join(', ')}
-                  {appsSelecionados.size > 5 && ` e mais ${appsSelecionados.size - 5}...`}
+                  {appsSelecionados.size > 5 && ` e mais ${appsSelecionados.size - 5}…`}
                 </span>
               )}
               {selHasSystem && (
@@ -596,7 +596,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
               Cancelar
             </Button>
             <Button variant="destructive" onClick={handleRemove} disabled={removing}>
-              {removing ? 'Removendo...' : 'Remover'}
+              {removing ? 'Removendo…' : 'Remover'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -612,7 +612,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
               (protegidos) são reativados via ADB.
             </DialogDescription>
           </DialogHeader>
-          {restoreBusy && <p className="text-xs text-muted-foreground">Processando...</p>}
+          {restoreBusy && <p className="text-xs text-muted-foreground">Processando…</p>}
           {restoreError && (
             <div
               role="alert"

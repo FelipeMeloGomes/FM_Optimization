@@ -154,7 +154,7 @@ export default function RestorePointsPage() {
           </label>
           <Input
             id="rp-name"
-            placeholder="Nome do ponto de restauração..."
+            placeholder="Nome do ponto de restauração…"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -167,7 +167,7 @@ export default function RestorePointsPage() {
             className="gap-1.5"
           >
             <Plus className="size-3.5" />
-            {creating ? 'Criando...' : 'Criar'}
+            {creating ? 'Criando…' : 'Criar'}
           </Button>
           <Button variant="outline" size="sm" onClick={refresh} className="gap-1.5">
             <RefreshCw className="size-3.5" />
@@ -177,8 +177,8 @@ export default function RestorePointsPage() {
       </div>
 
       <div aria-live="polite" className="sr-only">
-        {creating ? 'Criando ponto de restauração...' : ''}
-        {restoring ? 'Restaurando sistema...' : ''}
+        {creating ? 'Criando ponto de restauração…' : ''}
+        {restoring ? 'Restaurando sistema…' : ''}
         {restoreDone ? 'Sistema restaurado com sucesso' : ''}
       </div>
 
@@ -199,7 +199,7 @@ export default function RestorePointsPage() {
           </label>
           <Input
             id="rp-search"
-            placeholder="Buscar pontos de restauração..."
+            placeholder="Buscar pontos de restauração…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-sm pl-9"
@@ -365,7 +365,7 @@ export default function RestorePointsPage() {
                     setRestoreDone(true);
                   }}
                 >
-                  {restoring ? 'Restaurando...' : 'Restaurar'}
+                  {restoring ? 'Restaurando…' : 'Restaurar'}
                 </Button>
               </div>
             </>

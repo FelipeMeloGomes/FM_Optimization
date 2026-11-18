@@ -148,7 +148,7 @@ function NetworkPageContent() {
             ) : (
               <RefreshCw className="size-3.5" />
             )}
-            {benchmarkStatus === 'loading' ? 'Testando...' : 'Testar Novamente'}
+            {benchmarkStatus === 'loading' ? 'Testando…' : 'Testar Novamente'}
           </Button>
         </div>
 
@@ -161,7 +161,7 @@ function NetworkPageContent() {
               <div className="flex-1">
                 <p className="text-xs text-muted-foreground">Interface de rede</p>
                 <p className="text-sm font-medium">
-                  {networkInfo ? networkInfo.interfaceName : 'Carregando...'}
+                  {networkInfo ? networkInfo.interfaceName : 'Carregando…'}
                 </p>
               </div>
               <div className="text-right">
@@ -186,10 +186,10 @@ function NetworkPageContent() {
           >
             <Loader2 className="size-4 animate-spin text-primary" />
             <div className="flex-1">
-              <p className="text-sm font-medium">Testando velocidade dos DNSs...</p>
+              <p className="text-sm font-medium">Testando velocidade dos DNSs…</p>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  className="h-full rounded-full bg-primary transition-[width,background-color] duration-500"
                   style={{
                     width: `${benchmarkProgress.total > 0 ? (benchmarkProgress.current / benchmarkProgress.total) * 100 : 0}%`,
                   }}
@@ -274,7 +274,7 @@ function NetworkPageContent() {
                   {isActive(fastest.primary, fastest.secondary)
                     ? 'DNS Ativo'
                     : applyStatus === 'elevating'
-                      ? 'Elevando...'
+                      ? 'Elevando…'
                       : 'Aplicar DNS Mais Rápido'}
                 </Button>
               </div>
@@ -300,7 +300,7 @@ function NetworkPageContent() {
               <Card
                 key={provider.name}
                 className={cn(
-                  'transition-all duration-200',
+                  'transition-[color,background-color,border-color,box-shadow,opacity] duration-200',
                   active && 'border-primary/50 shadow-[0_0_15px_var(--color-selection)]',
                   isFastest && benchmarkStatus === 'done' && 'border-success/20'
                 )}

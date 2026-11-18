@@ -121,7 +121,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             aria-activedescendant={
               filtered.length > 0 ? `command-palette-option-${selectedIndex}` : undefined
             }
-            placeholder="Buscar tweaks..."
+            placeholder="Buscar tweaks…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"

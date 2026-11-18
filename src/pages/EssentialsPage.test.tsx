@@ -142,8 +142,20 @@ describe('EssentialsPage — conteúdo', () => {
 
     render(<EssentialsPage />);
 
-    expect(screen.getByText('Instalando...')).toBeDefined();
+    expect(screen.getByText('Instalando…')).toBeDefined();
     expect(screen.getByText('45%')).toBeDefined();
+  });
+
+  it('mostra Carregando… enquanto o percentual da instalação não chega', () => {
+    essentials({
+      running: { 'cpu-z': true },
+      installProgress: { 'cpu-z': { id: 'cpu-z', status: 'downloading', percent: null } },
+    });
+
+    render(<EssentialsPage />);
+
+    expect(screen.getByText('Baixando pelo winget…')).toBeDefined();
+    expect(screen.getByText('Carregando…')).toBeDefined();
   });
 
   it('mostra Cancelar durante a instalação', () => {

@@ -154,7 +154,7 @@ describe('ConfirmDialog — fase de confirmação', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Executar' }));
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(screen.getByText('Executando...')).not.toBeNull();
+    expect(screen.getByText('Executando…')).not.toBeNull();
     expect(screen.getByText('Script em execução')).not.toBeNull();
     expect(screen.getByText('Executando script')).not.toBeNull();
     expect(screen.getByText('Não feche esta janela')).not.toBeNull();

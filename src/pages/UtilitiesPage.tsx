@@ -43,7 +43,7 @@ function UtilSectionCard({
   return (
     <div
       className={cn(
-        'rounded-xl border bg-card transition-all duration-300 hover:shadow-lg overflow-hidden',
+        'rounded-xl border bg-card transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg overflow-hidden',
         section.borderColor,
         isAnyExecuting && 'ring-2 ring-primary/50'
       )}
@@ -73,7 +73,7 @@ function UtilSectionCard({
               <div
                 key={script.id}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg border bg-background p-3 transition-all',
+                  'flex items-center gap-3 rounded-lg border bg-background p-3 transition-[color,background-color,border-color,box-shadow,opacity]',
                   script.requiresAdmin && 'border-warning/20',
                   isScriptExecuting && 'ring-2 ring-primary/50'
                 )}

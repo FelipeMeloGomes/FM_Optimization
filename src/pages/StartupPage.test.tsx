@@ -211,6 +211,28 @@ describe('StartupPage — conteúdo', () => {
     expect(screen.getByText('Meu Serviço')).toBeDefined();
   });
 
+  it('mostra Carregando… no botão de um serviço ocupado', () => {
+    startup({ busy: { 'svc-1': true } });
+    renderPage();
+
+    const tabs = screen.getAllByRole('tab');
+    const servicos = tabs.find((t) => (t.textContent ?? '').includes('Serviços'));
+    act(() => fireEvent.click(servicos!));
+
+    expect(screen.getByText('Carregando…')).toBeDefined();
+    expect(screen.queryByText('Parar')).toBeNull();
+  });
+
+  it('mostra Carregando… no diálogo enquanto a ação está em andamento', () => {
+    const view = renderPage();
+    act(() => fireEvent.click(screen.getByLabelText(/Desativar Spotify/i)));
+
+    startup({ busy: { 'app-1': true } });
+    view.rerender(<StartupPage />);
+
+    expect(screen.getByRole('button', { name: 'Carregando…' })).toBeDefined();
+  });
+
   it('confirma a desativação e chama toggle com o app', async () => {
     const { toggle } = store.startup;
 

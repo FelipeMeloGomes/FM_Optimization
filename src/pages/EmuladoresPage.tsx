@@ -269,7 +269,7 @@ function EmuladoresPageContent() {
             </div>
             <div className="flex-1">
               <p className="text-xs text-muted-foreground">Caminho ADB</p>
-              <p className="text-sm font-medium font-mono truncate">{adbPath || 'Detectando...'}</p>
+              <p className="text-sm font-medium font-mono truncate">{adbPath || 'Detectando…'}</p>
             </div>
             <Button
               variant="ghost"
@@ -310,7 +310,7 @@ function EmuladoresPageContent() {
             <Card
               key={emulator.id}
               className={cn(
-                'transition-all duration-200',
+                'transition-[color,background-color,border-color,box-shadow,opacity] duration-200',
                 isActive && [colors.border, colors.shadow],
                 isActive && 'cursor-pointer'
               )}
@@ -365,7 +365,7 @@ function EmuladoresPageContent() {
                       disabled={connecting}
                     />
                     <span className="text-xs text-muted-foreground">
-                      {connecting && !isActive ? 'Conectando...' : 'ADB'}
+                      {connecting && !isActive ? 'Conectando…' : 'ADB'}
                     </span>
                   </div>
                   {isActive ? (
@@ -401,7 +401,7 @@ function EmuladoresPageContent() {
       {connecting && (
         <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
           <Loader2 className="size-4 animate-spin" />
-          Conectando ao ADB...
+          Conectando ao ADB…
         </div>
       )}
 

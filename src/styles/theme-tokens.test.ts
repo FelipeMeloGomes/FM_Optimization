@@ -24,6 +24,10 @@ const GUARDED_SOURCES = [
   ...listSources(resolve(SOURCE, 'layout')),
 ].sort();
 
+/** Task 9: todo TSX não-teste, incluindo hooks e contextos. */
+const ALL_TSX = listSources(SOURCE).sort();
+const ELLIPSIS_IN_STRING = /['"`][^'"`\n]*\.\.\.[^'"`\n]*['"`]/;
+
 const css = readFileSync(fileURLToPath(new URL('./globals.css', import.meta.url)), 'utf8');
 
 const THEME_BLOCKS = [
@@ -86,5 +90,30 @@ describe('guard de cores fixas', () => {
     const match = source.match(/rgba?\(/);
 
     expect(match, `RGB fixo em ${file}: ${match?.join(', ')}`).toBeNull();
+  });
+});
+
+describe('guard de tipografia e movimento', () => {
+  it.each(ALL_TSX)('%s usa reticências tipográficas', (file) => {
+    const source = readFileSync(resolve(SOURCE, file), 'utf8');
+    const match = source.match(ELLIPSIS_IN_STRING);
+
+    expect(match, `...) em ${file}: ${match?.join(', ')}`).toBeNull();
+  });
+
+  it.each(ALL_TSX)('%s não usa transition-all', (file) => {
+    const source = readFileSync(resolve(SOURCE, file), 'utf8');
+
+    expect(source, `transition-all em ${file}`).not.toContain('transition-all');
+  });
+
+  it('respeita movimento reduzido também no CSS global', () => {
+    expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+  });
+
+  it('não fixa a classe dark no HTML inicial', () => {
+    const html = readFileSync(resolve(SOURCE, '..', 'index.html'), 'utf8');
+
+    expect(html).not.toContain('class="dark"');
   });
 });

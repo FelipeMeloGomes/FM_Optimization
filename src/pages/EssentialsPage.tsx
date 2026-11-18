@@ -122,7 +122,7 @@ function EssentialCard({
   return (
     <div
       className={cn(
-        'rounded-xl border bg-card transition-all duration-300 hover:shadow-lg overflow-hidden',
+        'rounded-xl border bg-card transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg overflow-hidden',
         style.borderColor,
         isRunning && 'ring-2 ring-primary/50'
       )}
@@ -163,12 +163,12 @@ function EssentialCard({
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
               <span>
                 {installProgress?.status === 'installing'
-                  ? 'Instalando...'
+                  ? 'Instalando…'
                   : installProgress?.status === 'downloading'
-                    ? 'Baixando pelo winget...'
-                    : 'Iniciando o winget...'}
+                    ? 'Baixando pelo winget…'
+                    : 'Iniciando o winget…'}
               </span>
-              <span>{installPercent === null ? 'aguarde' : `${installPercent}%`}</span>
+              <span>{installPercent === null ? 'Carregando…' : `${installPercent}%`}</span>
             </div>
             <Progress
               value={installPercent ?? 0}

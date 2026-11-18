@@ -92,7 +92,7 @@ function openPalette() {
 }
 
 function type(value: string) {
-  fireEvent.change(screen.getByPlaceholderText('Buscar tweaks...'), { target: { value } });
+  fireEvent.change(screen.getByPlaceholderText('Buscar tweaks…'), { target: { value } });
 }
 
 function results(): string[] {
@@ -140,7 +140,7 @@ describe('CommandPalette — abertura', () => {
   it('mostra o campo de busca ao abrir', () => {
     openPalette();
 
-    expect(screen.getByPlaceholderText('Buscar tweaks...')).not.toBeNull();
+    expect(screen.getByPlaceholderText('Buscar tweaks…')).not.toBeNull();
     expect(screen.getByText('ESC')).not.toBeNull();
   });
 });
@@ -202,7 +202,7 @@ describe('CommandPalette — busca', () => {
     rerender(<CommandPalette isOpen={false} onClose={() => {}} />);
     rerender(<CommandPalette isOpen onClose={() => {}} />);
 
-    const input = screen.getByPlaceholderText('Buscar tweaks...') as HTMLInputElement;
+    const input = screen.getByPlaceholderText('Buscar tweaks…') as HTMLInputElement;
     expect(input.value).toBe('');
   });
 });

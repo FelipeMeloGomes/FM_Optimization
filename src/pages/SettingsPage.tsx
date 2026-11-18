@@ -41,7 +41,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <Badge variant="secondary" className="px-3 py-1 text-xs">
-              v{appVersion || '...'}
+              v{appVersion || '…'}
             </Badge>
           </div>
         </div>

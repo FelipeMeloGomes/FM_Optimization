@@ -323,7 +323,7 @@ export default function StartupPage() {
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar..."
+              placeholder="Buscar…"
               className="h-9 w-full pl-8"
               aria-label="Buscar na lista"
             />
@@ -696,7 +696,9 @@ export default function StartupPage() {
                           ) : (
                             <Square className="size-3.5 shrink-0" />
                           )}
-                          <span className="hidden sm:inline">Parar</span>
+                          <span className="hidden sm:inline">
+                            {busy[service.id] ? 'Carregando…' : 'Parar'}
+                          </span>
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -747,7 +749,11 @@ export default function StartupPage() {
               ) : (
                 <Power className="size-3.5" />
               )}
-              {pending?.type === 'stop-service' ? 'Parar agora' : 'Desativar'}
+              {pending !== null && busy[pending.entry.id]
+                ? 'Carregando…'
+                : pending?.type === 'stop-service'
+                  ? 'Parar agora'
+                  : 'Desativar'}
             </Button>
           </DialogFooter>
         </DialogContent>

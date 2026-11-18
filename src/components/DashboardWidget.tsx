@@ -50,7 +50,7 @@ export const DashboardWidget = memo(function DashboardWidget({
   return (
     <Card
       className={cn(
-        'transition-all duration-300',
+        'transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
         styles.border,
         'hover:shadow-[0_0_20px_var(--color-selection)]',
         className

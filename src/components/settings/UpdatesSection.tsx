@@ -82,7 +82,7 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Versao atual</p>
-            <p className="text-sm font-semibold text-foreground">{appVersion || '...'}</p>
+            <p className="text-sm font-semibold text-foreground">{appVersion || '…'}</p>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
             className="flex items-center gap-3 rounded-lg bg-muted/50 p-3"
           >
             <RefreshCw className="size-4 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Verificando atualizacoes...</p>
+            <p className="text-sm text-muted-foreground">Verificando atualizacoes…</p>
           </div>
         )}
 
@@ -135,7 +135,7 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
           >
             <div className="mb-3 flex items-center gap-2">
               <RefreshCw className="size-4 animate-spin text-primary" />
-              <p className="text-sm font-medium text-foreground">Baixando atualizacao...</p>
+              <p className="text-sm font-medium text-foreground">Baixando atualizacao…</p>
             </div>
             <Progress value={Math.round(progress.percent)} className="mb-2 h-2" />
             <p className="text-xs text-muted-foreground">

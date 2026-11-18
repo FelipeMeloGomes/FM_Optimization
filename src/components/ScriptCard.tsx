@@ -151,7 +151,7 @@ export const ScriptCard = memo(function ScriptCard({
   return (
     <div
       className={cn(
-        'group relative rounded-xl border bg-card p-5 transition-all duration-300 hover:shadow-lg',
+        'group relative rounded-xl border bg-card p-5 transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg',
         config.borderColor,
         isApplied && 'hover:border-success/40',
         isExecuting && 'ring-2 ring-primary/50'

@@ -29,7 +29,7 @@ export function SidebarLink({ to, icon: Icon, label, collapsed }: SidebarLinkPro
       end={to === '/'}
       className={({ isActive }) =>
         cn(
-          'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200',
+          'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-[color,background-color,border-color,box-shadow,opacity] duration-200',
           isActive
             ? 'bg-primary/20 text-primary'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -48,7 +48,7 @@ export function SidebarLink({ to, icon: Icon, label, collapsed }: SidebarLinkPro
           />
           <span
             className={cn(
-              'overflow-hidden whitespace-nowrap transition-all duration-300',
+              'overflow-hidden whitespace-nowrap transition-[width,opacity] duration-300',
               collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
             )}
           >
@@ -115,7 +115,7 @@ export function Sidebar({ openCommandPalette, defaultCollapsed = false }: Sideba
             src={logoUrl}
             alt="FM Optimize"
             className={cn(
-              'object-contain transition-all duration-300',
+              'object-contain transition-[width,height,filter] duration-300',
               glowColor
                 ? `drop-shadow-[0_0_8px_${glowColor}]`
                 : 'drop-shadow-[0_0_6px_var(--color-primary)]',
@@ -127,14 +127,14 @@ export function Sidebar({ openCommandPalette, defaultCollapsed = false }: Sideba
           type="button"
           onClick={openCommandPalette}
           className={cn(
-            'flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground',
+            'flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-[color,background-color,border-color,box-shadow,opacity] duration-200 hover:bg-muted hover:text-foreground',
             collapsed && 'mx-auto size-9 justify-center px-0 gap-0'
           )}
         >
           <Search className="size-4 shrink-0" />
           <span
             className={cn(
-              'overflow-hidden whitespace-nowrap transition-all duration-300',
+              'overflow-hidden whitespace-nowrap transition-[width,opacity] duration-300',
               collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
             )}
           >
@@ -198,7 +198,7 @@ export function Sidebar({ openCommandPalette, defaultCollapsed = false }: Sideba
           type="button"
           onClick={() => setCollapsed((v) => !v)}
           className={cn(
-            'flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground',
+            'flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-[color,background-color,border-color,box-shadow,opacity] duration-200 hover:bg-muted hover:text-foreground',
             collapsed && 'mx-auto size-9 justify-center px-0 gap-0'
           )}
           aria-label={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
@@ -206,7 +206,7 @@ export function Sidebar({ openCommandPalette, defaultCollapsed = false }: Sideba
           {collapsed ? <PanelLeftOpen className="size-5" /> : <PanelLeftClose className="size-5" />}
           <span
             className={cn(
-              'overflow-hidden whitespace-nowrap transition-all duration-300',
+              'overflow-hidden whitespace-nowrap transition-[width,opacity] duration-300',
               collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
             )}
           >

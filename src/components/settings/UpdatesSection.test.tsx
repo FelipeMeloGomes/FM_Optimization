@@ -119,7 +119,7 @@ describe('UpdatesSection — estado inicial', () => {
   it('mostra reticências quando a versão não foi informada', () => {
     render(<UpdatesSection appVersion="" packaged />);
 
-    expect(screen.getByText('...')).not.toBeNull();
+    expect(screen.getByText('…')).not.toBeNull();
   });
 });
 
@@ -130,7 +130,7 @@ describe('UpdatesSection — verificação', () => {
     fireEvent.click(screen.getByRole('button', { name: /Verificar atualizacoes/ }));
 
     expect(api.checkForUpdate).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('status').textContent).toContain('Verificando atualizacoes...');
+    expect(screen.getByRole('status').textContent).toContain('Verificando atualizacoes…');
   });
 
   it('mostra que já está na versão mais recente', () => {
@@ -195,7 +195,7 @@ describe('UpdatesSection — download e instalação', () => {
     });
 
     const status = screen.getByRole('status').textContent ?? '';
-    expect(status).toContain('Baixando atualizacao...');
+    expect(status).toContain('Baixando atualizacao…');
     expect(status).toContain('43% (4.0/10.0 MB)');
   });
 
@@ -224,7 +224,7 @@ describe('UpdatesSection — download e instalação', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Tentar novamente/ }));
     expect(api.checkForUpdate).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('status').textContent).toContain('Verificando atualizacoes...');
+    expect(screen.getByRole('status').textContent).toContain('Verificando atualizacoes…');
   });
 });
 
