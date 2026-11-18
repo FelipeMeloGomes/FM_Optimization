@@ -11,6 +11,7 @@ import { resolveScriptId } from './legacy-script-ids';
 import { isAdmin, isAdminAsync } from './services/admin-check';
 import { getAutoCleanScheduler } from './services/auto-clean';
 import { loadSettings } from './services/data-service';
+import { execPowerShellSafe } from './services/powershell';
 import { executeScript } from './services/script-executor';
 import { loadScripts } from './services/script-registry';
 import {
@@ -138,8 +139,6 @@ function handleElevatedScript(): boolean {
 }
 
 async function applyDnsElevated(interfaceIndex: number, addresses: string[]): Promise<void> {
-  const { execPowerShellSafe } = await import('./services/powershell');
-
   if (addresses.length === 0) {
     await execPowerShellSafe('Set-DnsClientServerAddress', [
       '-InterfaceIndex',
