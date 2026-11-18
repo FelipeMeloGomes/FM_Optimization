@@ -61,6 +61,15 @@ describe('SpeedTestPage', () => {
     expect(screen.getByRole('img', { name: 'Download: 0.0 Mbps' })).toBeDefined();
   });
 
+  it('usa o hero banner padrão das outras páginas', () => {
+    const { container } = render(<SpeedTestPage />);
+    const hero = container.querySelector('.bg-gradient-to-br');
+
+    expect(hero).not.toBeNull();
+    expect(hero?.querySelector('h2')?.textContent).toBe('Teste de Velocidade');
+    expect(hero?.textContent).toContain('Rede');
+  });
+
   it('mostra fase e progresso durante a medição', () => {
     speed({
       status: 'measuring',

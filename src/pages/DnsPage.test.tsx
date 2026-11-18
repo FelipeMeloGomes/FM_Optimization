@@ -75,6 +75,16 @@ describe('DnsPage', () => {
     expect(screen.getByText('DHCP (Padrão)')).toBeDefined();
   });
 
+  it('usa o hero banner padrão, com o benchmark dentro dele', () => {
+    const { container } = renderPage();
+    const hero = container.querySelector('.bg-gradient-to-br');
+
+    expect(hero).not.toBeNull();
+    expect(hero?.querySelector('h2')?.textContent).toBe('DNS');
+    expect(hero?.textContent).toContain('Rede');
+    expect(hero?.querySelector('button')?.textContent).toContain('Testar Novamente');
+  });
+
   it('executa o benchmark chamando runBenchmark', () => {
     const { runBenchmark } = store.dns;
 

@@ -47,13 +47,20 @@ function SpeedTestPageContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
-          <Activity className="size-4 text-primary" />
+      {/* Hero Banner */}
+      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
+          <Activity className="size-28 text-primary" aria-hidden="true" />
         </div>
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">Teste de Velocidade</h2>
-          <p className="text-sm text-muted-foreground">
+        <div className="relative p-6">
+          <div className="mb-2 flex items-center gap-2">
+            <Activity className="size-4 text-primary" aria-hidden="true" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+              Rede
+            </span>
+          </div>
+          <h2 className="text-lg font-bold text-foreground">Teste de Velocidade</h2>
+          <p className="mt-1 max-w-lg text-sm text-muted-foreground">
             Meça download, upload, ping e jitter da sua conexão
           </p>
         </div>
@@ -63,7 +70,6 @@ function SpeedTestPageContent() {
         <CardContent className="flex flex-col items-center gap-5 p-6 sm:p-8">
           <SpeedGauge
             valueMbps={gaugeValue}
-            progress={progress.progress}
             label={gaugeLabel}
             phase={progress.phase}
             active={status === 'measuring'}

@@ -100,27 +100,41 @@ function DnsPageContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">DNS</h2>
-          <p className="text-sm text-muted-foreground">
-            Configure seu DNS para melhor velocidade e privacidade
-          </p>
+      {/* Hero Banner */}
+      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
+          <Wifi className="size-28 text-primary" aria-hidden="true" />
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={runBenchmark}
-          disabled={benchmarkStatus === 'loading'}
-          className="gap-1.5"
-        >
-          {benchmarkStatus === 'loading' ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <RefreshCw className="size-3.5" />
-          )}
-          {benchmarkStatus === 'loading' ? 'Testando…' : 'Testar Novamente'}
-        </Button>
+        <div className="relative p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <Wifi className="size-4 text-primary" aria-hidden="true" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                  Rede
+                </span>
+              </div>
+              <h2 className="text-lg font-bold text-foreground">DNS</h2>
+              <p className="mt-1 max-w-lg text-sm text-muted-foreground">
+                Configure seu DNS para melhor velocidade e privacidade
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={runBenchmark}
+              disabled={benchmarkStatus === 'loading'}
+              className="gap-1.5"
+            >
+              {benchmarkStatus === 'loading' ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="size-3.5" />
+              )}
+              {benchmarkStatus === 'loading' ? 'Testando…' : 'Testar Novamente'}
+            </Button>
+          </div>
+        </div>
       </div>
 
       <Card className="border-primary/20">

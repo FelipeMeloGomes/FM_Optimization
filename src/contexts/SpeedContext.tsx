@@ -40,7 +40,13 @@ export function SpeedProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     const cleanup = window.electronAPI.onSpeedProgress((data) => {
-      if (runRef.current === runId) setProgress(data);
+      if (runRef.current !== runId) return;
+      // O serviço emite `done` com currentMbps null logo antes de resolver a
+      // promise. Se esse evento vencer a corrida do IPC, o medidor vê valor 0 e
+      // a agulha volta ao início antes de subir ao resultado. O resultado final
+      // já chega por `result`/`status`, então este evento só traz dano.
+      if (data.phase === 'done') return;
+      setProgress(data);
     });
     cleanupRef.current = cleanup;
 

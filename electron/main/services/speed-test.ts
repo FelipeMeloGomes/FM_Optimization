@@ -29,6 +29,8 @@ export interface SpeedTestOptions {
   downloadBytes?: number;
   uploadBytes?: number;
   timeoutMs?: number;
+  /** Intervalo mínimo entre avisos de progresso para a agulha não ficar travada. */
+  progressIntervalMs?: number;
   /** Injeta servidores e evita a descoberta (usado nos testes). */
   serverUrls?: string[];
 }
@@ -78,6 +80,32 @@ function toMbps(bytes: number, elapsedMs: number): number {
   return (bytes * 8) / (seconds * 1_000_000);
 }
 
+/**
+ * Lê o corpo em pedaços e devolve os bytes recebidos. Sem stream (respostas
+ * falsas dos testes) cai para `arrayBuffer` e devolve o tamanho total.
+ */
+async function consumeResponseBody(
+  response: Response,
+  onBytes: (bytes: number) => void
+): Promise<number> {
+  const reader = response.body?.getReader?.();
+  if (!reader) {
+    const bytes = (await response.arrayBuffer()).byteLength;
+    onBytes(bytes);
+    return bytes;
+  }
+
+  let received = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (!value?.byteLength) continue;
+    received += value.byteLength;
+    onBytes(value.byteLength);
+  }
+  return received;
+}
+
 async function discoverServers(fetchFn: typeof fetch, signal: AbortSignal): Promise<string[]> {
   const response = await withAbort(fetchFn(SERVERS_URL, { cache: 'no-store', signal }), signal);
   if (!response.ok) throw new Error('Não foi possível consultar os servidores de teste');
@@ -102,6 +130,7 @@ export async function runSpeedTest(
     downloadBytes = 10_000_000,
     uploadBytes = 10_000_000,
     timeoutMs = 30_000,
+    progressIntervalMs = 60,
     serverUrls,
   } = options;
 
@@ -158,8 +187,26 @@ export async function runSpeedTest(
     const activeDownloadBytes = fast ? downloadBytes : Math.min(downloadBytes, 1_000_000);
     const activeUploadBytes = fast ? uploadBytes : Math.min(uploadBytes, 1_000_000);
 
-    emit('download', 0.1);
+    // Progresso usa relógio de parede: o relógio injetado mede apenas o resultado
+    // final, e os testes não devem mudar por causa da frequência dos avisos.
+    const streamed = (phase: SpeedTestPhase, from: number, span: number, total: number) => {
+      const startWall = Date.now();
+      let bytes = 0;
+      let lastEmit = 0;
+      return (chunk: number) => {
+        bytes += chunk;
+        const wall = Date.now();
+        if (wall - lastEmit < progressIntervalMs) return;
+        lastEmit = wall;
+        const fraction = Math.min(0.95, bytes / total);
+        emit(phase, from + fraction * span, toMbps(bytes, wall - startWall));
+      };
+    };
+
+    const downloadTotal = activeDownloadBytes * activeConnections;
+    emit('download', 0.1, 0);
     const downloadStart = now();
+    const onDownloadBytes = streamed('download', 0.1, 0.45, downloadTotal);
     await Promise.all(
       Array.from({ length: activeConnections }, () => {
         const signal = requestSignal();
@@ -169,30 +216,52 @@ export async function runSpeedTest(
             signal,
           }),
           signal
-        ).then((response) => response.arrayBuffer());
+        ).then((response) => consumeResponseBody(response, onDownloadBytes));
       })
     );
-    const downloadMbps = toMbps(activeDownloadBytes * activeConnections, now() - downloadStart);
+    const downloadMbps = toMbps(downloadTotal, now() - downloadStart);
     emit('download', 0.55, downloadMbps);
 
-    emit('upload', 0.55);
+    // Upload com `Content-Length` fixo: o servidor da Ookla não aceita corpo em
+    // stream (chunked). O progresso é interpolado a partir da sondagem enquanto
+    // as requisições estão em voo; o valor final medido substitui a estimativa.
+    emit('upload', 0.55, 0);
     const payload = Buffer.alloc(activeUploadBytes, 7);
+    const uploadTotal = activeUploadBytes * activeConnections;
     const uploadStart = now();
-    await Promise.all(
-      Array.from({ length: activeConnections }, () => {
-        const signal = requestSignal();
-        return withAbort(
-          fetchFn(`${base}/speedtest/upload?r=${Math.random()}`, {
-            method: 'POST',
-            body: payload,
-            cache: 'no-store',
-            signal,
-          }),
-          signal
-        );
-      })
-    );
-    const uploadMbps = toMbps(activeUploadBytes * activeConnections, now() - uploadStart);
+    const estimatedSpeed = Math.max(downloadMbps, probeMbps, 50);
+    // O upload costuma terminar antes do tempo estimado pela sondagem; deixa a
+    // barra circular mais devagar para o salto final para 100% não parecer brusco.
+    const estimateMs = Math.max(800, ((uploadTotal * 8) / (estimatedSpeed * 1e6)) * 1000);
+    const uploadWallStart = Date.now();
+    const progressTimer = setInterval(() => {
+      const elapsed = Date.now() - uploadWallStart;
+      const fraction = Math.min(0.9, elapsed / estimateMs);
+      // A estimativa sobe aos poucos, como a subida da agulha no Speedtest.net.
+      // Um valor constante deixava a agulha parada durante todo o upload.
+      const ramp = Math.min(1, fraction * 1.3);
+      emit('upload', 0.55 + fraction * 0.44, estimatedSpeed * (0.12 + 0.88 * ramp));
+    }, progressIntervalMs);
+
+    try {
+      await Promise.all(
+        Array.from({ length: activeConnections }, () => {
+          const signal = requestSignal();
+          return withAbort(
+            fetchFn(`${base}/speedtest/upload?r=${Math.random()}`, {
+              method: 'POST',
+              body: payload,
+              cache: 'no-store',
+              signal,
+            }),
+            signal
+          );
+        })
+      );
+    } finally {
+      clearInterval(progressTimer);
+    }
+    const uploadMbps = toMbps(uploadTotal, now() - uploadStart);
     emit('upload', 1, uploadMbps);
 
     const result: SpeedTestResult = {

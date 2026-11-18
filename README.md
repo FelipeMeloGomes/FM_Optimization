@@ -50,7 +50,7 @@
 ### Rede e DNS
 
 - **DNS** — página própria com benchmark de latência, ordenação dos provedores, aplicação do mais rápido e indicador de DNS ativo.
-- **Velocidade** — teste real de internet com medidor animado: mede download, upload, ping e jitter contra a rede de servidores do Speedtest.net (o servidor mais próximo é escolhido automaticamente), mostra o progresso de cada fase e mantém o resultado final na tela. Sem histórico e sem salvar medições.
+- **Velocidade** — teste real de internet com medidor animado: mede download, upload, ping e jitter contra a rede de servidores do Speedtest.net (o servidor mais próximo é escolhido automaticamente), move a agulha em tempo real com transições suaves entre fases e mantém o resultado final na tela. Sem histórico e sem salvar medições.
 - **Rede** — tweaks de internet para reduzir latência e melhorar a estabilidade da conexão, incluindo os scripts de DNS, apresentados em seções virtualizadas.
 
 ### Segurança e privacidade

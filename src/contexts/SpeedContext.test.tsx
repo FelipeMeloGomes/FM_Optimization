@@ -100,6 +100,32 @@ describe('SpeedContext', () => {
     });
   });
 
+  it('ignora o evento final de progresso para não zerar a agulha antes do resultado', async () => {
+    const gate = deferred<SpeedTestResult>();
+    const { emit } = installApi({ measure: () => gate.promise });
+    renderProbe();
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('start'));
+    });
+    await emit({ phase: 'upload', progress: 0.9, currentMbps: 700 });
+
+    // O serviço envia `done` com currentMbps null logo antes de resolver a
+    // promise. Se esse evento chegar primeiro, o medidor vê valor 0 e a agulha
+    // volta ao início antes de subir para o resultado final.
+    await emit({ phase: 'done', progress: 1, currentMbps: null });
+
+    expect(screen.getByTestId('status').textContent).toBe('measuring');
+    expect(screen.getByTestId('phase').textContent).toBe('upload');
+    expect(screen.getByTestId('current').textContent).toBe('700');
+
+    await act(async () => {
+      gate.resolve(RESULT);
+    });
+    expect(screen.getByTestId('status').textContent).toBe('done');
+    expect(screen.getByTestId('download').textContent).toBe('95.5');
+  });
+
   it('mostra o resultado quando a medição termina', async () => {
     installApi();
     renderProbe();
