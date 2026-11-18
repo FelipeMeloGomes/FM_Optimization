@@ -40,13 +40,13 @@ const COLOR_MAP: Record<string, { border: string; bg: string; text: string; shad
     border: 'border-blue-500/30',
     bg: 'bg-blue-500/10',
     text: 'text-blue-400',
-    shadow: 'shadow-[0_0_15px_rgba(59,130,246,0.15)]',
+    shadow: 'shadow-[0_0_15px_color-mix(in_srgb,var(--color-primary)_20%,transparent)]',
   },
   emerald: {
     border: 'border-emerald-500/30',
     bg: 'bg-emerald-500/10',
     text: 'text-emerald-400',
-    shadow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]',
+    shadow: 'shadow-[0_0_15px_color-mix(in_srgb,var(--color-primary)_20%,transparent)]',
   },
 };
 
@@ -369,7 +369,11 @@ function EmuladoresPageContent() {
                     </span>
                   </div>
                   {isActive ? (
-                    <Badge variant="default" className={cn('text-[10px]', colors.text)}>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px]"
+                      style={{ color: 'var(--color-primary)' }}
+                    >
                       Conectado
                     </Badge>
                   ) : (

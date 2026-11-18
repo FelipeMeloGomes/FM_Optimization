@@ -406,7 +406,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
                   <ShieldCheck className="size-3.5 shrink-0" />
                   <div>
                     <p className="font-medium">Selecionar Bloatware</p>
-                    <p className="text-muted-foreground text-[10px]">Todos os apps conhecidos</p>
+                    <p className="text-[10px]">Todos os apps conhecidos</p>
                   </div>
                 </button>
                 <div className="h-px bg-border my-1" />
@@ -426,11 +426,9 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
                       <Bookmark className="size-3.5 shrink-0" />
                       <div className="flex-1">
                         <p className="font-medium">{preset.name}</p>
-                        <p className="text-muted-foreground text-[10px]">{preset.description}</p>
+                        <p className="text-[10px]">{preset.description}</p>
                       </div>
-                      <span className="text-[10px] text-muted-foreground tabular-nums">
-                        {matchingCount}
-                      </span>
+                      <span className="text-[10px] tabular-nums">{matchingCount}</span>
                     </button>
                   );
                 })}
