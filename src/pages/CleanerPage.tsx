@@ -315,12 +315,12 @@ export default function CleanerPage() {
       {pendingCleaners.length > 0 && (
         <section
           aria-label="Limpezas pendentes"
-          className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4"
+          className="rounded-xl border border-warning/20 bg-warning/5 p-4"
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-            <ShieldAlert className="mt-0.5 size-4 shrink-0 text-amber-400" aria-hidden="true" />
+            <ShieldAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
             <div className="flex-1 space-y-2">
-              <p className="text-sm font-medium text-amber-400">
+              <p className="text-sm font-medium text-warning">
                 {pendingCleaners.length} limpeza(s) automática(s) aguardando administrador
               </p>
               <ul className="flex flex-wrap gap-2">
@@ -456,9 +456,9 @@ export default function CleanerPage() {
       )}
 
       {!isAdmin && items.some((item) => item.requiresAdmin) && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-          <Lock className="size-4 shrink-0 text-amber-400" aria-hidden="true" />
-          <p className="flex-1 text-xs text-amber-400">
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3">
+          <Lock className="size-4 shrink-0 text-warning" aria-hidden="true" />
+          <p className="flex-1 text-xs text-warning">
             Itens com cadeado exigem administrador para serem limpos.
           </p>
           <Button
@@ -589,14 +589,14 @@ export default function CleanerPage() {
                           {item.label}
                         </span>
                         {isLarge && (
-                          <span className="shrink-0 rounded bg-yellow-500/15 px-1.5 py-0.5 text-[9px] font-medium text-yellow-400">
+                          <span className="shrink-0 rounded bg-warning/15 px-1.5 py-0.5 text-[9px] font-medium text-warning">
                             Grande
                           </span>
                         )}
                         {locked && (
                           <span
                             title="Requer administrador"
-                            className="inline-flex shrink-0 items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-400"
+                            className="inline-flex shrink-0 items-center gap-1 rounded bg-warning/10 px-1.5 py-0.5 text-[9px] font-medium text-warning"
                           >
                             <Lock className="size-2.5" aria-hidden="true" />
                             Admin

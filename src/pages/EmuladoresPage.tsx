@@ -37,15 +37,15 @@ const EMULATORS: EmulatorCard[] = [
 
 const COLOR_MAP: Record<string, { border: string; bg: string; text: string; shadow: string }> = {
   blue: {
-    border: 'border-blue-500/30',
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-400',
+    border: 'border-info/30',
+    bg: 'bg-info/10',
+    text: 'text-info',
     shadow: 'shadow-[0_0_15px_color-mix(in_srgb,var(--color-primary)_20%,transparent)]',
   },
   emerald: {
-    border: 'border-emerald-500/30',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
+    border: 'border-success/30',
+    bg: 'bg-success/10',
+    text: 'text-success',
     shadow: 'shadow-[0_0_15px_color-mix(in_srgb,var(--color-primary)_20%,transparent)]',
   },
 };

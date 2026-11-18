@@ -309,9 +309,9 @@ export default function DebloatPage() {
       )}
 
       {!isAdmin && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-          <Lock className="size-4 shrink-0 text-amber-400" aria-hidden="true" />
-          <p className="flex-1 text-xs text-amber-400">
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3">
+          <Lock className="size-4 shrink-0 text-warning" aria-hidden="true" />
+          <p className="flex-1 text-xs text-warning">
             Remover apps precisa de administrador. O inventário continua visível para consulta.
           </p>
           <Button
@@ -450,7 +450,7 @@ export default function DebloatPage() {
                           </span>
                         )}
                         {locked && (
-                          <span className="shrink-0 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-400">
+                          <span className="shrink-0 rounded bg-warning/10 px-1.5 py-0.5 text-[9px] font-medium text-warning">
                             Protegido
                           </span>
                         )}

@@ -74,7 +74,7 @@ function UtilSectionCard({
                 key={script.id}
                 className={cn(
                   'flex items-center gap-3 rounded-lg border bg-background p-3 transition-all',
-                  script.requiresAdmin && 'border-yellow-500/20',
+                  script.requiresAdmin && 'border-warning/20',
                   isScriptExecuting && 'ring-2 ring-primary/50'
                 )}
               >

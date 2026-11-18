@@ -39,10 +39,10 @@ const DEVICE_CARDS: DeviceCard[] = [
     name: 'Teclado',
     description: 'Reduza a latência de digitação e resposta instantânea de teclas.',
     icon: Keyboard,
-    color: 'text-cyan-400',
-    dotColor: 'bg-cyan-400',
-    bgColor: 'bg-cyan-500/10',
-    borderColor: 'border-cyan-500/20',
+    color: 'text-info',
+    dotColor: 'bg-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/20',
     scriptIds: ['inputlag-1', 'inputlag-9'],
     whatItOptimizes: [
       'KeyboardDelay reduzido a zero',
@@ -55,10 +55,10 @@ const DEVICE_CARDS: DeviceCard[] = [
     name: 'Mouse',
     description: 'Desative aceleração e obtenha movimento 1:1 preciso.',
     icon: Mouse,
-    color: 'text-yellow-400',
-    dotColor: 'bg-yellow-400',
-    bgColor: 'bg-yellow-500/10',
-    borderColor: 'border-yellow-500/20',
+    color: 'text-warning',
+    dotColor: 'bg-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/20',
     scriptIds: ['inputlag-2', 'inputlag-11'],
     whatItOptimizes: [
       'Aceleração do mouse desativada',
@@ -71,10 +71,10 @@ const DEVICE_CARDS: DeviceCard[] = [
     name: 'Monitor',
     description: 'Minimize a latência de tolerância do driver de vídeo.',
     icon: Monitor,
-    color: 'text-purple-400',
-    dotColor: 'bg-purple-400',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'border-purple-500/20',
+    color: 'text-primary',
+    dotColor: 'bg-primary',
+    bgColor: 'bg-primary/10',
+    borderColor: 'border-primary/20',
     scriptIds: ['inputlag-3'],
     whatItOptimizes: [
       'Tolerância DXGKrnl reduzida',
@@ -253,7 +253,7 @@ function DeviceSection({
                 key={script.id}
                 className={cn(
                   'flex items-center gap-3 rounded-lg border bg-card p-3 transition-all',
-                  script.requiresAdmin && 'border-yellow-500/20',
+                  script.requiresAdmin && 'border-warning/20',
                   isScriptExecuting && 'ring-2 ring-primary/50'
                 )}
               >
@@ -406,7 +406,7 @@ export default function InputLagPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="size-1.5 rounded-full bg-yellow-400" />
+            <div className="size-1.5 rounded-full bg-warning" />
             <h3 className="text-sm font-semibold text-foreground">Otimizações do Registro</h3>
           </div>
           <Badge variant="secondary" className="text-[10px]">
@@ -423,7 +423,7 @@ export default function InputLagPage() {
                 key={item.id}
                 className={cn(
                   'group relative rounded-xl border bg-card p-4 transition-all duration-300 hover:shadow-lg',
-                  script.requiresAdmin ? 'border-yellow-500/20' : 'border-border',
+                  script.requiresAdmin ? 'border-warning/20' : 'border-border',
                   isExecuting && 'ring-2 ring-primary/50'
                 )}
               >
@@ -432,13 +432,13 @@ export default function InputLagPage() {
                     <div
                       className={cn(
                         'flex size-8 items-center justify-center rounded-lg',
-                        script.requiresAdmin ? 'bg-yellow-500/10' : 'bg-muted'
+                        script.requiresAdmin ? 'bg-warning/10' : 'bg-muted'
                       )}
                     >
                       <Terminal
                         className={cn(
                           'size-4',
-                          script.requiresAdmin ? 'text-yellow-400' : 'text-muted-foreground'
+                          script.requiresAdmin ? 'text-warning' : 'text-muted-foreground'
                         )}
                       />
                     </div>

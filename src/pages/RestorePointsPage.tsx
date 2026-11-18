@@ -81,8 +81,8 @@ export default function RestorePointsPage() {
     if (needsAdmin) {
       return (
         <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-          <div className="flex size-14 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10">
-            <ShieldAlert className="size-7 text-amber-400" />
+          <div className="flex size-14 items-center justify-center rounded-xl border border-warning/30 bg-warning/10">
+            <ShieldAlert className="size-7 text-warning" />
           </div>
           <div className="max-w-md space-y-2">
             <p className="text-base font-semibold text-foreground">
@@ -145,7 +145,7 @@ export default function RestorePointsPage() {
       {/* Create Section */}
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
-          <div className="size-1.5 rounded-full bg-emerald-400" />
+          <div className="size-1.5 rounded-full bg-success" />
           <h3 className="text-sm font-semibold text-foreground">Criar Novo Ponto</h3>
         </div>
         <div className="flex items-center gap-3">

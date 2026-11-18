@@ -158,10 +158,10 @@ describe('EmuladoresPage', () => {
   it('marca exatamente um card de emulador como ativo', () => {
     emulator({ emulatorAtivo: 'bluestacks-4' });
     renderPage();
-    expect(document.querySelectorAll('.border-blue-500\\/30').length).toBe(1);
+    expect(document.querySelectorAll('.border-info\\/30').length).toBe(1);
 
     emulator({ emulatorAtivo: 'bluestacks-5' });
     renderPage();
-    expect(document.querySelectorAll('.border-blue-500\\/30').length).toBe(1);
+    expect(document.querySelectorAll('.border-info\\/30').length).toBe(1);
   });
 });

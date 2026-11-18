@@ -509,7 +509,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
                         {app.isDisabled && (
                           <Badge
                             variant="secondary"
-                            className="text-[9px] px-1 py-0 shrink-0 bg-orange-500/15 text-orange-400 border-orange-500/30"
+                            className="text-[9px] px-1 py-0 shrink-0 bg-destructive/15 text-destructive border-destructive/30"
                           >
                             DESAB
                           </Badge>
@@ -583,7 +583,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
                 </span>
               )}
               {selHasSystem && (
-                <span className="block mt-2 text-xs text-amber-400">
+                <span className="block mt-2 text-xs text-warning">
                   A seleção inclui apps de sistema/críticos — eles receberão backup automático antes
                   da remoção. Apps protegidos que não puderem ser desinstalados serão desabilitados.
                   Removê-los pode deixar o emulador instável.
@@ -677,7 +677,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
               {app.mode === 'disabled' ? (
                 <Badge
                   variant="secondary"
-                  className="text-[9px] px-1 py-0 shrink-0 bg-orange-500/15 text-orange-400 border-orange-500/30"
+                  className="text-[9px] px-1 py-0 shrink-0 bg-destructive/15 text-destructive border-destructive/30"
                 >
                   Desabilitado
                 </Badge>
@@ -688,7 +688,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
               ) : (
                 <Badge
                   variant="secondary"
-                  className="text-[9px] px-1 py-0 shrink-0 bg-orange-500/15 text-orange-400 border-orange-500/30"
+                  className="text-[9px] px-1 py-0 shrink-0 bg-destructive/15 text-destructive border-destructive/30"
                 >
                   Sem backup
                 </Badge>
