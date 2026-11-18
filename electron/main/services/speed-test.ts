@@ -2,21 +2,35 @@ import { performance } from 'node:perf_hooks';
 import type { SpeedProgress, SpeedTestPhase, SpeedTestResult } from '../../shared/ipc-types';
 
 /**
- * Medição de velocidade contra a borda da Cloudflare. Roda no main porque o
- * CSP do renderer só permite `connect-src 'self'`. `fetch` e `now` são
- * injetáveis para que os testes exercitem o cálculo real sem depender da rede.
+ * Medição de velocidade contra a rede pública de servidores da Ookla, a mesma
+ * usada pelo Speedtest.net. Roda no main porque o CSP do renderer só permite
+ * `connect-src 'self'`.
+ *
+ * A descoberta devolve o servidor mais perto do usuário (por geolocalização de
+ * IP). Medir contra um servidor distante — como a borda da Cloudflare em SP —
+ * limita a leitura à capacidade da rota, não à velocidade real da internet.
+ * Várias conexões paralelas são necessárias para encher uma fibra rápida.
  */
 
-const DOWN_URL = 'https://speed.cloudflare.com/__down';
-const UP_URL = 'https://speed.cloudflare.com/__up';
+const SERVERS_URL =
+  'https://www.speedtest.net/api/js/servers?engine=js&https_functional=true&limit=10';
+
+interface OoklaServer {
+  url: string;
+  host: string;
+  https_functional?: number;
+}
 
 export interface SpeedTestOptions {
   fetchFn?: typeof fetch;
   now?: () => number;
   latencyCount?: number;
-  downloadSizes?: number[];
-  uploadSizes?: number[];
+  connections?: number;
+  downloadBytes?: number;
+  uploadBytes?: number;
   timeoutMs?: number;
+  /** Injeta servidores e evita a descoberta (usado nos testes). */
+  serverUrls?: string[];
 }
 
 let activeController: AbortController | null = null;
@@ -64,6 +78,18 @@ function toMbps(bytes: number, elapsedMs: number): number {
   return (bytes * 8) / (seconds * 1_000_000);
 }
 
+async function discoverServers(fetchFn: typeof fetch, signal: AbortSignal): Promise<string[]> {
+  const response = await withAbort(fetchFn(SERVERS_URL, { cache: 'no-store', signal }), signal);
+  if (!response.ok) throw new Error('Não foi possível consultar os servidores de teste');
+  const servers = (await response.json()) as OoklaServer[];
+  if (!Array.isArray(servers) || servers.length === 0) {
+    throw new Error('Nenhum servidor de teste disponível');
+  }
+  return servers.map((server) =>
+    server.https_functional === 1 ? `https://${server.host}` : `http://${new URL(server.url).host}`
+  );
+}
+
 export async function runSpeedTest(
   onProgress: (progress: SpeedProgress) => void,
   options: SpeedTestOptions = {}
@@ -72,91 +98,116 @@ export async function runSpeedTest(
     fetchFn = fetch,
     now = () => performance.now(),
     latencyCount = 10,
-    downloadSizes = [100_000, 1_000_000, 10_000_000],
-    uploadSizes = [100_000, 1_000_000, 10_000_000],
-    timeoutMs = 10_000,
+    connections = 8,
+    downloadBytes = 10_000_000,
+    uploadBytes = 10_000_000,
+    timeoutMs = 30_000,
+    serverUrls,
   } = options;
 
   const controller = new AbortController();
   activeController = controller;
-  const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(timeoutMs)]);
+  const cancelSignal = controller.signal;
+
+  /** Cada requisição ganha o seu próprio cronômetro, não um orçamento global. */
+  const requestSignal = () => AbortSignal.any([cancelSignal, AbortSignal.timeout(timeoutMs)]);
 
   const emit = (phase: SpeedTestPhase, progress: number, currentMbps: number | null = null) =>
     onProgress({ phase, progress, currentMbps });
 
   const checkCancelled = () => {
-    if (controller.signal.aborted) throw new Error('Teste cancelado');
+    if (cancelSignal.aborted) throw new Error('Teste cancelado');
   };
 
   try {
     emit('latency', 0);
+    const urls = serverUrls ?? (await discoverServers(fetchFn, cancelSignal));
+    const base = urls[0];
+    if (!base) throw new Error('Nenhum servidor de teste disponível');
+
     const latencies: number[] = [];
     for (let i = 0; i < latencyCount; i++) {
       checkCancelled();
       const start = now();
+      const signal = requestSignal();
       await withAbort(
-        fetchFn(`${DOWN_URL}?bytes=0&r=${Math.random()}`, { cache: 'no-store', signal }),
+        fetchFn(`${base}/speedtest/download?size=0&r=${Math.random()}`, {
+          cache: 'no-store',
+          signal,
+        }),
         signal
       );
       latencies.push(now() - start);
       emit('latency', ((i + 1) / latencyCount) * 0.1);
     }
 
+    // Sondagem curta: em banda baixa, 8×10 MB levaria mais que o timeout.
+    const probeStart = now();
+    const probeSignal = requestSignal();
+    const probeResponse = await withAbort(
+      fetchFn(`${base}/speedtest/download?size=1000000&r=${Math.random()}`, {
+        cache: 'no-store',
+        signal: probeSignal,
+      }),
+      probeSignal
+    );
+    await probeResponse.arrayBuffer();
+    const probeMbps = toMbps(1_000_000, now() - probeStart);
+    const fast = probeMbps >= 100;
+    const activeConnections = fast ? connections : Math.min(connections, 4);
+    const activeDownloadBytes = fast ? downloadBytes : Math.min(downloadBytes, 1_000_000);
+    const activeUploadBytes = fast ? uploadBytes : Math.min(uploadBytes, 1_000_000);
+
     emit('download', 0.1);
-    const downloadSamples: number[] = [];
-    for (let i = 0; i < downloadSizes.length; i++) {
-      checkCancelled();
-      const size = downloadSizes[i];
-      const start = now();
-      const response = await withAbort(
-        fetchFn(`${DOWN_URL}?bytes=${size}&r=${Math.random()}`, { cache: 'no-store', signal }),
-        signal
-      );
-      let bytes = 0;
-      const reader = response.body?.getReader();
-      if (reader) {
-        for (;;) {
-          const chunk = await withAbort(reader.read(), signal);
-          if (chunk.done) break;
-          bytes += chunk.value.byteLength;
-        }
-      }
-      const mbps = toMbps(bytes, now() - start);
-      downloadSamples.push(mbps);
-      emit('download', 0.1 + ((i + 1) / downloadSizes.length) * 0.45, mbps);
-    }
+    const downloadStart = now();
+    await Promise.all(
+      Array.from({ length: activeConnections }, () => {
+        const signal = requestSignal();
+        return withAbort(
+          fetchFn(`${base}/speedtest/download?size=${activeDownloadBytes}&r=${Math.random()}`, {
+            cache: 'no-store',
+            signal,
+          }),
+          signal
+        ).then((response) => response.arrayBuffer());
+      })
+    );
+    const downloadMbps = toMbps(activeDownloadBytes * activeConnections, now() - downloadStart);
+    emit('download', 0.55, downloadMbps);
 
     emit('upload', 0.55);
-    const uploadSamples: number[] = [];
-    for (let i = 0; i < uploadSizes.length; i++) {
-      checkCancelled();
-      const size = uploadSizes[i];
-      const payload = Buffer.alloc(size, 7);
-      const start = now();
-      await withAbort(
-        fetchFn(`${UP_URL}?r=${Math.random()}`, {
-          method: 'POST',
-          body: payload,
-          cache: 'no-store',
-          signal,
-        }),
-        signal
-      );
-      const mbps = toMbps(size, now() - start);
-      uploadSamples.push(mbps);
-      emit('upload', 0.55 + ((i + 1) / uploadSizes.length) * 0.45, mbps);
-    }
+    const payload = Buffer.alloc(activeUploadBytes, 7);
+    const uploadStart = now();
+    await Promise.all(
+      Array.from({ length: activeConnections }, () => {
+        const signal = requestSignal();
+        return withAbort(
+          fetchFn(`${base}/speedtest/upload?r=${Math.random()}`, {
+            method: 'POST',
+            body: payload,
+            cache: 'no-store',
+            signal,
+          }),
+          signal
+        );
+      })
+    );
+    const uploadMbps = toMbps(activeUploadBytes * activeConnections, now() - uploadStart);
+    emit('upload', 1, uploadMbps);
 
     const result: SpeedTestResult = {
-      downloadMbps: percentile(downloadSamples, 0.9),
-      uploadMbps: percentile(uploadSamples, 0.9),
+      downloadMbps,
+      uploadMbps,
       pingMs: percentile(latencies, 0.5),
       jitterMs: jitterOf(latencies),
     };
     emit('done', 1);
     return result;
   } catch (error) {
-    if (controller.signal.aborted) throw new Error('Teste cancelado');
+    if (cancelSignal.aborted) throw new Error('Teste cancelado');
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      throw new Error('O servidor demorou para responder. Tente novamente.');
+    }
     throw error;
   } finally {
     if (activeController === controller) activeController = null;

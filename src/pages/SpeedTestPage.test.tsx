@@ -102,6 +102,27 @@ describe('SpeedTestPage', () => {
     expect(start).toHaveBeenCalledTimes(1);
   });
 
+  it('mostra Upload no medidor durante a fase de upload', () => {
+    speed({
+      status: 'measuring',
+      progress: { phase: 'upload', progress: 0.7, currentMbps: 80 },
+    });
+    render(<SpeedTestPage />);
+
+    expect(screen.getByRole('img', { name: 'Upload: 80.0 Mbps' })).toBeDefined();
+  });
+
+  it('zera o medidor quando a medição falha no meio', () => {
+    speed({
+      status: 'error',
+      error: 'offline',
+      progress: { phase: 'download', progress: 0.3, currentMbps: 42 },
+    });
+    render(<SpeedTestPage />);
+
+    expect(screen.getByRole('img', { name: 'Download: 0.0 Mbps' })).toBeDefined();
+  });
+
   it('inicia o teste ao clicar em Iniciar', () => {
     const { start } = store.speed;
     render(<SpeedTestPage />);

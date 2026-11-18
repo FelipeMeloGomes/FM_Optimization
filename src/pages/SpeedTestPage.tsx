@@ -35,8 +35,15 @@ function SpeedTestPageContent() {
   const { status, progress, result, error, start, cancel } = useSpeedContext();
 
   // O evento final de progresso não carrega Mbps: o resultado travado vem do
-  // resultado da medição, não do último aviso de progresso.
-  const gaugeValue = status === 'done' ? (result?.downloadMbps ?? 0) : (progress.currentMbps ?? 0);
+  // resultado da medição, não do último aviso de progresso. Em erro, a agulha
+  // volta a zero em vez de ficar presa na última amostra.
+  const gaugeValue =
+    status === 'error'
+      ? 0
+      : status === 'done'
+        ? (result?.downloadMbps ?? 0)
+        : (progress.currentMbps ?? 0);
+  const gaugeLabel = status === 'done' || progress.phase !== 'upload' ? 'Download' : 'Upload';
 
   return (
     <div className="space-y-6">
@@ -57,7 +64,7 @@ function SpeedTestPageContent() {
           <SpeedGauge
             valueMbps={gaugeValue}
             progress={progress.progress}
-            label="Download"
+            label={gaugeLabel}
             phase={progress.phase}
             active={status === 'measuring'}
           />
@@ -137,7 +144,7 @@ function SpeedTestPageContent() {
       )}
 
       <p className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Wifi className="size-3.5" />A medição usa os servidores da Cloudflare e não salva
+        <Wifi className="size-3.5" />A medição usa a rede de servidores do Speedtest.net e não salva
         resultados.
       </p>
     </div>

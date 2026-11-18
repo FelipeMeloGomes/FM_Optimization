@@ -127,6 +127,27 @@ describe('SpeedContext', () => {
     expect(screen.getByTestId('error').textContent).toBe('offline');
   });
 
+  it('reseta o progresso quando a medição falha no meio', async () => {
+    const gate = deferred<SpeedTestResult>();
+    const { emit } = installApi({ measure: () => gate.promise });
+    renderProbe();
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('start'));
+    });
+    await emit({ phase: 'download', progress: 0.3, currentMbps: 42 });
+
+    await act(async () => {
+      gate.reject(new Error('offline'));
+    });
+
+    expect(screen.getByTestId('status').textContent).toBe('error');
+    expect(screen.getByTestId('error').textContent).toBe('offline');
+    expect(screen.getByTestId('phase').textContent).toBe('latency');
+    expect(screen.getByTestId('progress').textContent).toBe('0');
+    expect(screen.getByTestId('current').textContent).toBe('null');
+  });
+
   it('cancela, volta ao estado inicial e ignora rejeição tardia', async () => {
     const gate = deferred<SpeedTestResult>();
     const { api } = installApi({ measure: () => gate.promise });

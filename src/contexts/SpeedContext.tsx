@@ -53,6 +53,9 @@ export function SpeedProvider({ children }: { children: ReactNode }) {
       if (runRef.current !== runId) return;
       const message = typeof e === 'string' ? e : (e as Error).message;
       setError(message);
+      // Uma falha no meio da medição não pode deixar a agulha travada no valor
+      // da última amostra: o erro volta com o medidor zerado.
+      setProgress(INITIAL_PROGRESS);
       setStatus('error');
     } finally {
       cleanup();

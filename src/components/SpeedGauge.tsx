@@ -36,7 +36,7 @@ const PHASE_LABEL: Record<SpeedTestPhase, string> = {
 
 export function SpeedGauge({
   valueMbps,
-  maxMbps = 300,
+  maxMbps = 1000,
   progress,
   label,
   phase,
