@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import type { AppSettings } from '../../electron/shared/ipc-types';
+import { formatHsl, readableForeground } from '../lib/color-contrast';
 import { getThemeById, THEMES } from '../lib/theme-config';
 
 interface SettingsContextValue {
@@ -135,20 +136,21 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       root.style.setProperty(`--accent-${level.key}`, `hsl(${h}, ${sl}%, ${level.lightness}%)`);
     }
 
-    // Override primary colors
-    root.style.setProperty('--color-primary', `hsl(${h}, ${s}%, ${l}%)`);
-    root.style.setProperty('--color-primary-foreground', l > 60 ? '#0a0b10' : '#ffffff');
-    root.style.setProperty(
-      '--color-accent',
-      `hsl(${h}, ${Math.min(s + 10, 100)}%, ${Math.max(l - 15, 5)}%)`
-    );
-    root.style.setProperty('--color-accent-foreground', l > 60 ? '#0a0b10' : '#ffffff');
-    root.style.setProperty('--color-ring', `hsl(${h}, ${s}%, ${l}%)`);
-    root.style.setProperty('--color-sidebar-primary', `hsl(${h}, ${s}%, ${l}%)`);
-    root.style.setProperty(
-      '--color-sidebar-accent',
-      `hsl(${h}, ${Math.min(s + 10, 100)}%, ${Math.max(l - 15, 5)}%)`
-    );
+    // Override primary colors with a foreground that actually contrasts.
+    const primary = readableForeground({ h, s, l });
+    const accent = readableForeground({
+      h,
+      s: Math.min(s + 10, 100),
+      l: Math.max(l - 15, 5),
+    });
+
+    root.style.setProperty('--color-primary', formatHsl(primary.background));
+    root.style.setProperty('--color-primary-foreground', primary.foreground);
+    root.style.setProperty('--color-accent', formatHsl(accent.background));
+    root.style.setProperty('--color-accent-foreground', accent.foreground);
+    root.style.setProperty('--color-ring', formatHsl(primary.background));
+    root.style.setProperty('--color-sidebar-primary', formatHsl(primary.background));
+    root.style.setProperty('--color-sidebar-accent', formatHsl(accent.background));
   }, [settings.accentColor]);
 
   const update = useCallback((partial: Partial<AppSettings>) => {

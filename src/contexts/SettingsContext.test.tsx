@@ -170,7 +170,27 @@ describe('SettingsProvider — tema e cor de destaque', () => {
       'hsl(0, 100%, 50%)'
     );
     expect(document.documentElement.style.getPropertyValue('--color-primary-foreground')).toBe(
-      '#ffffff'
+      '#0a0b10'
+    );
+  });
+
+  it('usa texto escuro sobre o ciano padrão para manter contraste', async () => {
+    installApi({ getSettings: vi.fn(async () => ({ ...SAVED, accentColor: '#22d3ee' })) });
+    renderProvider();
+
+    await waitFor(() =>
+      expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe(
+        'hsl(188, 86%, 53%)'
+      )
+    );
+    expect(document.documentElement.style.getPropertyValue('--color-primary-foreground')).toBe(
+      '#0a0b10'
+    );
+    expect(document.documentElement.style.getPropertyValue('--color-accent')).toBe(
+      'hsl(188, 96%, 38%)'
+    );
+    expect(document.documentElement.style.getPropertyValue('--color-accent-foreground')).toBe(
+      '#0a0b10'
     );
   });
 
