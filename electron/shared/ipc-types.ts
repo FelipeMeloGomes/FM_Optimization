@@ -251,6 +251,21 @@ export interface BenchmarkResult {
   latencyMs: number | null;
 }
 
+export type SpeedTestPhase = 'latency' | 'download' | 'upload' | 'done';
+
+export interface SpeedProgress {
+  phase: SpeedTestPhase;
+  progress: number;
+  currentMbps: number | null;
+}
+
+export interface SpeedTestResult {
+  downloadMbps: number;
+  uploadMbps: number;
+  pingMs: number;
+  jitterMs: number;
+}
+
 export interface AdbDevice {
   serial: string;
   state: 'device' | 'offline' | 'unauthorized';
