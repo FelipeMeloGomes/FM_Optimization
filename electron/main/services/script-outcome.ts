@@ -1,4 +1,7 @@
+import { EXIT_INTERRUPTED_SENTINEL } from '../../shared/exit-codes';
 import type { ExecutionHistoryEntry } from '../../shared/ipc-types';
+
+export { EXIT_INTERRUPTED_SENTINEL };
 
 export type RunTrigger = 'manual' | 'scheduled';
 
@@ -10,9 +13,6 @@ export const EXIT_MENU_CLOSED_WITHOUT_APPLY = 3;
 
 /** Usuário fechou a janela do console (Ctrl+C / STATUS_CONTROL_C_EXIT). */
 export const EXIT_USER_INTERRUPTED = 3221225786; // 0xC000013A
-
-/** Sentinela interna para "interrompido pelo usuário" após normalização. */
-export const EXIT_INTERRUPTED_SENTINEL = -2;
 
 /** Scripts cujo `2` significa "não sei o que aconteceu no handoff". */
 const UNKNOWN_HANDOFF_SCRIPT_IDS: ReadonlySet<string> = new Set(['apps-6', 'apps-7']);

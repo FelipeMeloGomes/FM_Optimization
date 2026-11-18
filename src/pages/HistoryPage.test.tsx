@@ -128,4 +128,45 @@ describe('HistoryPage', () => {
     expect(html).toContain('Manual');
     expect(html).not.toContain('Automática');
   });
+
+  it('mostra "Interrompido pelo usuário" quando o usuário fecha a janela do script', () => {
+    store.state = { status: 'success', data: [entry({ exitCode: -2 })] };
+
+    const html = render();
+
+    expect(html).toContain('Interrompido pelo usuário');
+    // O painel de estatísticas sempre escreve "Sucesso"; uma segunda ocorrência
+    // seria o selo de sucesso indevido na linha.
+    expect(html.match(/Sucesso/g)).toHaveLength(1);
+  });
+
+  it('não rotula a interrupção do usuário como erro de spawn', () => {
+    store.state = { status: 'success', data: [entry({ exitCode: -2 })] };
+
+    const html = render();
+
+    expect(html).not.toContain('Erro (spawn)');
+  });
+
+  it('não conta a interrupção do usuário como erro nas estatísticas', () => {
+    store.state = { status: 'success', data: [entry({ exitCode: -2 })] };
+
+    const html = render();
+
+    expect(html).toContain('Total 1');
+    expect(html).toContain('Erros 0');
+  });
+
+  it('continua rotulando falhas reais como erro', () => {
+    store.state = {
+      status: 'success',
+      data: [entry({ exitCode: 1 }), entry({ exitCode: -1, id: 'h-2' })],
+    };
+
+    const html = render();
+
+    expect(html).toContain('Erro (1)');
+    expect(html).toContain('Erro (spawn)');
+    expect(html).toContain('Erros 2');
+  });
 });

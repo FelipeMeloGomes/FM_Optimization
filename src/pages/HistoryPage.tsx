@@ -10,6 +10,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useMemo, useRef } from 'react';
+import { EXIT_INTERRUPTED_SENTINEL } from '../../electron/shared/exit-codes';
 import {
   Badge,
   EmptyState,
@@ -89,7 +90,7 @@ function HistoryRow({
             <CheckCircle className="size-3" /> Sucesso
           </Badge>
         )}
-        {entry.exitCode === -2 && (
+        {entry.exitCode === EXIT_INTERRUPTED_SENTINEL && (
           <Badge
             variant="secondary"
             className="gap-1 text-amber-400 bg-amber-500/10"
@@ -103,11 +104,13 @@ function HistoryRow({
             <AlertTriangle className="size-3" /> Erro ({entry.exitCode})
           </Badge>
         )}
-        {entry.exitCode != null && entry.exitCode < 0 && (
-          <Badge variant="destructive" className="gap-1">
-            <AlertOctagon className="size-3" /> Erro (spawn)
-          </Badge>
-        )}
+        {entry.exitCode != null &&
+          entry.exitCode < 0 &&
+          entry.exitCode !== EXIT_INTERRUPTED_SENTINEL && (
+            <Badge variant="destructive" className="gap-1">
+              <AlertOctagon className="size-3" /> Erro (spawn)
+            </Badge>
+          )}
         {entry.exitCode === null && !entry.wasCancelled && '—'}
       </TableCell>
     </TableRow>
@@ -131,7 +134,11 @@ export default function HistoryPage() {
     const h = state.data;
     const success = h.filter((e) => e.exitCode === 0).length;
     const failed = h.filter(
-      (e) => e.exitCode != null && e.exitCode !== 0 && !e.wasCancelled
+      (e) =>
+        e.exitCode != null &&
+        e.exitCode !== 0 &&
+        e.exitCode !== EXIT_INTERRUPTED_SENTINEL &&
+        !e.wasCancelled
     ).length;
     const cancelled = h.filter((e) => e.wasCancelled).length;
     return { total: h.length, success, failed, cancelled };
