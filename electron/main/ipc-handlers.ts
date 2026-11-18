@@ -12,7 +12,7 @@ import type {
   StartupStopServicePayload,
 } from '../shared/ipc-types';
 import { appState } from './app-state';
-import { auditIpcValidation } from './audit-logger';
+import { auditIpcValidation, auditLog } from './audit-logger';
 import { resolveScriptId } from './legacy-script-ids';
 import {
   clearRemovedApp,
@@ -30,8 +30,9 @@ import {
   setAdbPath,
 } from './services/adb';
 import { isAdmin, isAdminAsync } from './services/admin-check';
+import { getAppxInventory, removeAppxPackages } from './services/appx-inventory';
 import { getAutoCleanScheduler } from './services/auto-clean';
-import { getCleanerStats } from './services/cleaner-stats';
+import { cleanItems, getCleanerItemsStats } from './services/cleaner-items';
 import {
   getDataDir,
   loadSettings,
@@ -537,11 +538,42 @@ export function registerIpcHandlers(): void {
     });
   });
 
-  ipcMain.handle('get-cleaner-stats', (_e, cleanerId: string) => {
-    return handleIpc('get-cleaner-stats', cleanerId, (validated) => {
-      return getCleanerStats(validated as string);
-    });
-  });
+  ipcMain.handle('get-cleaner-items-stats', () =>
+    handleIpcNoInput('get-cleaner-items-stats', () => getCleanerItemsStats())
+  );
+
+  ipcMain.handle('clean-items', (_e, payload: unknown) =>
+    handleIpc('clean-items', payload, async (validated) => {
+      const { ids } = validated as { ids: string[] };
+      const result = await cleanItems(ids, { elevated: isAdmin() });
+      auditLog('info', 'cleaner:items', {
+        ids,
+        freedBytes: result.freedBytes,
+        removedFiles: result.removedFiles,
+        failed: result.failed,
+      });
+      return result;
+    })
+  );
+
+  ipcMain.handle('appx:get-inventory', (_e, refresh: unknown) =>
+    handleIpc('appx:get-inventory', refresh, (validated) =>
+      getAppxInventory({ elevated: isAdmin(), refresh: validated === true })
+    )
+  );
+
+  ipcMain.handle('appx:remove', (_e, payload: unknown) =>
+    handleIpc('appx:remove', payload, async (validated) => {
+      const { families } = validated as { families: string[] };
+      const result = await removeAppxPackages(families, { elevated: isAdmin() });
+      auditLog('info', 'appx:remove', {
+        families,
+        removed: result.removed,
+        failed: result.failed,
+      });
+      return result;
+    })
+  );
 
   ipcMain.handle('essentials:list', () =>
     handleIpcNoInput('essentials:list', () => listEssentials())

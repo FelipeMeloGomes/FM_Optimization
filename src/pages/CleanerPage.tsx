@@ -1,9 +1,11 @@
+import type { LucideIcon } from 'lucide-react';
 import {
-  AlertTriangle,
-  Clock,
+  Boxes,
   Eraser,
-  FileIcon,
+  FolderOpen,
   Globe,
+  Loader2,
+  Lock,
   RefreshCw,
   ShieldAlert,
   ShieldCheck,
@@ -12,150 +14,35 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CleanerCardSkeleton } from '../components/CleanerCardSkeleton';
-import { ConfirmDialog } from '../components/ConfirmDialog';
+import type { CleanerItemId } from '../../electron/shared/cleaner-items';
+import type { CleanerItemStats } from '../../electron/shared/ipc-types';
+import { ConfirmCleanDialog } from '../components/ConfirmCleanDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
-import { ScriptBadge } from '../components/ScriptBadge';
 import { Button } from '../components/ui';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { useAutoCleanContext } from '../contexts/AutoCleanContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
-import { formatBytes, useCleanerStats } from '../hooks/use-cleaner-stats';
-import { useIsScriptApplied } from '../hooks/use-is-script-applied';
-import { useScriptPage } from '../hooks/use-script-page';
+import { useCleanerItems } from '../hooks/use-cleaner-items';
 import { cleanerName } from '../lib/cleaner-options';
 import { cn } from '../lib/utils';
-
-interface CleanerCard {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ElementType;
-  color: string;
-  bgColor: string;
-  borderColor: string;
-  dotColor: string;
-  frequency: string;
-  whatItCleans: string[];
-}
-
-const CLEANER_CARDS: CleanerCard[] = [
-  {
-    id: 'cleaner-1',
-    name: 'Limpeza Rápida',
-    description:
-      'Remove arquivos temporários, logs do sistema, prefetch e lixeira. Seguro para executar semanalmente.',
-    icon: Zap,
-    color: 'text-green-400',
-    bgColor: 'bg-green-500/10',
-    borderColor: 'border-green-500/20',
-    dotColor: 'bg-green-400',
-    frequency: 'Semanal',
-    whatItCleans: [
-      'Arquivos temporários do Windows',
-      'Logs do sistema',
-      'Prefetch',
-      'Lixeira',
-      'Cache de miniaturas',
-    ],
-  },
-  {
-    id: 'cleaner-2',
-    name: 'Limpeza de Atualizações',
-    description:
-      'Limpa cache do Windows Update, Windows Store e shaders DirectX. Use após instalar atualizadores drivers.',
-    icon: RefreshCw,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20',
-    dotColor: 'bg-blue-400',
-    frequency: 'Conforme necessário',
-    whatItCleans: [
-      'Cache do Windows Update',
-      'Cache da Windows Store',
-      'Shaders DirectX',
-      'Cache de drivers temporários',
-    ],
-  },
-  {
-    id: 'cleaner-3',
-    name: 'Limpeza de Navegadores',
-    description:
-      'Apaga cache e dados temporários do Chrome, Edge, Firefox e Brave. Pode exigir login novamente.',
-    icon: Globe,
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'border-purple-500/20',
-    dotColor: 'bg-purple-400',
-    frequency: 'Quando necessário',
-    whatItCleans: [
-      'Cache do Google Chrome',
-      'Cache do Microsoft Edge',
-      'Cache do Mozilla Firefox',
-      'Cache do Brave Browser',
-    ],
-  },
-  {
-    id: 'cleaner-4',
-    name: 'Limpeza Total',
-    description:
-      'Faxina completa: temporários, logs, prefetch, lixeira, navegadores, Windows Update e mais. Execute 1 vez por mês.',
-    icon: Trash2,
-    color: 'text-red-400',
-    bgColor: 'bg-red-500/10',
-    borderColor: 'border-red-500/20',
-    dotColor: 'bg-red-400',
-    frequency: 'Mensal',
-    whatItCleans: [
-      'Todas as limpezas anteriores',
-      'Cache de componentes do Windows',
-      'Limpeza de disco avançada',
-      'Limpeza profunda do sistema',
-    ],
-  },
-];
+import { formatBytes } from '../utils/format';
 
 const LARGE_CLEANUP_THRESHOLD_BYTES = 1024 * 1024 * 1024;
+const SKELETON_ROWS = 6;
 
-function StatsTooltip({
-  cleanerId,
-  categories,
-}: {
-  cleanerId: string;
-  categories: { label: string; fileCount: number; totalSizeBytes: number }[];
-}) {
-  if (!categories || categories.length === 0) return null;
+const ITEM_ICONS: Record<CleanerItemId, LucideIcon> = {
+  'temp-user': FolderOpen,
+  'temp-windows': FolderOpen,
+  prefetch: Zap,
+  'windows-update': RefreshCw,
+  directx: Boxes,
+  chrome: Globe,
+  edge: Globe,
+  firefox: Globe,
+  brave: Globe,
+};
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          tabIndex={0}
-          aria-label="Ver detalhes por categoria"
-          className="cursor-help underline decoration-dotted underline-offset-2"
-        >
-          detalhes
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-xs">
-        <div className="space-y-1.5">
-          <p className="font-medium text-xs">Detalhes por categoria:</p>
-          {categories.map((cat) => (
-            <div
-              key={`${cleanerId}-${cat.label}`}
-              className="flex items-center justify-between gap-4 text-xs"
-            >
-              <span className="text-muted-foreground">{cat.label}</span>
-              <span className="font-medium tabular-nums">
-                {cat.fileCount.toLocaleString('pt-BR')} arq. · {formatBytes(cat.totalSizeBytes)}
-              </span>
-            </div>
-          ))}
-        </div>
-      </TooltipContent>
-    </Tooltip>
-  );
+function iconFor(item: CleanerItemStats): LucideIcon {
+  return ITEM_ICONS[item.id] ?? FolderOpen;
 }
 
 function formatTimeSince(timestamp: number): string {
@@ -173,29 +60,15 @@ function formatTimeSince(timestamp: number): string {
   return `há ${diffD} dias`;
 }
 
-export default function CleanerPage() {
-  const {
-    state,
-    categoryScripts: cleanerScripts,
-    activeExecution,
-    handleCancel,
-    handleConfirmExecute,
-    confirmScript,
-    setConfirmScript,
-    handleConfirm,
-  } = useScriptPage('Cleaner');
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
 
-  const {
-    stats,
-    loading: statsLoading,
-    isRefreshing,
-    lastRefreshed,
-    refresh,
-    previousStats,
-  } = useCleanerStats();
+export default function CleanerPage() {
+  const { items, loading, error, isRefreshing, lastRefreshed, refresh, clean } = useCleanerItems();
 
   const { settings } = useSettingsContext();
-  const isScriptApplied = useIsScriptApplied();
 
   const {
     status: autoCleanStatus,
@@ -208,84 +81,176 @@ export default function CleanerPage() {
   const autoCleanIsAdmin = autoCleanStatus?.isAdmin ?? false;
   const [confirmDiscardAll, setConfirmDiscardAll] = useState(false);
 
-  const getScriptData = useCallback(
-    (scriptId: string) => cleanerScripts.find((s) => s.id === scriptId),
-    [cleanerScripts]
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminKnown, setAdminKnown] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [selectionInitialized, setSelectionInitialized] = useState(false);
+  const [cleaning, setCleaning] = useState(false);
+  const [cleaningIds, setCleaningIds] = useState<string[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    window.electronAPI
+      .isAdmin()
+      .then((value) => {
+        if (cancelled) return;
+        setIsAdmin(value);
+        setAdminKnown(true);
+      })
+      .catch(() => {
+        if (!cancelled) setAdminKnown(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const cleanup = window.electronAPI.onScriptEnded((data) => {
+      // A limpeza agendada é anunciada pelo AutoCleanProvider; aqui só importa
+      // que os números exibidos deixem de estar velhos.
+      if (data.code === 0) void refresh();
+    });
+    return cleanup;
+  }, [refresh]);
+
+  const canCleanItem = useCallback(
+    (item: CleanerItemStats) => item.totalSizeBytes > 0 && (!item.requiresAdmin || isAdmin),
+    [isAdmin]
   );
 
-  const handleButtonClick = useCallback(
-    (card: CleanerCard) => {
-      const script = cleanerScripts.find((s) => s.id === card.id);
-      if (script) handleConfirmExecute(script);
-    },
-    [cleanerScripts, handleConfirmExecute]
+  const selectableItems = useMemo(
+    () => items.filter((item) => canCleanItem(item)),
+    [items, canCleanItem]
   );
+
+  // A seleção inicial só pode acontecer depois que sabemos se o app está
+  // elevado: sem isso, os itens de sistema seriam desmarcados por engano.
+  useEffect(() => {
+    if (selectionInitialized || loading || !adminKnown) return;
+    setSelected(new Set(selectableItems.map((item) => item.id)));
+    setSelectionInitialized(true);
+  }, [selectionInitialized, loading, adminKnown, selectableItems]);
+
+  const selectedItems = useMemo(
+    () => items.filter((item) => selected.has(item.id)),
+    [items, selected]
+  );
+  const selectedBytes = selectedItems.reduce((total, item) => total + item.totalSizeBytes, 0);
+  const selectedFiles = selectedItems.reduce((total, item) => total + item.fileCount, 0);
+
+  const allSelected =
+    selectableItems.length > 0 && selectableItems.every((item) => selected.has(item.id));
+  const hasSelectableItems = selectableItems.length > 0;
 
   const totalStats = useMemo(() => {
     let totalFiles = 0;
     let totalBytes = 0;
-    for (const card of CLEANER_CARDS) {
-      const s = stats[card.id];
-      if (s) {
-        totalFiles += s.fileCount;
-        totalBytes += s.totalSizeBytes;
-      }
+    for (const item of items) {
+      totalFiles += item.fileCount;
+      totalBytes += item.totalSizeBytes;
     }
     return { totalFiles, totalBytes };
-  }, [stats]);
+  }, [items]);
 
-  useEffect(() => {
-    const cleanup = window.electronAPI.onScriptEnded((data) => {
-      if (data.code === 0) {
-        const prev = previousStats.current;
-        const freedBytes = Object.keys(stats).reduce((acc, id) => {
-          const prevBytes = prev[id]?.totalSizeBytes ?? 0;
-          const currBytes = stats[id]?.totalSizeBytes ?? 0;
-          return acc + Math.max(0, prevBytes - currBytes);
-        }, 0);
-        const freedFiles = Object.keys(stats).reduce((acc, id) => {
-          const prevCount = prev[id]?.fileCount ?? 0;
-          const currCount = stats[id]?.fileCount ?? 0;
-          return acc + Math.max(0, prevCount - currCount);
-        }, 0);
+  const toggleItem = useCallback((id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
-        refresh();
+  const toggleAll = useCallback(() => {
+    setSelected((prev) => {
+      if (selectableItems.length > 0 && selectableItems.every((item) => prev.has(item.id))) {
+        return new Set();
+      }
+      return new Set(selectableItems.map((item) => item.id));
+    });
+  }, [selectableItems]);
 
-        // Limpeza agendada já é anunciada pelo AutoCleanProvider; aqui o toast
-        // sairia duplicado. Atualizar as estatísticas continua valendo.
-        if (data.trigger === 'scheduled') return;
+  const runClean = useCallback(
+    async (ids: CleanerItemId[]) => {
+      setConfirmOpen(false);
+      setCleaning(true);
+      setCleaningIds(ids);
 
-        if (freedBytes > 0) {
+      try {
+        const result = await clean(ids);
+        await refresh();
+        setSelected(new Set());
+
+        const failedLabels = result.items
+          .filter((item) => item.error !== undefined)
+          .map((item) => item.label);
+
+        if (result.freedBytes > 0) {
           showEnhancedToast({
-            type: 'success',
+            type: failedLabels.length > 0 ? 'warning' : 'success',
             title: 'Limpeza concluída',
-            description: `Liberado: ${formatBytes(freedBytes)} em ${freedFiles.toLocaleString('pt-BR')} arquivos`,
+            description: `Liberado: ${formatBytes(result.freedBytes)} em ${result.removedFiles.toLocaleString('pt-BR')} arquivos${
+              failedLabels.length > 0 ? ` · Falhou: ${failedLabels.join(', ')}` : ''
+            }`,
+            duration: 'long',
+            sound: settings.soundEnabled,
+          });
+        } else if (failedLabels.length > 0) {
+          showEnhancedToast({
+            type: 'error',
+            title: 'Limpeza incompleta',
+            description: `Não foi possível limpar: ${failedLabels.join(', ')}`,
             duration: 'long',
             sound: settings.soundEnabled,
           });
         } else {
           showEnhancedToast({
-            type: 'success',
-            title: 'Limpeza concluída',
-            description: 'Scripts executados com sucesso',
+            type: 'info',
+            title: 'Nada para liberar',
+            description: 'Os itens selecionados já estavam limpos',
             duration: 'medium',
             sound: settings.soundEnabled,
           });
         }
+      } catch (e) {
+        showEnhancedToast({
+          type: 'error',
+          title: 'Falha na limpeza',
+          description: errorMessage(e),
+          duration: 'long',
+          sound: settings.soundEnabled,
+        });
+      } finally {
+        setCleaning(false);
+        setCleaningIds([]);
       }
-    });
-    return cleanup;
-  }, [refresh, stats, previousStats, settings.soundEnabled]);
+    },
+    [clean, refresh, settings.soundEnabled]
+  );
 
-  if (state.status === 'loading') {
+  const requestClean = useCallback(() => {
+    if (selectedItems.length === 0 || cleaning) return;
+    const ids = selectedItems.map((item) => item.id);
+    if (settings.confirmOnExecute) {
+      setConfirmOpen(true);
+      return;
+    }
+    void runClean(ids);
+  }, [selectedItems, cleaning, settings.confirmOnExecute, runClean]);
+
+  if (loading) {
     return (
       <div className="space-y-4" aria-busy="true" role="status">
         <div className="h-24 rounded-xl bg-muted animate-pulse" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <CleanerCardSkeleton
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
-              key={`skeleton-${i}`}
+        <div className="h-14 rounded-xl bg-muted animate-pulse" />
+        <div className="space-y-2 rounded-xl border border-border bg-card p-4">
+          {Array.from({ length: SKELETON_ROWS }).map((_, index) => (
+            <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: placeholders estáticos, ordem fixa
+              key={`cleaner-row-skeleton-${index}`}
+              className="h-10 animate-pulse rounded-lg bg-muted"
             />
           ))}
         </div>
@@ -293,330 +258,328 @@ export default function CleanerPage() {
     );
   }
 
-  if (state.status === 'error') {
+  if (error && items.length === 0) {
     return (
       <div
         className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground"
         role="alert"
       >
-        <p className="text-sm">Erro ao carregar scripts de limpeza</p>
-        <p className="text-xs text-destructive">{state.error}</p>
+        <p className="text-sm">Erro ao carregar itens de limpeza</p>
+        <p className="text-xs text-destructive">{error}</p>
+        <Button variant="outline" size="sm" onClick={() => void refresh()}>
+          Tentar de novo
+        </Button>
       </div>
     );
   }
 
   return (
-    <TooltipProvider delayDuration={200}>
-      <div className="space-y-6">
-        {pendingCleaners.length > 0 && (
-          <section
-            aria-label="Limpezas pendentes"
-            className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4"
-          >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              <ShieldAlert className="mt-0.5 size-4 shrink-0 text-amber-400" aria-hidden="true" />
-              <div className="flex-1 space-y-2">
-                <p className="text-sm font-medium text-amber-400">
-                  {pendingCleaners.length} limpeza(s) automática(s) aguardando administrador
-                </p>
-                <ul className="flex flex-wrap gap-2">
-                  {pendingCleaners.map((id) => (
-                    <li key={id}>
-                      <span className="inline-flex items-center gap-1 rounded-md border border-border bg-background/50 py-0.5 pl-2 pr-1 text-xs text-foreground">
-                        {cleanerName(id)}
-                        <button
-                          type="button"
-                          aria-label={`Descartar pendência de ${cleanerName(id)}`}
-                          onClick={() => void discardPending([id])}
-                          className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        >
-                          <X className="size-3" aria-hidden="true" />
-                        </button>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+    <div className="space-y-6">
+      {pendingCleaners.length > 0 && (
+        <section
+          aria-label="Limpezas pendentes"
+          className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <ShieldAlert className="mt-0.5 size-4 shrink-0 text-amber-400" aria-hidden="true" />
+            <div className="flex-1 space-y-2">
+              <p className="text-sm font-medium text-amber-400">
+                {pendingCleaners.length} limpeza(s) automática(s) aguardando administrador
+              </p>
+              <ul className="flex flex-wrap gap-2">
+                {pendingCleaners.map((id) => (
+                  <li key={id}>
+                    <span className="inline-flex items-center gap-1 rounded-md border border-border bg-background/50 py-0.5 pl-2 pr-1 text-xs text-foreground">
+                      {cleanerName(id)}
+                      <button
+                        type="button"
+                        aria-label={`Descartar pendência de ${cleanerName(id)}`}
+                        onClick={() => void discardPending([id])}
+                        className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        <X className="size-3" aria-hidden="true" />
+                      </button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2 sm:pl-7">
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2 sm:pl-7">
+            <Button
+              size="sm"
+              onClick={() => void runAutoCleanPending()}
+              disabled={autoCleanRunning}
+              className="gap-1.5"
+            >
+              Executar agora
+            </Button>
+            {!autoCleanIsAdmin && (
               <Button
                 size="sm"
-                onClick={() => void runAutoCleanPending()}
-                disabled={autoCleanRunning}
+                variant="secondary"
+                onClick={() => void relaunchAsAdmin()}
                 className="gap-1.5"
               >
-                Executar agora
+                <ShieldCheck className="size-3.5" aria-hidden="true" />
+                Reiniciar como admin
               </Button>
-              {!autoCleanIsAdmin && (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => void relaunchAsAdmin()}
-                  className="gap-1.5"
-                >
-                  <ShieldCheck className="size-3.5" aria-hidden="true" />
-                  Reiniciar como admin
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant={confirmDiscardAll ? 'destructive' : 'ghost'}
-                onClick={() => {
-                  if (confirmDiscardAll) {
-                    void discardPending(pendingCleaners);
-                    setConfirmDiscardAll(false);
-                    return;
-                  }
-                  setConfirmDiscardAll(true);
-                }}
-                onBlur={() => setConfirmDiscardAll(false)}
-              >
-                {confirmDiscardAll ? 'Confirmar descarte' : 'Descartar todas'}
-              </Button>
-            </div>
-          </section>
-        )}
-
-        {/* Hero Banner */}
-        <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-          <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-            <Eraser className="size-28 text-primary" aria-hidden="true" />
-          </div>
-          <div className="relative p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Eraser className="size-4 text-primary" aria-hidden="true" />
-                  <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                    Limpeza
-                  </span>
-                </div>
-                <h2 className="text-lg font-bold text-foreground">
-                  Mantenha seu Windows limpo e rápido
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-                  Remova arquivos temporários, cache de atualizações e dados de navegadores para
-                  liberar espaço e melhorar a performance do sistema.
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={refresh}
-                disabled={isRefreshing}
-                aria-label="Atualizar estatísticas"
-                className="shrink-0 gap-1.5"
-              >
-                <RefreshCw
-                  className={cn('size-3.5', isRefreshing && 'animate-spin')}
-                  aria-hidden="true"
-                />
-                <span className="text-xs">{isRefreshing ? 'Atualizando...' : 'Atualizar'}</span>
-              </Button>
-            </div>
-            {lastRefreshed > 0 && (
-              <p className="mt-2 text-[10px] text-muted-foreground">
-                Atualizado {formatTimeSince(lastRefreshed)}
-                {totalStats.totalFiles > 0 && (
-                  <span className="ml-2">
-                    · {totalStats.totalFiles.toLocaleString('pt-BR')} arquivos ·{' '}
-                    {formatBytes(totalStats.totalBytes)} totais para limpar
-                  </span>
-                )}
-              </p>
             )}
+            <Button
+              size="sm"
+              variant={confirmDiscardAll ? 'destructive' : 'ghost'}
+              onClick={() => {
+                if (confirmDiscardAll) {
+                  void discardPending(pendingCleaners);
+                  setConfirmDiscardAll(false);
+                  return;
+                }
+                setConfirmDiscardAll(true);
+              }}
+              onBlur={() => setConfirmDiscardAll(false)}
+            >
+              {confirmDiscardAll ? 'Confirmar descarte' : 'Descartar todas'}
+            </Button>
           </div>
-        </div>
+        </section>
+      )}
 
-        <div aria-live="polite" className="sr-only">
-          {isRefreshing
+      {/* Hero Banner */}
+      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
+          <Eraser className="size-28 text-primary" aria-hidden="true" />
+        </div>
+        <div className="relative p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Eraser className="size-4 text-primary" aria-hidden="true" />
+                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                  Limpeza
+                </span>
+              </div>
+              <h2 className="text-lg font-bold text-foreground">
+                Mantenha seu Windows limpo e rápido
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1 max-w-lg">
+                Escolha o que limpar, item por item, e libere espaço sem mexer no que você usa.
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void refresh()}
+              disabled={isRefreshing}
+              aria-label="Atualizar estatísticas"
+              className="shrink-0 gap-1.5"
+            >
+              <RefreshCw
+                className={cn('size-3.5', isRefreshing && 'animate-spin')}
+                aria-hidden="true"
+              />
+              <span className="text-xs">{isRefreshing ? 'Atualizando...' : 'Atualizar'}</span>
+            </Button>
+          </div>
+          {lastRefreshed > 0 && (
+            <p className="mt-2 text-[10px] text-muted-foreground">
+              Atualizado {formatTimeSince(lastRefreshed)}
+              {totalStats.totalFiles > 0 && (
+                <span className="ml-2">
+                  · {totalStats.totalFiles.toLocaleString('pt-BR')} arquivos ·{' '}
+                  {formatBytes(totalStats.totalBytes)} totais para limpar
+                </span>
+              )}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div aria-live="polite" className="sr-only">
+        {cleaning
+          ? 'Limpando itens selecionados...'
+          : isRefreshing
             ? 'Atualizando estatísticas...'
             : lastRefreshed > 0
               ? 'Estatísticas atualizadas'
               : ''}
+      </div>
+
+      {error && items.length > 0 && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2"
+        >
+          <p className="flex-1 text-xs text-destructive">
+            Não foi possível atualizar as estatísticas: {error}
+          </p>
+          <Button variant="ghost" size="sm" onClick={() => void refresh()}>
+            Tentar de novo
+          </Button>
+        </div>
+      )}
+
+      {!isAdmin && items.some((item) => item.requiresAdmin) && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+          <Lock className="size-4 shrink-0 text-amber-400" aria-hidden="true" />
+          <p className="flex-1 text-xs text-amber-400">
+            Itens com cadeado exigem administrador para serem limpos.
+          </p>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => void relaunchAsAdmin()}
+            className="gap-1.5"
+          >
+            <ShieldCheck className="size-3.5" aria-hidden="true" />
+            Reiniciar como admin
+          </Button>
+        </div>
+      )}
+
+      <section aria-label="Itens de limpeza" className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input
+              type="checkbox"
+              className="size-4 accent-primary"
+              checked={allSelected}
+              onChange={toggleAll}
+              disabled={!hasSelectableItems || cleaning}
+            />
+            Selecionar todos
+            <span className="text-xs text-muted-foreground">
+              {selected.size} de {selectableItems.length} selecionados
+            </span>
+          </label>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {formatBytes(selectedBytes)} · {selectedFiles.toLocaleString('pt-BR')} arquivos
+            </span>
+            <Button
+              size="sm"
+              onClick={requestClean}
+              disabled={selectedItems.length === 0 || cleaning}
+              className="gap-1.5"
+            >
+              {cleaning ? (
+                <>
+                  <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                  Limpando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="size-3.5" aria-hidden="true" />
+                  Limpar selecionados
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
-        {/* Cleaner Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {CLEANER_CARDS.map((card) => {
-            const script = getScriptData(card.id);
-            const isExecuting = activeExecution === card.id;
-            const isApplied = !!script && isScriptApplied(script);
-            const cardStats = stats[card.id];
-            const hasData = cardStats && cardStats.fileCount > 0;
-            const hasError = cardStats?.error === true;
-            const isLarge = cardStats && cardStats.totalSizeBytes > LARGE_CLEANUP_THRESHOLD_BYTES;
+        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+          {items.map((item) => {
+            const Icon = iconFor(item);
+            const hasData = item.fileCount > 0;
+            const canSelect = canCleanItem(item);
+            const locked = item.requiresAdmin && !isAdmin;
+            const isWorking = cleaningIds.includes(item.id);
+            const isLarge = item.totalSizeBytes > LARGE_CLEANUP_THRESHOLD_BYTES;
+            const checkboxId = `clean-item-${item.id}`;
 
             return (
-              <div
-                key={card.id}
+              <li
+                key={item.id}
                 className={cn(
-                  'group relative rounded-xl border bg-card p-5 transition-all duration-300 hover:shadow-lg',
-                  card.borderColor,
-                  isExecuting && 'ring-2 ring-primary/50',
-                  isLarge && 'border-yellow-500/30'
+                  'flex items-center gap-3 px-4 py-3 transition-colors',
+                  canSelect && !cleaning && 'hover:bg-muted/40',
+                  !canSelect && 'opacity-60',
+                  isWorking && 'bg-primary/5'
                 )}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        'flex size-10 items-center justify-center rounded-lg',
-                        card.bgColor
-                      )}
-                    >
-                      <card.icon className={cn('size-5', card.color)} aria-hidden="true" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-foreground">{card.name}</h3>
-                        {isLarge && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="rounded bg-yellow-500/15 px-1.5 py-0.5 text-[9px] font-medium text-yellow-400">
-                                Grande
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">
-                              <p>Mais de 1 GB de arquivos para limpar</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        {script && <ScriptBadge script={script} />}
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <Clock className="size-3" aria-hidden="true" />
-                          {card.frequency}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <input
+                  id={checkboxId}
+                  type="checkbox"
+                  className="size-4 shrink-0 accent-primary"
+                  checked={selected.has(item.id)}
+                  onChange={() => toggleItem(item.id)}
+                  disabled={!canSelect || cleaning}
+                  aria-label={`Selecionar ${item.label}`}
+                />
 
-                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                  {card.description}
-                </p>
-
-                {statsLoading ? (
-                  <div className="mt-3 space-y-2">
-                    <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-                    <div className="h-2 w-full animate-pulse rounded bg-muted" />
-                  </div>
-                ) : hasError ? (
-                  <div className="mt-3 flex items-center gap-2 rounded-md bg-muted/50 px-2.5 py-1.5">
-                    <span className="text-xs text-muted-foreground">
-                      Não foi possível carregar estatísticas
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={refresh}
-                      className="h-5 px-1.5 text-[10px]"
-                    >
-                      Retry
-                    </Button>
-                  </div>
-                ) : hasData ? (
-                  <div className="mt-3 space-y-2 animate-in fade-in-0 duration-300">
-                    <div className="flex items-center gap-1.5 rounded-md bg-muted/50 px-2.5 py-1.5">
-                      <FileIcon className="size-3 text-muted-foreground" aria-hidden="true" />
-                      <span className="text-xs text-muted-foreground">
-                        {cardStats.fileCount.toLocaleString('pt-BR')}{' '}
-                        {cardStats.fileCount === 1 ? 'arquivo' : 'arquivos'}
-                      </span>
-                      <span className="text-xs text-muted-foreground">·</span>
-                      <span className="text-xs font-medium text-foreground">
-                        {formatBytes(cardStats.totalSizeBytes)}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        <StatsTooltip cleanerId={card.id} categories={cardStats.categories} />
-                      </span>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="mt-4">
-                  <p className="text-xs font-medium text-foreground mb-2">O que limpa:</p>
-                  <ul className="space-y-1">
-                    {card.whatItCleans.map((item, i) => (
-                      <li
-                        // biome-ignore lint/suspicious/noArrayIndexKey: static list items, stable order
-                        key={`clean-${i}`}
-                        className="flex items-center gap-2 text-xs text-muted-foreground"
-                      >
-                        <span className={cn('size-1 rounded-full', card.dotColor)} />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => handleButtonClick(card)}
-                    disabled={isExecuting}
-                    aria-label={
-                      isApplied
-                        ? `Executar novamente a limpeza ${card.name}`
-                        : `Executar limpeza ${card.name}`
-                    }
-                    className={cn('flex-1 gap-2', isExecuting && 'animate-pulse')}
-                  >
-                    {isExecuting ? (
-                      <>
-                        <span className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Executando...
-                      </>
-                    ) : (
-                      <>
-                        <card.icon className="size-3.5" aria-hidden="true" />
-                        {isApplied ? 'Executar novamente' : 'Executar'}
-                      </>
-                    )}
-                  </Button>
-                  {isExecuting && (
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleCancel(card.id)}
-                      aria-label="Cancelar execução"
-                    >
-                      Cancelar
-                    </Button>
+                <label
+                  htmlFor={checkboxId}
+                  className={cn(
+                    'flex min-w-0 flex-1 items-center gap-3',
+                    canSelect && 'cursor-pointer'
                   )}
-                </div>
+                >
+                  <span
+                    className={cn(
+                      'flex size-8 shrink-0 items-center justify-center rounded-lg',
+                      item.error ? 'bg-destructive/10' : 'bg-muted'
+                    )}
+                  >
+                    {isWorking ? (
+                      <Loader2 className="size-4 animate-spin text-primary" aria-hidden="true" />
+                    ) : (
+                      <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+                    )}
+                  </span>
 
-                {script?.riskLevel === 'deep' && (
-                  <div className="mt-3 flex items-start gap-2 rounded-lg bg-red-500/5 p-2 border border-red-500/10">
-                    <AlertTriangle
-                      className="size-3.5 text-red-400 mt-0.5 shrink-0"
-                      aria-hidden="true"
-                    />
-                    <p className="text-[10px] text-red-400/80 leading-relaxed">
-                      Esta limpeza é mais agressiva. Recomendada apenas uma vez por mês para manter
-                      o sistema estável.
-                    </p>
-                  </div>
-                )}
-              </div>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium text-foreground">
+                        {item.label}
+                      </span>
+                      {isLarge && (
+                        <span className="shrink-0 rounded bg-yellow-500/15 px-1.5 py-0.5 text-[9px] font-medium text-yellow-400">
+                          Grande
+                        </span>
+                      )}
+                      {locked && (
+                        <span
+                          title="Requer administrador"
+                          className="inline-flex shrink-0 items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-400"
+                        >
+                          <Lock className="size-2.5" aria-hidden="true" />
+                          Admin
+                        </span>
+                      )}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+                      {item.error ? 'Não foi possível medir este item' : item.description}
+                    </span>
+                  </span>
+                </label>
+
+                <span className="shrink-0 text-right">
+                  <span className="block text-sm font-medium tabular-nums text-foreground">
+                    {hasData ? formatBytes(item.totalSizeBytes) : '—'}
+                  </span>
+                  <span className="block text-[11px] text-muted-foreground tabular-nums">
+                    {item.error
+                      ? 'Erro na leitura'
+                      : hasData
+                        ? `${item.fileCount.toLocaleString('pt-BR')} ${
+                            item.fileCount === 1 ? 'arquivo' : 'arquivos'
+                          }`
+                        : 'Nada para limpar'}
+                  </span>
+                </span>
+              </li>
             );
           })}
-        </div>
+        </ul>
+      </section>
 
-        {/* Confirm Dialog */}
-        <ConfirmDialog
-          open={!!confirmScript}
-          onOpenChange={(open) => {
-            if (!open) setConfirmScript(null);
-          }}
-          script={confirmScript}
-          onConfirm={handleConfirm}
-          isExecuting={!!confirmScript && activeExecution === confirmScript.id}
-        />
-      </div>
-    </TooltipProvider>
+      <ConfirmCleanDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        items={selectedItems}
+        totalBytes={selectedBytes}
+        onConfirm={() => void runClean(selectedItems.map((item) => item.id))}
+      />
+    </div>
   );
 }

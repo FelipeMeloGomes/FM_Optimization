@@ -1,5 +1,13 @@
 import { spawn } from 'node:child_process';
 
+/**
+ * O powershell.exe (5.1) escreve em stdout redirecionado usando o code page OEM
+ * do console, não UTF-8. No processo GUI do Electron o console filho nasce com
+ * o code page do sistema (850 em pt-BR), então acentos vindos do ConvertTo-Json
+ * chegam corrompidos ao Node. Forçar o OutputEncoding resolve na origem.
+ */
+const UTF8_OUTPUT = '[Console]::OutputEncoding = [Text.Encoding]::UTF8';
+
 const DANGEROUS_PATTERNS = [
   /\bformat\b/i,
   /\bdiskpart\b/i,
@@ -78,7 +86,7 @@ export async function execPowerShell(script: string, timeout = 30000): Promise<s
     throw new Error(`Script rejected by security policy: ${violations.join(', ')}`);
   }
 
-  const wrapped = `$ProgressPreference = 'SilentlyContinue'\n${script}`;
+  const wrapped = `$ProgressPreference = 'SilentlyContinue'\n${UTF8_OUTPUT}\n${script}`;
 
   return new Promise<string>((resolve, reject) => {
     const proc = spawn(
@@ -119,7 +127,7 @@ export async function execPowerShellSafe(
   args: string[],
   options?: { timeout?: number }
 ): Promise<string> {
-  const fullCommand = [command, ...args].join(' ');
+  const fullCommand = `${UTF8_OUTPUT}\n${[command, ...args].join(' ')}`;
   const { violations } = sanitizeScript(fullCommand);
 
   if (violations.length > 0) {

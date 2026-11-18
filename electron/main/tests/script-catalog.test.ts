@@ -43,8 +43,8 @@ const windowsPage = scripts.filter((s) => s.category === 'Windows');
 const cpuFamily = scripts.filter((s) => /^cpu-\d+$/.test(s.id));
 
 describe('merged processor catalog', () => {
-  it('has 100 entries with 34 scripts on the CPU category and 34 cpu-N ids', () => {
-    expect(scripts).toHaveLength(100);
+  it('has 98 entries with 34 scripts on the CPU category and 34 cpu-N ids', () => {
+    expect(scripts).toHaveLength(98);
     expect(cpuPage).toHaveLength(34);
     expect(cpuFamily).toHaveLength(34);
   });

@@ -16,7 +16,6 @@ export const CATEGORY_ROUTES: Record<string, string> = {
   'DNS Manager': '/rede',
   'Input Lag': '/input-lag',
   Utilities: '/utilities',
-  Debloat: '/debloat',
   Personalização: '/personalizacao',
   Segurança: '/privacidade-seguranca',
 };

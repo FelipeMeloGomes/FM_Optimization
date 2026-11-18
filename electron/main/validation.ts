@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CLEANER_ITEM_IDS } from '../shared/cleaner-items';
 import {
   InterfaceIndexSchema,
   RestorePointNameSchema,
@@ -159,7 +160,18 @@ export const adbListInstancesSchema = z.object({
   emulatorId: z.string().min(1, 'Emulator ID is required'),
 });
 
-export const getCleanerStatsSchema = z.string().min(1, 'Cleaner ID is required');
+export const CleanItemsSchema = z.object({
+  ids: z.array(z.enum(CLEANER_ITEM_IDS)).min(1, 'Selecione ao menos um item').max(32),
+});
+
+/** PackageFamilyName: nome do pacote + publisher id, sem espaços/aspas. */
+export const AppxFamilySchema = z
+  .string()
+  .regex(/^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$/, 'Invalid Appx package family');
+
+export const RemoveAppxPackagesSchema = z.object({
+  families: z.array(AppxFamilySchema).min(1, 'Selecione ao menos um app').max(50),
+});
 
 export const essentialIdSchema = z.string().min(1, 'Program ID is required').max(64);
 
@@ -224,7 +236,10 @@ export const IpcSchemas: Record<string, z.ZodSchema> = {
   'adb:clear-removed': adbClearRemovedSchema,
   'adb:clear-removed-history': z.undefined(),
   'adb:list-instances': adbListInstancesSchema,
-  'get-cleaner-stats': getCleanerStatsSchema,
+  'get-cleaner-items-stats': z.undefined(),
+  'clean-items': CleanItemsSchema,
+  'appx:get-inventory': z.boolean().optional(),
+  'appx:remove': RemoveAppxPackagesSchema,
   'essentials:list': z.undefined(),
   'essentials:open-page': essentialIdSchema,
   'essentials:install': essentialIdSchema,

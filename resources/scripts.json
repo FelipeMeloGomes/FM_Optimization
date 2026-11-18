@@ -229,23 +229,9 @@
     "riskLevel": "moderate"
   },
   {
-    "id": "apps-3",
-    "tags": [],
-    "category": "Debloat",
-    "description": "Remove Cortana, OneDrive, Xbox, YourPhone, Copilot, Widgets e apps pre-instalados desnecessarios. Deixa o Windows mais leve e limpo, ideal apos uma instalacao nova.",
-    "subcategory": "",
-    "name": "Remover Bloatware",
-    "extension": "bat",
-    "requiresAdmin": true,
-    "isBuiltIn": true,
-    "content": "QGVjaG8gb2ZmCnRpdGxlIEZNIE9wdGltaXplIC0gUmVtb3ZlciBCbG9hdHdhcmUKY29sb3IgMEIKY2xzCmVjaG8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmVjaG8gICAgICAgICAgUkVNT1ZFUiBCTE9BVFdBUkUKZWNobyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KZWNoby4KZWNobyBSZW1vdmVuZG8gYXBwcyBkZXNuZWNlc3NhcmlvcyBkbyBXaW5kb3dzLi4uCmVjaG8uCgo6OiBSZW1vdmVyIENvcnRhbmEgKHZpYSByZWdpc3RybykKcmVnIGFkZCAiSEtMTVxTT0ZUV0FSRVxQb2xpY2llc1xNaWNyb3NvZnRcV2luZG93c1xXaW5kb3dzIFNlYXJjaCIgL3YgQWxsb3dDb3J0YW5hIC90IFJFR19EV09SRCAvZCAwIC9mID5udWwgMj4mMQpyZWcgYWRkICJIS0NVXFNvZnR3YXJlXE1pY3Jvc29mdFxXaW5kb3dzXEN1cnJlbnRWZXJzaW9uXEV4cGxvcmVyXEFkdmFuY2VkIiAvdiBTaG93Q29ydGFuYUJ1dHRvbiAvdCBSRUdfRFdPUkQgL2QgMCAvZiA+bnVsIDI+JjEKZWNobyBbT0tdIENvcnRhbmEgZGVzYWJpbGl0YWRhCgo6OiBSZW1vdmVyIE9uZURyaXZlCnRhc2traWxsIC9mIC9pbSBPbmVEcml2ZS5leGUgPm51bCAyPiYxCiVTeXN0ZW1Sb290JVxTeXNXT1c2NFxPbmVEcml2ZVNldHVwLmV4ZSAvdW5pbnN0YWxsID5udWwgMj4mMQpyZCAvcyAvcSAiJXVzZXJwcm9maWxlJVxPbmVEcml2ZSIgPm51bCAyPiYxCnJlZyBkZWxldGUgIkhLQ1VcU29mdHdhcmVcTWljcm9zb2Z0XFdpbmRvd3NcQ3VycmVudFZlcnNpb25cUnVuIiAvdiBPbmVEcml2ZVNldHVwIC9mID5udWwgMj4mMQplY2hvIFtPS10gT25lRHJpdmUgcmVtb3ZpZG8KCjo6IFJlbW92ZXIgWGJveApyZWcgYWRkICJIS0xNXFNPRlRXQVJFXFBvbGljaWVzXE1pY3Jvc29mdFxXaW5kb3dzXEdhbWVEVlIiIC92IEFsbG93R2FtZURWUiAvdCBSRUdfRFdPUkQgL2QgMCAvZiA+bnVsIDI+JjEKZWNobyBbT0tdIFhib3ggZGVzYWJpbGl0YWRvCgo6OiBSZW1vdmVyIFlvdXJQaG9uZQpyZWcgZGVsZXRlICJIS0xNXFNPRlRXQVJFXE1pY3Jvc29mdFxZb3VyUGhvbmUiIC9mID5udWwgMj4mMQplY2hvIFtPS10gWW91clBob25lIHJlbW92aWRvCgo6OiBEZXNhYmlsaXRhciBDb3BpbG90CnJlZyBhZGQgIkhLTE1cU09GVFdBUkVcUG9saWNpZXNcTWljcm9zb2Z0XFdpbmRvd3NcV2luZG93c0NvcGlsb3QiIC92IFR1cm5PZmZXaW5kb3dzQ29waWxvdCAvdCBSRUdfRFdPUkQgL2QgMSAvZiA+bnVsIDI+JjEKZWNobyBbT0tdIENvcGlsb3QgZGVzYWJpbGl0YWRvCgo6OiBEZXNhYmlsaXRhciBXaWRnZXRzCnJlZyBhZGQgIkhLTE1cU09GVFdBUkVcUG9saWNpZXNcTWljcm9zb2Z0XERzaCIgL3YgQWxsb3dOZXdzQW5kSW50ZXJlc3RzIC90IFJFR19EV09SRCAvZCAwIC9mID5udWwgMj4mMQplY2hvIFtPS10gV2lkZ2V0cyBkZXNhYmlsaXRhZG9zCgo6OiBSZW1vdmVyIGFwcHMgcHJlLWluc3RhbGFkb3MgdmlhIFBvd2VyU2hlbGwgKHNlIGRpc3Bvbml2ZWwpCndoZXJlIHBvd2Vyc2hlbGwgPm51bCAyPiYxCmlmICVlcnJvcmxldmVsJSBlcXUgMCAoCiAgICBwb3dlcnNoZWxsIC1Db21tYW5kICJHZXQtQXBweFBhY2thZ2UgKnhib3gqIHwgUmVtb3ZlLUFwcHhQYWNrYWdlIiA+bnVsIDI+JjEKICAgIHBvd2Vyc2hlbGwgLUNvbW1hbmQgIkdldC1BcHB4UGFja2FnZSAqc2t5cGUqIHwgUmVtb3ZlLUFwcHhQYWNrYWdlIiA+bnVsIDI+JjEKICAgIHBvd2Vyc2hlbGwgLUNvbW1hbmQgIkdldC1BcHB4UGFja2FnZSAqYmluZyogfCBSZW1vdmUtQXBweFBhY2thZ2UiID5udWwgMj4mMQogICAgcG93ZXJzaGVsbCAtQ29tbWFuZCAiR2V0LUFwcHhQYWNrYWdlICp6dW5lKiB8IFJlbW92ZS1BcHB4UGFja2FnZSIgPm51bCAyPiYxCiAgICBwb3dlcnNoZWxsIC1Db21tYW5kICJHZXQtQXBweFBhY2thZ2UgKm9mZmljZWh1YiogfCBSZW1vdmUtQXBweFBhY2thZ2UiID5udWwgMj4mMQogICAgcG93ZXJzaGVsbCAtQ29tbWFuZCAiR2V0LUFwcHhQYWNrYWdlICpwZW9wbGUqIHwgUmVtb3ZlLUFwcHhQYWNrYWdlIiA+bnVsIDI+JjEKICAgIGVjaG8gW09LXSBBcHBzIHByZS1pbnN0YWxhZG9zIHJlbW92aWRvcwopCgplY2hvLgplY2hvID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQplY2hvIEJsb2F0d2FyZSByZW1vdmlkbyBjb20gc3VjZXNzbyEKZWNobyBSZWNvbWVuZGFkbyByZWluaWNpYXIgbyBjb21wdXRhZG9yLgplY2hvID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQpwYXVzZQo=",
-    "guide": "Remove programas que vem instalados de fabrica no Windows, como Cortana, OneDrive e Xbox. Deixa o sistema mais leve, ideal depois de formatar.",
-    "riskLevel": "moderate"
-  },
-  {
     "id": "apps-4",
     "tags": [],
-    "category": "Debloat",
+    "category": "Personalização",
     "description": "Instala o Equicord, mod do Discord com mais de 300 plugins, e ativa o plugin FakeNitro automaticamente (emotes e stickers de qualquer servidor, upload maior etc). Fecha e reabre o Discord durante o processo.",
     "subcategory": "",
     "name": "Debloat Discord (Equicord)",
@@ -260,7 +246,7 @@
   {
     "id": "apps-5",
     "tags": [],
-    "category": "Debloat",
+    "category": "Personalização",
     "description": "Desinstala o Equicord e devolve o Discord ao estado original. Desativa tambem o plugin FakeNitro se estiver configurado.",
     "subcategory": "",
     "name": "Reverter Discord",
@@ -275,7 +261,7 @@
   {
     "id": "apps-6",
     "tags": [],
-    "category": "Debloat",
+    "category": "Personalização",
     "description": "Instala o Spicetify com Marketplace de temas e extensoes, ativa o bloqueador de anuncios e libera a customizacao completa do Spotify. Fecha o Spotify durante o processo.",
     "subcategory": "",
     "name": "Debloat Spotify (Spicetify)",
@@ -290,7 +276,7 @@
   {
     "id": "apps-7",
     "tags": [],
-    "category": "Debloat",
+    "category": "Personalização",
     "description": "Restaura o Spotify original removendo as modificacoes do Spicetify (adblock, temas e extensoes).",
     "subcategory": "",
     "name": "Reverter Spotify",
@@ -457,20 +443,6 @@
     "isBuiltIn": true,
     "tags": [],
     "guide": "Script interativo com 10 categorias de otimizacao. Voce escolhe o que quer aplicar: servicos, privacidade, visual, rede e mais. Otimizacao completa e segura.",
-    "riskLevel": "safe"
-  },
-  {
-    "id": "builtin-14",
-    "name": "Debloat - Chris Titus Utility",
-    "description": "Comando para baixar e executar a ferramenta de otimizacao Chris Titus Online. Util para quem quer uma abordagem externa e atualizada de debloat do Windows.",
-    "category": "Debloat",
-    "subcategory": "",
-    "content": "QGVjaG8gb2ZmCnRpdGxlIEZNIE9wdGltaXplIC0gQ2hyaXMgVGl0dXMgVXRpbGl0eQpjb2xvciAwQgpjbHMKZWNobyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KZWNobyAgICAgIENIUklTIFRJVFVTIFdJTkRPV1MgVVRJTElUWQplY2hvID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQplY2hvLgplY2hvIElzc28gdmFpIGJhaXhhciBlIGV4ZWN1dGFyIG8gc2NyaXB0IGRlCmVjaG8gb3RpbWl6YWNhbyBkbyBDaHJpcyBUaXR1cyBkaXJldGFtZW50ZQplY2hvIGRvIEdpdEh1Yi4KZWNoby4KZWNobyBEZXNlamEgY29udGludWFyPwpwYXVzZQplY2hvLgplY2hvIEJhaXhhbmRvIGUgZXhlY3V0YW5kby4uLgpwb3dlcnNoZWxsIC1Db21tYW5kICJpd3IgLXVzZWIgaHR0cHM6Ly9jaHJpc3RpdHVzLmNvbS93aW4gfCBpZXgiCmVjaG8uCnBhdXNl",
-    "extension": "bat",
-    "requiresAdmin": false,
-    "isBuiltIn": true,
-    "tags": [],
-    "guide": "Baixa e executa o Chris Titus Windows Utility, ferramenta famosa de otimizacao do Windows feita pela comunidade. Alternativa externa ao FM Optimize.",
     "riskLevel": "safe"
   },
   {

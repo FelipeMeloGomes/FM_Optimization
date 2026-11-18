@@ -5,7 +5,7 @@
 <h1 align="center">FM Optimize</h1>
 
 <p align="center">
-  <strong>100 scripts de otimização do Windows em um único app desktop.</strong><br />
+  <strong>98 scripts de otimização do Windows em um único app desktop.</strong><br />
   Desempenho, privacidade, limpeza e debloat em uma interface só.
 </p>
 
@@ -35,10 +35,10 @@
 
 ### Manutenção
 
-- **Limpeza** — arquivos temporários, cache de navegadores e atualizações do Windows, com contagem de arquivos e tamanho por categoria em tempo real.
+- **Limpeza** — lista item por item (temporários, Prefetch, Windows Update, shaders DirectX e cache de Chrome, Edge, Firefox e Brave) com tamanho em tempo real, seleção individual e um botão único para limpar o que estiver marcado.
 - **Limpeza automática** — agendamento diário, semanal ou mensal, com escolha das categorias. Com a automação ligada, fechar a janela libera a memória dela e o app continua na bandeja (~90 MB, sem renderer), podendo iniciar com o Windows já escondido e voltar na última página ao ser reaberto. Scripts finalizados com a janela fechada avisam por notificação nativa do Windows.
-- **Debloat** — remoção de bloatware do Windows (Cortana, OneDrive, Xbox, Copilot, Widgets) e dos apps Discord (Equicord + FakeNitro) e Spotify (Spicetify). O debloat de apps tem opção de reverter.
-- **Personalização** — barra de tarefas e menu Iniciar limpos, menu de contexto clássico, animações, transparência e efeitos visuais.
+- **Debloat** — inventário dos apps Appx instalados e provisionados, um por linha, com busca, abas (Todos, Recomendados e Protegidos), seleção individual ou em lote e remoção confirmada. Os nomes vêm do manifesto do Windows; componentes de sistema com nome GUID são identificados pelo caminho de instalação, em vez de aparecerem como texto quebrado. Apps de sistema, frameworks, drivers de placa de vídeo (AMD, Intel e NVIDIA) e componentes marcados como não removíveis aparecem com cadeado e são recusados pelo main mesmo se a interface insistir. Sem administrador é possível selecionar itens para consulta, mas a remoção fica bloqueada e a página oferece reiniciar como admin.
+- **Personalização** — barra de tarefas e menu Iniciar limpos, menu de contexto clássico, animações, transparência e efeitos visuais. Inclui os mods de Discord (Equicord + FakeNitro) e Spotify (Spicetify), cada um com o card de reverter ao lado.
 - **Utilitários** — SFC, DISM, CHKDSK, TRIM de SSD, limpeza do WinSxS, compactação do sistema e outros comandos de manutenção.
 - **Armazenamento** — Limpeza de Disco do Windows e otimizações de SSD, exibidas apenas quando um SSD é detectado.
 
@@ -63,7 +63,7 @@
 - **Histórico de execução** — duração, status e origem (manual ou agendada) de cada tweak. Cards aplicados ganham o selo **Aplicado**, inclusive os scripts interativos: o app espera a janela fechar e registra o código de saída real (menu fechado sem aplicar ou handoff sem desfecho fica como `—`, e fechar o console do Spotify aparece como **Interrompido pelo usuário**, não como erro).
 - **Bloqueio de páginas** — oculte páginas da barra lateral e proteja-as com senha mestra criptografada via DPAPI (Emuladores bloqueado por padrão).
 - **Atualização integrada** — download e instalação de novas versões direto do GitHub.
-- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`). Histórico, inicialização e os cards de tweaks (Desempenho, Debloat, Privacidade e Personalização) usam listas virtualizadas: só as linhas visíveis são renderizadas.
+- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`). Histórico, inicialização e os cards de tweaks (Desempenho, Privacidade e Personalização) usam listas virtualizadas: só as linhas visíveis são renderizadas.
 - **Atalhos** — `Ctrl+1`…`Ctrl+9` navegam entre páginas e `Ctrl+,` abre as Configurações.
 
 ## Tecnologias
@@ -160,6 +160,6 @@ src/
   contexts/    # estado de sistema, scripts, histórico e configurações
   components/  # UI reutilizável
 resources/
-  scripts.json # catálogo dos 100 scripts
+  scripts.json # catálogo dos 98 scripts
   icon.svg
 ```

@@ -1,31 +1,216 @@
-import { PackageX } from 'lucide-react';
-import { ConfirmDialog } from '../components/ConfirmDialog';
-import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
-import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
-import { useScriptPage } from '../hooks/use-script-page';
-import { DEBLOAT_SECTIONS } from '../lib/app-sections';
+import {
+  Loader2,
+  Lock,
+  Package,
+  PackageX,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { AppxPackageInfo } from '../../electron/shared/ipc-types';
+import { ConfirmRemoveAppsDialog } from '../components/ConfirmRemoveAppsDialog';
+import { showEnhancedToast } from '../components/EnhancedToast';
+import { Button, Input, Tabs } from '../components/ui';
+import { useSettingsContext } from '../contexts/SettingsContext';
+import { useAppxInventory } from '../hooks/use-appx-inventory';
+import { cn } from '../lib/utils';
 
+const SKELETON_ROWS = 7;
+
+type TabId = 'all' | 'recommended' | 'protected';
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
+function plural(count: number, singular: string, pluralForm: string): string {
+  return `${count} ${count === 1 ? singular : pluralForm}`;
+}
+
+function matchesQuery(app: AppxPackageInfo, query: string): boolean {
+  if (query === '') return true;
+  const needle = query.toLowerCase();
+  return (
+    app.displayName.toLowerCase().includes(needle) ||
+    app.packageName.toLowerCase().includes(needle) ||
+    app.familyName.toLowerCase().includes(needle)
+  );
+}
+
+function isInTab(app: AppxPackageInfo, tab: TabId): boolean {
+  if (tab === 'recommended') return app.recommended;
+  if (tab === 'protected') return !app.removable;
+  return true;
+}
+
+/**
+ * Página Debloat: inventário dos apps Appx do Windows, um por linha.
+ *
+ * A lista mostra todos os apps (Store, UWP e componentes), mas apps de sistema,
+ * frameworks e `NonRemovable` aparecem com cadeado e sem checkbox. A remoção
+ * vai para o main só como PackageFamilyName; o main resolve os nomes e recusa
+ * protegidos mesmo que a UI insista.
+ */
 export default function DebloatPage() {
-  const {
-    state,
-    categoryScripts: debloatScripts,
-    activeExecution,
-    handleCancel,
-    handleConfirmExecute,
-    confirmScript,
-    setConfirmScript,
-    handleConfirm,
-  } = useScriptPage('Debloat');
+  const { inventory, loading, error, isRefreshing, lastRefreshed, refresh, remove } =
+    useAppxInventory();
+  const { settings } = useSettingsContext();
 
-  if (state.status === 'loading') {
+  const [query, setQuery] = useState('');
+  const [tab, setTab] = useState<TabId>('all');
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [elevating, setElevating] = useState(false);
+
+  const packages = inventory?.packages ?? [];
+  const isAdmin = inventory?.elevated ?? false;
+
+  // Uma nova varredura pode remover um app da lista: não deixe uma seleção
+  // órfã habilitar o botão de remover.
+  useEffect(() => {
+    setSelected((previous) => {
+      const selectable = new Set(
+        packages.filter((app) => app.removable).map((app) => app.familyName)
+      );
+      const next = [...previous].filter((family) => selectable.has(family));
+      return next.length === previous.size ? previous : new Set(next);
+    });
+  }, [packages]);
+
+  const searched = useMemo(
+    () => packages.filter((app) => matchesQuery(app, query.trim())),
+    [packages, query]
+  );
+  const visible = useMemo(() => searched.filter((app) => isInTab(app, tab)), [searched, tab]);
+
+  const counts = useMemo(
+    () => ({
+      all: packages.length,
+      recommended: packages.filter((app) => app.recommended).length,
+      protected: packages.filter((app) => !app.removable).length,
+    }),
+    [packages]
+  );
+
+  const selectedApps = useMemo(
+    () => packages.filter((app) => selected.has(app.familyName)),
+    [packages, selected]
+  );
+
+  const toggle = useCallback((familyName: string) => {
+    setSelected((previous) => {
+      const next = new Set(previous);
+      if (next.has(familyName)) next.delete(familyName);
+      else next.add(familyName);
+      return next;
+    });
+  }, []);
+
+  const selectRecommended = useCallback(() => {
+    const recommended = packages.filter((app) => app.recommended && app.removable);
+    if (recommended.length === 0) {
+      showEnhancedToast({
+        type: 'info',
+        title: 'Nenhum app recomendado',
+        description: 'Os apps da lista curada não estão instalados neste Windows.',
+        duration: 'medium',
+        sound: settings.soundEnabled,
+      });
+      return;
+    }
+    setSelected(new Set(recommended.map((app) => app.familyName)));
+  }, [packages, settings.soundEnabled]);
+
+  const runRemove = useCallback(
+    async (families: string[]) => {
+      setConfirmOpen(false);
+      setRemoving(true);
+      try {
+        const result = await remove(families);
+        setSelected(new Set());
+
+        const names = result.failed.map(
+          (failure) =>
+            packages.find((app) => app.familyName === failure.familyName)?.displayName ??
+            failure.familyName
+        );
+
+        if (result.failed.length > 0) {
+          showEnhancedToast({
+            type: 'warning',
+            title: result.removed.length > 0 ? 'Remoção parcial' : 'Nenhum app removido',
+            description: `${plural(result.removed.length, 'app removido', 'apps removidos')}${
+              names.length > 0 ? ` · Falhou: ${names.join(', ')}` : ''
+            }. Alguns apps podem ser reinstalados pelo Windows.`,
+            duration: 'long',
+            sound: settings.soundEnabled,
+          });
+        } else {
+          showEnhancedToast({
+            type: 'success',
+            title: 'Apps removidos',
+            description: `${plural(result.removed.length, 'app removido', 'apps removidos')} do Windows.`,
+            duration: 'long',
+            sound: settings.soundEnabled,
+          });
+        }
+      } catch (e) {
+        showEnhancedToast({
+          type: 'error',
+          title: 'Falha ao remover apps',
+          description: errorMessage(e),
+          duration: 'long',
+          sound: settings.soundEnabled,
+        });
+      } finally {
+        setRemoving(false);
+      }
+    },
+    [remove, packages, settings.soundEnabled]
+  );
+
+  const requestRemove = useCallback(() => {
+    if (selectedApps.length === 0 || removing || !isAdmin) return;
+    const families = selectedApps.map((app) => app.familyName);
+    if (settings.confirmOnExecute) {
+      setConfirmOpen(true);
+      return;
+    }
+    void runRemove(families);
+  }, [selectedApps, removing, isAdmin, settings.confirmOnExecute, runRemove]);
+
+  const relaunchAsAdmin = useCallback(async () => {
+    setElevating(true);
+    try {
+      await window.electronAPI.elevateApp(undefined, undefined, undefined, true);
+    } catch (e) {
+      showEnhancedToast({
+        type: 'error',
+        title: 'Não foi possível reiniciar como admin',
+        description: errorMessage(e),
+        duration: 'long',
+        sound: settings.soundEnabled,
+      });
+    } finally {
+      setElevating(false);
+    }
+  }, [settings.soundEnabled]);
+
+  if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" aria-busy="true" role="status">
         <div className="h-24 rounded-xl bg-muted animate-pulse" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {Array.from({ length: DEBLOAT_SECTIONS.length }).map((_, i) => (
-            <ScriptCardSkeleton
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
-              key={`skeleton-${i}`}
+        <div className="h-14 rounded-xl bg-muted animate-pulse" />
+        <div className="space-y-2 rounded-xl border border-border bg-card p-4">
+          {Array.from({ length: SKELETON_ROWS }).map((_, index) => (
+            <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: placeholders estáticos, ordem fixa
+              key={`debloat-row-skeleton-${index}`}
+              className="h-10 animate-pulse rounded-lg bg-muted"
             />
           ))}
         </div>
@@ -33,58 +218,257 @@ export default function DebloatPage() {
     );
   }
 
-  if (state.status === 'error') {
+  if (error && packages.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
-        <p className="text-sm">Erro ao carregar tweaks</p>
-        <p className="text-xs text-destructive">{state.error}</p>
+      <div
+        className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground"
+        role="alert"
+      >
+        <p className="text-sm">Erro ao carregar o inventário de apps</p>
+        <p className="text-xs text-destructive">{error}</p>
+        <Button variant="outline" size="sm" onClick={() => void refresh()}>
+          Tentar de novo
+        </Button>
       </div>
     );
   }
+
+  const tabs = [
+    { id: 'all', label: 'Todos', count: counts.all },
+    { id: 'recommended', label: 'Recomendados', count: counts.recommended },
+    { id: 'protected', label: 'Protegidos', count: counts.protected },
+  ];
 
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
       <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
         <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <PackageX className="size-28 text-primary" />
+          <PackageX className="size-28 text-primary" aria-hidden="true" />
         </div>
         <div className="relative p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <PackageX className="size-4 text-primary" />
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-              Debloat
-            </span>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <PackageX className="size-4 text-primary" aria-hidden="true" />
+                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                  Debloat
+                </span>
+              </div>
+              <h2 className="text-lg font-bold text-foreground">Debloat de apps do Windows</h2>
+              <p className="text-sm text-muted-foreground mt-1 max-w-lg">
+                Inventário dos apps Appx instalados e provisionados. Selecione o que não usa — apps
+                de sistema e frameworks ficam protegidos e não podem ser removidos.
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void refresh()}
+              disabled={isRefreshing}
+              aria-label="Atualizar inventário"
+              className="shrink-0 gap-1.5"
+            >
+              <RefreshCw
+                className={cn('size-3.5', isRefreshing && 'animate-spin')}
+                aria-hidden="true"
+              />
+              <span className="text-xs">{isRefreshing ? 'Varrendo...' : 'Atualizar'}</span>
+            </Button>
           </div>
-          <h2 className="text-lg font-bold text-foreground">Debloat do sistema e dos apps</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Remova o bloatware pré-instalado do Windows e dê um debloat no Discord e no Spotify com
-            um clique. Todos os ajustes de app incluem opção de reverter.
-          </p>
+          {lastRefreshed > 0 && (
+            <p className="mt-2 text-[10px] text-muted-foreground">
+              A varredura usa PowerShell e pode levar até 1 minuto.
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Debloat Sections */}
-      {DEBLOAT_SECTIONS.map((section) => (
-        <VirtualizedSectionCard
-          key={section.id}
-          section={section}
-          scripts={debloatScripts}
-          activeExecution={activeExecution}
-          onCancel={handleCancel}
-          onConfirmExecute={handleConfirmExecute}
-        />
-      ))}
+      {error && packages.length > 0 && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2"
+        >
+          <p className="flex-1 text-xs text-destructive">
+            Não foi possível atualizar o inventário: {error}
+          </p>
+          <Button variant="ghost" size="sm" onClick={() => void refresh()}>
+            Tentar de novo
+          </Button>
+        </div>
+      )}
 
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        open={!!confirmScript}
-        onOpenChange={(open) => {
-          if (!open) setConfirmScript(null);
-        }}
-        script={confirmScript}
-        onConfirm={handleConfirm}
-        isExecuting={!!confirmScript && activeExecution === confirmScript.id}
+      {!isAdmin && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+          <Lock className="size-4 shrink-0 text-amber-400" aria-hidden="true" />
+          <p className="flex-1 text-xs text-amber-400">
+            Remover apps precisa de administrador. O inventário continua visível para consulta.
+          </p>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => void relaunchAsAdmin()}
+            disabled={elevating}
+            className="gap-1.5"
+          >
+            <ShieldCheck className="size-3.5" aria-hidden="true" />
+            Reiniciar como admin
+          </Button>
+        </div>
+      )}
+
+      <section aria-label="Apps do Windows" className="space-y-3">
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:max-w-xs">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              aria-label="Buscar apps"
+              placeholder="Buscar por nome ou pacote…"
+              className="pl-9"
+            />
+          </div>
+          <Tabs items={tabs} value={tab} onChange={(id) => setTab(id as TabId)} />
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={selectRecommended} className="gap-1.5">
+              <Sparkles className="size-3.5" aria-hidden="true" />
+              Selecionar recomendados
+            </Button>
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {selected.size === 0
+                ? 'Nenhum selecionado'
+                : plural(selected.size, 'selecionado', 'selecionados')}
+            </span>
+          </div>
+          <Button
+            size="sm"
+            onClick={requestRemove}
+            disabled={selectedApps.length === 0 || removing || !isAdmin}
+            className="gap-1.5"
+          >
+            {removing ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                Removendo...
+              </>
+            ) : (
+              <>
+                <PackageX className="size-3.5" aria-hidden="true" />
+                Remover selecionados
+              </>
+            )}
+          </Button>
+        </div>
+
+        {visible.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-card px-4 py-12 text-center">
+            <p className="text-sm text-muted-foreground">Nenhum app encontrado</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Ajuste a busca ou troque de aba para ver outros apps.
+            </p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+            {visible.map((app) => {
+              const locked = !app.removable;
+              const checked = selected.has(app.familyName);
+              const checkboxId = `appx-${app.familyName}`;
+
+              const rowContent = (
+                <>
+                  {locked ? (
+                    <span
+                      title={app.protectionReason ?? 'App protegido'}
+                      className="flex size-4 shrink-0 items-center justify-center"
+                    >
+                      <Lock className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                    </span>
+                  ) : (
+                    <input
+                      id={checkboxId}
+                      type="checkbox"
+                      className="size-4 shrink-0 accent-primary"
+                      checked={checked}
+                      onChange={() => toggle(app.familyName)}
+                      disabled={removing}
+                      aria-label={`Selecionar ${app.displayName}`}
+                    />
+                  )}
+
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <Package className="size-4 text-muted-foreground" aria-hidden="true" />
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="truncate text-sm font-medium text-foreground">
+                        {app.displayName}
+                      </span>
+                      {app.recommended && (
+                        <span className="shrink-0 rounded bg-primary/15 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                          Recomendado
+                        </span>
+                      )}
+                      {app.isProvisioned && (
+                        <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
+                          Provisão
+                        </span>
+                      )}
+                      {locked && (
+                        <span className="shrink-0 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-400">
+                          Protegido
+                        </span>
+                      )}
+                    </div>
+                    <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+                      {app.packageName}
+                    </span>
+                  </div>
+
+                  <span className="shrink-0 text-right text-[11px] text-muted-foreground tabular-nums">
+                    {app.version || '—'}
+                  </span>
+                </>
+              );
+
+              const rowClass = cn(
+                'flex w-full items-center gap-3 px-4 py-3 transition-colors',
+                !locked && !removing && 'cursor-pointer hover:bg-muted/40',
+                locked && 'opacity-70',
+                checked && 'bg-primary/5'
+              );
+
+              // Label associa a linha inteira ao checkbox: clicar no nome ou no
+              // ícone seleciona, e o clique no próprio checkbox não duplica.
+              return (
+                <li key={app.familyName}>
+                  {locked ? (
+                    <div className={rowClass}>{rowContent}</div>
+                  ) : (
+                    <label htmlFor={checkboxId} className={rowClass}>
+                      {rowContent}
+                    </label>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      <ConfirmRemoveAppsDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        apps={selectedApps}
+        onConfirm={() => void runRemove(selectedApps.map((app) => app.familyName))}
       />
     </div>
   );

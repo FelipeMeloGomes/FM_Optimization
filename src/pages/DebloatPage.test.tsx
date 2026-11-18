@@ -1,116 +1,320 @@
-// @vitest-environment node
-import { renderToStaticMarkup } from 'react-dom/server';
+// @vitest-environment jsdom
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
+import type {
+  AppxInventory,
+  AppxPackageInfo,
+  AppxRemoveResult,
+} from '../../electron/shared/ipc-types';
 
 /**
- * Regressão da página Debloat: hero, seções de bloatware/Discord/Spotify,
- * esqueleto de carregamento e erro. `use-script-page` e `use-is-script-applied`
- * são mockados na fronteira; o componente, as seções e a montagem são reais.
+ * A página Debloat é um inventário: uma linha por app Appx, com busca, abas,
+ * seleção individual/em lote e remoção confirmada. Os testes cobrem o que a
+ * pessoa vê e o que é enviado ao main (famílias, nunca comandos).
  */
 
-vi.mock('../hooks/use-script-page', () => ({
-  useScriptPage: () => ({
-    state: store.page,
-    categoryScripts: store.scripts,
-    activeExecution: null,
-    handleExecute: () => {},
-    handleCancel: () => {},
-    handleConfirmExecute: () => {},
-    confirmScript: null,
-    setConfirmScript: () => {},
-    handleConfirm: () => {},
+const XBOX = 'Microsoft.XboxGamingOverlay_8wekyb3d8bbwe';
+const STORE = 'Microsoft.WindowsStore_8wekyb3d8bbwe';
+const GAME_BAR = 'Microsoft.XboxGamingOverlay';
+
+const state = vi.hoisted(() => ({
+  inventory: null as AppxInventory | null,
+  loading: false,
+  error: null as string | null,
+  isRefreshing: false,
+  lastRefreshed: 0,
+  refresh: vi.fn(async () => {}),
+  remove: vi.fn<(families: string[]) => Promise<AppxRemoveResult>>(),
+  toasts: [] as { type: string; title: string; description?: string }[],
+  confirmOnExecute: true,
+  elevate: vi.fn(async () => ({ launched: true, cancelled: false })),
+}));
+
+vi.mock('../hooks/use-appx-inventory', () => ({
+  useAppxInventory: () => ({
+    inventory: state.inventory,
+    loading: state.loading,
+    error: state.error,
+    isRefreshing: state.isRefreshing,
+    lastRefreshed: state.lastRefreshed,
+    refresh: state.refresh,
+    remove: state.remove,
   }),
 }));
 
-vi.mock('../hooks/use-is-script-applied', () => ({
-  useIsScriptApplied: () => () => false,
+vi.mock('../components/EnhancedToast', () => ({
+  showEnhancedToast: (options: { type: string; title: string; description?: string }) => {
+    state.toasts.push(options);
+  },
+}));
+
+vi.mock('../contexts/SettingsContext', () => ({
+  useSettingsContext: () => ({
+    settings: { soundEnabled: false, confirmOnExecute: state.confirmOnExecute },
+  }),
 }));
 
 import DebloatPage from './DebloatPage';
 
-const store = vi.hoisted<{ page: AsyncState<ScriptEntry[]>; scripts: ScriptEntry[] }>(() => ({
-  page: { status: 'success', data: [] },
-  scripts: [],
-}));
-
-function script(id: string, name: string, category = 'Debloat'): ScriptEntry {
+function app(overrides: Partial<AppxPackageInfo> = {}): AppxPackageInfo {
   return {
-    id,
-    name,
-    description: `${name} — desc`,
-    category,
-    subcategory: '',
-    content: '',
-    extension: 'ps1',
-    requiresAdmin: false,
-    isBuiltIn: true,
-    tags: [] as string[],
+    familyName: XBOX,
+    packageName: GAME_BAR,
+    displayName: 'Xbox Game Bar',
+    version: '1.0.0.0',
+    publisher: 'CN=Microsoft',
+    isFramework: false,
+    isProvisioned: false,
+    removable: true,
+    recommended: true,
+    ...overrides,
   };
 }
 
-function text(html: string): string {
-  return html
-    .replace(/<!--.*?-->/g, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+const PROTECTED_STORE = app({
+  familyName: STORE,
+  packageName: 'Microsoft.WindowsStore',
+  displayName: 'Microsoft Store',
+  removable: false,
+  protectionReason: 'Componente essencial do Windows',
+  recommended: false,
+});
 
-function render(): string {
-  return text(renderToStaticMarkup(<DebloatPage />));
+const SOLITAIRE = app({
+  familyName: 'Microsoft.MicrosoftSolitaireCollection_8wekyb3d8bbwe',
+  packageName: 'Microsoft.MicrosoftSolitaireCollection',
+  displayName: 'Paciência',
+  recommended: false,
+});
+
+const PHOTOS = app({
+  familyName: 'Microsoft.Windows.Photos_8wekyb3d8bbwe',
+  packageName: 'Microsoft.Windows.Photos',
+  displayName: 'Fotos',
+  recommended: false,
+});
+
+function inventory(packages: AppxPackageInfo[], elevated = true): AppxInventory {
+  return { packages, elevated, scannedAt: 1000 };
 }
 
 beforeEach(() => {
-  store.page = { status: 'success', data: [] };
-  store.scripts = [];
+  state.inventory = inventory([app(), PROTECTED_STORE, SOLITAIRE, PHOTOS]);
+  state.loading = false;
+  state.error = null;
+  state.isRefreshing = false;
+  state.lastRefreshed = 0;
+  state.confirmOnExecute = true;
+  state.toasts = [];
+  state.refresh.mockClear();
+  state.remove.mockReset();
+  state.remove.mockResolvedValue({ removed: [XBOX], failed: [] });
+  state.elevate.mockClear();
+  (window as unknown as { electronAPI: unknown }).electronAPI = {
+    elevateApp: state.elevate,
+  };
 });
 
-describe('DebloatPage', () => {
-  it('mostra o esqueleto enquanto carrega', () => {
-    store.page = { status: 'loading' };
+describe('DebloatPage — carregamento e erro', () => {
+  it('mostra o esqueleto enquanto o inventário carrega', () => {
+    state.loading = true;
+    state.inventory = null;
 
-    const html = renderToStaticMarkup(<DebloatPage />);
+    const { container } = render(<DebloatPage />);
 
-    expect(html).toContain('animate-pulse');
-    expect(text(html)).not.toContain('Debloat do sistema e dos apps');
+    expect(container.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Debloat de apps do Windows')).toBeNull();
   });
 
-  it('mostra o erro quando o catálogo falha', () => {
-    store.page = { status: 'error', error: 'scripts.json ilegível' };
+  it('mostra o erro e permite tentar de novo', () => {
+    state.error = 'PowerShell indisponível';
+    state.inventory = null;
 
-    const html = text(render());
+    render(<DebloatPage />);
 
-    expect(html).toContain('Erro ao carregar tweaks');
-    expect(html).toContain('scripts.json ilegível');
+    expect(screen.getByText('Erro ao carregar o inventário de apps')).not.toBeNull();
+    expect(screen.getByText('PowerShell indisponível')).not.toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(state.refresh).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('DebloatPage — inventário', () => {
+  it('lista uma linha por app com nome, pacote e selo de protegido', () => {
+    render(<DebloatPage />);
+
+    expect(screen.getByText('Debloat de apps do Windows')).not.toBeNull();
+    expect(screen.getByText('Xbox Game Bar')).not.toBeNull();
+    expect(screen.getAllByText(GAME_BAR).length).toBeGreaterThan(0);
+    expect(screen.getByText('Microsoft Store')).not.toBeNull();
+    expect(screen.getByText('Protegido')).not.toBeNull();
+
+    // Protegidos aparecem, mas não ganham checkbox.
+    expect(screen.getByLabelText('Selecionar Xbox Game Bar')).not.toBeNull();
+    expect(screen.queryByLabelText('Selecionar Microsoft Store')).toBeNull();
   });
 
-  it('renderiza o herói e as três seções com seus nomes', () => {
-    store.scripts = [
-      script('apps-3', 'App 1'),
-      script('builtin-14', 'App 2'),
-      script('apps-4', 'Discord'),
-      script('apps-5', 'Reverter Discord'),
-      script('apps-6', 'Spotify'),
-      script('apps-7', 'Reverter Spotify'),
-    ];
+  it('busca por nome ou package family', () => {
+    render(<DebloatPage />);
 
-    const html = render();
+    const search = screen.getByLabelText('Buscar apps');
+    fireEvent.change(search, { target: { value: 'fotos' } });
 
-    expect(html).toContain('Debloat do sistema e dos apps');
-    expect(html).toContain('Remova o bloatware pré-instalado');
-    expect(html).toContain('Remover Bloatware');
-    expect(html).toContain('Discord');
-    expect(html).toContain('Spotify');
-    expect(html).not.toContain('animate-pulse');
+    expect(screen.getByText('Fotos')).not.toBeNull();
+    expect(screen.queryByText('Xbox Game Bar')).toBeNull();
+
+    fireEvent.change(search, { target: { value: 'XboxGamingOverlay' } });
+    expect(screen.getByText('Xbox Game Bar')).not.toBeNull();
+    expect(screen.queryByText('Fotos')).toBeNull();
   });
 
-  it('lista cada script da seção com nome e descrição', () => {
-    store.scripts = [script('apps-3', 'Remover Bloatware')];
+  it('filtra pelas abas Recomendados e Protegidos', () => {
+    render(<DebloatPage />);
 
-    const html = render();
+    fireEvent.click(screen.getByRole('tab', { name: /Recomendados/ }));
+    expect(screen.getByText('Xbox Game Bar')).not.toBeNull();
+    expect(screen.queryByText('Paciência')).toBeNull();
+    expect(screen.queryByText('Microsoft Store')).toBeNull();
 
-    expect(html).toContain('Remover Bloatware');
-    expect(html).toContain('Remover Bloatware — desc');
+    fireEvent.click(screen.getByRole('tab', { name: /Protegidos/ }));
+    expect(screen.getByText('Microsoft Store')).not.toBeNull();
+    expect(screen.queryByText('Xbox Game Bar')).toBeNull();
+  });
+
+  it('mostra estado vazio quando a busca não encontra nada', () => {
+    render(<DebloatPage />);
+
+    fireEvent.change(screen.getByLabelText('Buscar apps'), {
+      target: { value: 'app que não existe' },
+    });
+
+    expect(screen.getByText('Nenhum app encontrado')).not.toBeNull();
+  });
+
+  it('atualiza o inventário pelo botão do herói', () => {
+    render(<DebloatPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Atualizar inventário' }));
+
+    expect(state.refresh).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('DebloatPage — seleção e remoção', () => {
+  it('seleciona ao clicar na linha do app, não só no checkbox', () => {
+    render(<DebloatPage />);
+
+    fireEvent.click(screen.getByText('Xbox Game Bar'));
+
+    expect(screen.getByLabelText('Selecionar Xbox Game Bar')).toHaveProperty('checked', true);
+    expect(screen.getByText('1 selecionado')).not.toBeNull();
+  });
+
+  it('seleciona individualmente e conta os selecionados', () => {
+    render(<DebloatPage />);
+
+    fireEvent.click(screen.getByLabelText('Selecionar Xbox Game Bar'));
+    expect(screen.getByText('1 selecionado')).not.toBeNull();
+
+    fireEvent.click(screen.getByLabelText('Selecionar Paciência'));
+    expect(screen.getByText('2 selecionados')).not.toBeNull();
+
+    fireEvent.click(screen.getByLabelText('Selecionar Xbox Game Bar'));
+    expect(screen.getByText('1 selecionado')).not.toBeNull();
+  });
+
+  it('"Selecionar recomendados" marca apenas os recomendados presentes', () => {
+    render(<DebloatPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Selecionar recomendados' }));
+
+    expect(screen.getByText('1 selecionado')).not.toBeNull();
+    expect(screen.getByLabelText('Selecionar Xbox Game Bar')).toHaveProperty('checked', true);
+    expect(screen.getByLabelText('Selecionar Paciência')).toHaveProperty('checked', false);
+  });
+
+  it('pede confirmação listando os apps e envia as famílias ao confirmar', async () => {
+    render(<DebloatPage />);
+
+    fireEvent.click(screen.getByLabelText('Selecionar Xbox Game Bar'));
+    fireEvent.click(screen.getByRole('button', { name: 'Remover selecionados' }));
+
+    expect(state.remove).not.toHaveBeenCalled();
+    expect(screen.getByText('Remover apps selecionados')).not.toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remover apps' }));
+
+    await waitFor(() => expect(state.remove).toHaveBeenCalledWith([XBOX]));
+    await waitFor(() => expect(state.toasts.at(-1)?.type).toBe('success'));
+  });
+
+  it('remove direto quando a confirmação está desligada', async () => {
+    state.confirmOnExecute = false;
+    render(<DebloatPage />);
+
+    fireEvent.click(screen.getByLabelText('Selecionar Xbox Game Bar'));
+    fireEvent.click(screen.getByRole('button', { name: 'Remover selecionados' }));
+
+    await waitFor(() => expect(state.remove).toHaveBeenCalledWith([XBOX]));
+    expect(screen.queryByText('Remover apps selecionados')).toBeNull();
+  });
+
+  it('avisa quando parte da remoção falha', async () => {
+    state.remove.mockResolvedValue({
+      removed: [XBOX],
+      failed: [{ familyName: SOLITAIRE.familyName, error: 'pacote em uso' }],
+    });
+    state.confirmOnExecute = false;
+    render(<DebloatPage />);
+
+    fireEvent.click(screen.getByLabelText('Selecionar Xbox Game Bar'));
+    fireEvent.click(screen.getByRole('button', { name: 'Remover selecionados' }));
+
+    await waitFor(() => expect(state.toasts.at(-1)?.type).toBe('warning'));
+    expect(state.toasts.at(-1)?.description).toContain('reinstalad');
+  });
+
+  it('mostra erro quando o main recusa a remoção', async () => {
+    state.remove.mockRejectedValue(new Error('requer administrador'));
+    state.confirmOnExecute = false;
+    render(<DebloatPage />);
+
+    fireEvent.click(screen.getByLabelText('Selecionar Xbox Game Bar'));
+    fireEvent.click(screen.getByRole('button', { name: 'Remover selecionados' }));
+
+    await waitFor(() => expect(state.toasts.at(-1)?.type).toBe('error'));
+    expect(state.toasts.at(-1)?.description).toContain('administrador');
+  });
+});
+
+describe('DebloatPage — sem administrador', () => {
+  it('permite selecionar para consulta sem admin, mas mantém a remoção bloqueada', () => {
+    state.inventory = inventory([app(), PROTECTED_STORE], false);
+    render(<DebloatPage />);
+
+    fireEvent.click(screen.getByLabelText('Selecionar Xbox Game Bar'));
+
+    expect(screen.getByLabelText('Selecionar Xbox Game Bar')).toHaveProperty('disabled', false);
+    expect(screen.getByText('1 selecionado')).not.toBeNull();
+    expect(
+      (screen.getByRole('button', { name: 'Remover selecionados' }) as HTMLButtonElement).disabled
+    ).toBe(true);
+  });
+
+  it('lista os apps, avisa e bloqueia a remoção até reiniciar como admin', () => {
+    state.inventory = inventory([app(), PROTECTED_STORE], false);
+    render(<DebloatPage />);
+
+    expect(screen.getByText('Xbox Game Bar')).not.toBeNull();
+    expect(screen.getByText(/precisa de administrador/i)).not.toBeNull();
+
+    fireEvent.click(screen.getByLabelText('Selecionar Xbox Game Bar'));
+    expect(
+      (screen.getByRole('button', { name: 'Remover selecionados' }) as HTMLButtonElement).disabled
+    ).toBe(true);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reiniciar como admin' }));
+    expect(state.elevate).toHaveBeenCalledWith(undefined, undefined, undefined, true);
   });
 });

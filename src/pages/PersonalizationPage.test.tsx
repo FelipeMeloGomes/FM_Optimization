@@ -88,14 +88,16 @@ describe('PersonalizationPage', () => {
     expect(html).toContain('falha ao ler catalogo');
   });
 
-  it('renderiza o herói e as duas seções com seus nomes', () => {
+  it('renderiza o herói e as seções com seus nomes', () => {
     store.scripts = [script('tweaks-1', 'Tarefa 1'), script('tweaks-2', 'Efeito 1')];
 
     const html = render();
 
-    expect(html).toContain('Aparência do Windows');
+    expect(html).toContain('Aparência e mods de apps');
     expect(html).toContain('Barra de tarefas e menus');
     expect(html).toContain('Efeitos visuais');
+    expect(html).toContain('Discord');
+    expect(html).toContain('Spotify');
     expect(html).not.toContain('animate-pulse');
   });
 

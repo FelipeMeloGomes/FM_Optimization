@@ -1,5 +1,7 @@
 export type CpuVendor = 'intel' | 'amd' | 'unknown';
 
+import type { CleanerItemGroup, CleanerItemId } from './cleaner-items';
+
 export interface CpuInfo {
   /** Nome padronizado para exibição (ex.: "AMD Ryzen 7 5700X"). */
   model: string;
@@ -369,18 +371,68 @@ export interface StartupStopServicePayload {
   id: string;
 }
 
-export interface CleanerCategoryStats {
+/** Item limpável, como aparece na lista da página de limpeza. */
+export interface CleanerItemStats {
+  id: CleanerItemId;
   label: string;
+  description: string;
+  group: CleanerItemGroup;
+  requiresAdmin: boolean;
   fileCount: number;
   totalSizeBytes: number;
+  /** A varredura deste item falhou; o tamanho exibido não é confiável. */
+  error?: boolean;
 }
 
-export interface CleanerStats {
-  fileCount: number;
-  totalSizeBytes: number;
-  estimatedSeconds: number;
-  categories: CleanerCategoryStats[];
-  error?: boolean;
+export interface CleanItemResult {
+  id: CleanerItemId;
+  label: string;
+  freedBytes: number;
+  removedFiles: number;
+  error?: string;
+}
+
+export interface CleanItemsResult {
+  items: CleanItemResult[];
+  freedBytes: number;
+  removedFiles: number;
+  failed: number;
+}
+
+/** App Appx (Store/UWP) como aparece no inventário da página Debloat. */
+export interface AppxPackageInfo {
+  /** PackageFamilyName — identidade estável usada em toda a UI e no IPC. */
+  familyName: string;
+  /** Package Name sem versão/arquitetura (ex.: Microsoft.XboxGamingOverlay). */
+  packageName: string;
+  /** Nome amigável para exibição; cai para o package name quando desconhecido. */
+  displayName: string;
+  version: string;
+  publisher: string;
+  isFramework: boolean;
+  isProvisioned: boolean;
+  /** Falso para apps de sistema, frameworks e NonRemovable. */
+  removable: boolean;
+  protectionReason?: string;
+  /** Está na lista curada de bloatware e pode ser removido. */
+  recommended: boolean;
+}
+
+export interface AppxInventory {
+  packages: AppxPackageInfo[];
+  /** false quando a varredura caiu para o usuário atual (sem admin). */
+  elevated: boolean;
+  scannedAt: number;
+}
+
+export interface AppxRemoveFailure {
+  familyName: string;
+  error: string;
+}
+
+export interface AppxRemoveResult {
+  removed: string[];
+  failed: AppxRemoveFailure[];
 }
 
 export interface IpcResult<T = void> {
@@ -472,7 +524,10 @@ export interface ElectronAPI {
   adbClearRemoved(packageName: string): Promise<void>;
   adbClearRemovedHistory(): Promise<void>;
   adbListInstances(emulatorId: string): Promise<AdbInstance[]>;
-  getCleanerStats(cleanerId: string): Promise<CleanerStats>;
+  getCleanerItemsStats(): Promise<CleanerItemStats[]>;
+  cleanItems(ids: CleanerItemId[]): Promise<CleanItemsResult>;
+  getAppxInventory(refresh?: boolean): Promise<AppxInventory>;
+  removeAppxPackages(families: string[]): Promise<AppxRemoveResult>;
   getEssentials(): Promise<EssentialListItem[]>;
   openEssentialPage(id: string): Promise<void>;
   installEssential(id: string): Promise<EssentialInstallResult>;

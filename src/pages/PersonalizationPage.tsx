@@ -56,10 +56,10 @@ export default function PersonalizationPage() {
               Personalização
             </span>
           </div>
-          <h2 className="text-lg font-bold text-foreground">Aparência do Windows</h2>
+          <h2 className="text-lg font-bold text-foreground">Aparência e mods de apps</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Ajuste a barra de tarefas, o menu de contexto e os efeitos visuais. Estes scripts
-            personalizam a interface — não removem programas nem alteram a proteção do sistema.
+            Ajuste a barra de tarefas, o menu de contexto e os efeitos visuais, ou aplique mods no
+            Discord e no Spotify. Os mods de apps incluem a opção de reverter.
           </p>
         </div>
       </div>

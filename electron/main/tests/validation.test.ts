@@ -35,6 +35,60 @@ describe('IpcSchemas', () => {
   });
 });
 
+describe('CleanItemsSchema', () => {
+  it('aceita ids conhecidos do catálogo', () => {
+    const schema = IpcSchemas['clean-items'];
+    expect(schema.safeParse({ ids: ['chrome', 'temp-user'] }).success).toBe(true);
+  });
+
+  it('rejeita lista vazia', () => {
+    const schema = IpcSchemas['clean-items'];
+    expect(schema.safeParse({ ids: [] }).success).toBe(false);
+  });
+
+  it('rejeita id fora do catálogo', () => {
+    const schema = IpcSchemas['clean-items'];
+    expect(schema.safeParse({ ids: ['C:\\Windows'] }).success).toBe(false);
+  });
+
+  it('rejeita payload sem ids', () => {
+    const schema = IpcSchemas['clean-items'];
+    expect(schema.safeParse({}).success).toBe(false);
+  });
+
+  it('valida get-cleaner-items-stats sem entrada', () => {
+    const schema = IpcSchemas['get-cleaner-items-stats'];
+    expect(schema.safeParse(undefined).success).toBe(true);
+  });
+});
+
+describe('Appx schemas', () => {
+  it('aceita refresh opcional no inventário', () => {
+    const schema = IpcSchemas['appx:get-inventory'];
+    expect(schema.safeParse(undefined).success).toBe(true);
+    expect(schema.safeParse(true).success).toBe(true);
+    expect(schema.safeParse(false).success).toBe(true);
+  });
+
+  it('aceita lista de famílias com nome e publisher id', () => {
+    const schema = IpcSchemas['appx:remove'];
+    expect(
+      schema.safeParse({ families: ['Microsoft.XboxGamingOverlay_8wekyb3d8bbwe'] }).success
+    ).toBe(true);
+  });
+
+  it('rejeita lista vazia, família com aspas e mais de 50 apps', () => {
+    const schema = IpcSchemas['appx:remove'];
+    expect(schema.safeParse({ families: [] }).success).toBe(false);
+    expect(schema.safeParse({ families: ["Microsoft.App'; calc"] }).success).toBe(false);
+    expect(
+      schema.safeParse({
+        families: Array.from({ length: 51 }, (_, i) => `Microsoft.App${i}_8wekyb3d8bbwe`),
+      }).success
+    ).toBe(false);
+  });
+});
+
 describe('validateIpcInput', () => {
   it('returns success for known channel with valid input', () => {
     const result = validateIpcInput('execute-script', 'intel-30');

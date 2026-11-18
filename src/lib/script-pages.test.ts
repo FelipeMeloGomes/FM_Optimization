@@ -1,7 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import { DEBLOAT_SECTIONS } from './app-sections';
 import { CATEGORY_ROUTES, getScriptRoute } from './category-routes';
 import { PERFORMANCE_SECTIONS } from './performance-sections';
 import { PERSONALIZATION_SECTIONS } from './personalization-sections';
@@ -52,7 +51,6 @@ describe('cada script mora em uma unica pagina', () => {
 
   it('nenhum script aparece em duas paginas', () => {
     const sectioned = [
-      ...idsOf(DEBLOAT_SECTIONS),
       ...idsOf(PRIVACY_SECTIONS),
       ...idsOf(PERSONALIZATION_SECTIONS),
       ...idsOf(UTIL_SECTIONS),
@@ -63,7 +61,6 @@ describe('cada script mora em uma unica pagina', () => {
   it('todo id de card existe no catalogo', () => {
     const known = new Set(scripts.map((script) => script.id));
     const missing = [
-      ...idsOf(DEBLOAT_SECTIONS),
       ...idsOf(PRIVACY_SECTIONS),
       ...idsOf(PERSONALIZATION_SECTIONS),
       ...idsOf(UTIL_SECTIONS),
@@ -71,8 +68,11 @@ describe('cada script mora em uma unica pagina', () => {
     expect(missing).toEqual([]);
   });
 
-  it('os cards da pagina Debloat cobrem exatamente a categoria Debloat', () => {
-    expect(idsOf(DEBLOAT_SECTIONS)).toEqual(idsInCategory('Debloat'));
+  it('o catalogo nao tem mais a categoria Debloat', () => {
+    // A pagina /debloat agora e um inventario de apps Appx, nao uma lista de
+    // scripts: `useScriptPage` nao filtra mais nada por essa categoria.
+    expect(idsInCategory('Debloat')).toEqual([]);
+    expect(Object.keys(CATEGORY_ROUTES)).not.toContain('Debloat');
   });
 
   it('os cards da pagina Personalizacao cobrem exatamente a categoria Personalizacao', () => {
@@ -108,7 +108,7 @@ describe('cada script mora em uma unica pagina', () => {
 
   it('a busca manda cada script para a pagina onde ele aparece', () => {
     expect(getScriptRoute({ id: 'apps-1', category: 'Segurança' })).toBe('/privacidade-seguranca');
-    expect(getScriptRoute({ id: 'apps-3', category: 'Debloat' })).toBe('/debloat');
+    expect(getScriptRoute({ id: 'apps-4', category: 'Personalização' })).toBe('/personalizacao');
     expect(getScriptRoute({ id: 'builtin-18', category: 'Internet' })).toBe('/rede');
     expect(getScriptRoute({ id: 'builtin-13', category: 'Utilities' })).toBe('/utilities');
     expect(getScriptRoute({ id: 'tweaks-4', category: 'Windows' })).toBe('/cpu');
@@ -131,11 +131,16 @@ describe('destino dos scripts movidos pela refatoracao', () => {
     ['tweaks-4', 'Windows'],
     ['tweaks-5', 'Windows'],
     ['tweaks-6', 'Windows'],
-    // Personalizacao: aparencia, nao remocao de software
+    // Personalizacao: aparencia e mods de apps
     ['tweaks-1', 'Personalização'],
     ['tweaks-2', 'Personalização'],
     ['builtin-32', 'Personalização'],
     ['builtin-86', 'Personalização'],
+    // Discord/Spotify sairam do Debloat e mantem o reverter ao lado
+    ['apps-4', 'Personalização'],
+    ['apps-5', 'Personalização'],
+    ['apps-6', 'Personalização'],
+    ['apps-7', 'Personalização'],
     // Utilitarios
     ['builtin-13', 'Utilities'],
     // Pagina nova de Privacidade
@@ -154,7 +159,13 @@ describe('destino dos scripts movidos pela refatoracao', () => {
     expect(gpuInCpu).toEqual([]);
   });
 
-  it('mantem todos os 100 scripts no catalogo', () => {
-    expect(scripts).toHaveLength(100);
+  it('mantem os scripts restantes no catalogo', () => {
+    expect(scripts).toHaveLength(98);
+  });
+
+  it('aposenta o debloat por script e o Chris Titus', () => {
+    const ids = scripts.map((script) => script.id);
+    expect(ids).not.toContain('apps-3');
+    expect(ids).not.toContain('builtin-14');
   });
 });
