@@ -1,136 +1,72 @@
 // @vitest-environment jsdom
 
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
-import { DNS_PROVIDERS } from '../lib/dns-providers';
 
 /**
- * Regressão da página Rede: cabeçalho DNS, provedores ordenados por latência,
- * aplicar DNS mais rápido (chama `applyDns`), executar benchmark
- * (`runBenchmark`) e scripts de Internet (chama `execute`). `useDnsContext`,
- * `useScriptContext`, `useScriptExecutionContext` e `useSettingsContext` são
- * mockados na fronteira.
+ * Regressão da página Rede Depois da separação, ela mostra só os scripts de
+ * Internet/DNS Manager em cards de seção (o padrão das demais páginas). O
+ * conteúdo de configuração de DNS vive em `DnsPage`. `useScriptPage`,
+ * `use-is-script-applied` e `useDnsContext` são mockados na fronteira para
+ * provar que a página não consome mais o contexto de DNS.
  */
 
+const store = vi.hoisted<{
+  page: AsyncState<ScriptEntry[]>;
+  scripts: ScriptEntry[];
+  activeExecution: string | null;
+  execute: ReturnType<typeof vi.fn>;
+  cancel: ReturnType<typeof vi.fn>;
+  confirmExecute: ReturnType<typeof vi.fn>;
+}>(() => ({
+  page: { status: 'success', data: [] },
+  scripts: [],
+  activeExecution: null,
+  execute: vi.fn(async () => {}),
+  cancel: vi.fn(async () => {}),
+  confirmExecute: vi.fn(),
+}));
+
+vi.mock('../hooks/use-script-page', () => ({
+  useScriptPage: () => ({
+    state: store.page,
+    categoryScripts: store.scripts,
+    activeExecution: store.activeExecution,
+    handleExecute: store.execute,
+    handleCancel: store.cancel,
+    handleConfirmExecute: store.confirmExecute,
+    confirmScript: null,
+    setConfirmScript: () => {},
+    handleConfirm: () => {},
+  }),
+}));
+
+vi.mock('../hooks/use-is-script-applied', () => ({
+  useIsScriptApplied: () => () => false,
+}));
+
 vi.mock('../contexts/DnsContext', () => ({
-  useDnsContext: () => store.dns,
+  useDnsContext: () => {
+    throw new Error('NetworkPage não deve consumir DnsContext');
+  },
   DnsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-
-vi.mock('../contexts/ScriptContext', () => ({
-  useScriptContext: () => store.script,
-}));
-
-vi.mock('../contexts/ScriptExecutionContext', () => ({
-  useScriptExecutionContext: () => store.exec,
-}));
-
-vi.mock('../contexts/SettingsContext', () => ({
-  useSettingsContext: () => ({ settings: { confirmOnExecute: false } }),
-}));
-
-vi.mock('../contexts/HistoryContext', () => ({
-  useHistoryContext: () => ({ state: { status: 'success', data: [] } }),
 }));
 
 import NetworkPage from './NetworkPage';
 
-const store: {
-  dns: {
-    networkInfo: { interfaceIndex: number; interfaceName: string; currentDns: string[] };
-    benchmarks: Map<string, { address: string; latencyMs: number | null }>;
-    benchmarkStatus: 'idle' | 'loading' | 'done';
-    benchmarkProgress: { current: number; total: number };
-    applyStatus: 'idle' | 'loading' | 'error' | 'elevating';
-    applyError: string | null;
-    activeDnsIps: string[];
-    runBenchmark: ReturnType<typeof vi.fn>;
-    applyDns: ReturnType<typeof vi.fn>;
-  };
-  script: {
-    state: AsyncState<ScriptEntry[]>;
-    filteredScripts: ScriptEntry[];
-    setCategoryFilter: ReturnType<typeof vi.fn>;
-    setSubcategoryFilter: ReturnType<typeof vi.fn>;
-    categoryFilter: string;
-    subcategoryFilter: string;
-    subcategories: string[];
-  };
-  exec: {
-    activeExecution: string | null;
-    execute: ReturnType<typeof vi.fn>;
-    cancel: ReturnType<typeof vi.fn>;
-  };
-} = {
-  dns: {
-    networkInfo: { interfaceIndex: 12, interfaceName: 'Ethernet', currentDns: ['1.1.1.1'] },
-    benchmarks: new Map(),
-    benchmarkStatus: 'idle',
-    benchmarkProgress: { current: 0, total: 0 },
-    applyStatus: 'idle',
-    applyError: null,
-    activeDnsIps: [],
-    runBenchmark: vi.fn(),
-    applyDns: vi.fn(async () => {}),
-  },
-  script: {
-    state: { status: 'success', data: [] },
-    filteredScripts: [],
-    setCategoryFilter: vi.fn(),
-    setSubcategoryFilter: vi.fn(),
-    categoryFilter: '',
-    subcategoryFilter: '',
-    subcategories: [],
-  },
-  exec: {
-    activeExecution: null,
-    execute: vi.fn(async () => {}),
-    cancel: vi.fn(async () => {}),
-  },
-};
-
-beforeEach(() => {
-  dns();
-  script();
-  exec();
-});
-
-function dns(overrides: Partial<typeof store.dns> = {}) {
-  store.dns = {
-    networkInfo: { interfaceIndex: 12, interfaceName: 'Ethernet', currentDns: ['1.1.1.1'] } as any,
-    benchmarks: new Map(),
-    benchmarkStatus: 'idle',
-    benchmarkProgress: { current: 0, total: 0 },
-    applyStatus: 'idle',
-    applyError: null,
-    activeDnsIps: [],
-    runBenchmark: vi.fn(),
-    applyDns: vi.fn(async () => {}),
-    ...overrides,
-  };
-}
-
-function script(overrides: Partial<typeof store.script> = {}) {
-  store.script = {
-    state: { status: 'success', data: [] },
-    filteredScripts: [],
-    setCategoryFilter: vi.fn(),
-    setSubcategoryFilter: vi.fn(),
-    categoryFilter: '',
-    subcategoryFilter: '',
-    subcategories: [],
-    ...overrides,
-  };
-}
-
-function exec(overrides: Partial<typeof store.exec> = {}) {
-  store.exec = {
-    activeExecution: null,
-    execute: vi.fn(async () => {}),
-    cancel: vi.fn(async () => {}),
-    ...overrides,
+function script(id: string, name: string, category = 'Internet'): ScriptEntry {
+  return {
+    id,
+    name,
+    description: `${name} — descrição`,
+    category,
+    subcategory: '',
+    content: '',
+    extension: 'bat',
+    requiresAdmin: false,
+    isBuiltIn: true,
+    tags: [],
   };
 }
 
@@ -139,98 +75,73 @@ function renderPage() {
 }
 
 beforeEach(() => {
-  dns();
-  script();
-  exec();
+  store.page = { status: 'success', data: [] };
+  store.scripts = [];
+  store.activeExecution = null;
+  store.execute = vi.fn(async () => {});
+  store.cancel = vi.fn(async () => {});
+  store.confirmExecute = vi.fn();
 });
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
+afterEach(() => vi.restoreAllMocks());
 
 describe('NetworkPage', () => {
-  it('renderiza o cabeçalho DNS e os provedores', () => {
+  it('não mostra mais a configuração de DNS', () => {
     renderPage();
 
-    expect(screen.getByText('DNS')).toBeDefined();
-    expect(
-      screen.getByText('Configure seu DNS para melhor velocidade e privacidade')
-    ).toBeDefined();
-    expect(screen.getByText('Cloudflare')).toBeDefined();
-    expect(screen.getByText('Google')).toBeDefined();
-    expect(screen.getByText('Quad9')).toBeDefined();
-    expect(screen.getByText('OpenDNS')).toBeDefined();
-    expect(screen.getByText('AdGuard')).toBeDefined();
-    expect(screen.getByText('CleanBrowsing')).toBeDefined();
-    expect(screen.getByText('DHCP (Padrão)')).toBeDefined();
+    expect(screen.queryByText('Configure seu DNS para melhor velocidade e privacidade')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Testar Novamente' })).toBeNull();
   });
 
-  it('executa o benchmark chamando runBenchmark', () => {
-    const { runBenchmark } = store.dns;
+  it('mostra o herói e as seções de scripts no padrão das outras páginas', () => {
+    store.scripts = [
+      script('internet-1', 'Ajustar TCP/IP'),
+      script('dns-1', 'Alterar DNS', 'DNS Manager'),
+    ];
 
     renderPage();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Testar Novamente' }));
-
-    expect(runBenchmark).toHaveBeenCalled();
+    expect(screen.getByText('Otimização de Rede')).toBeDefined();
+    expect(screen.getByText('TCP/IP e MTU')).toBeDefined();
+    expect(screen.getByText('DNS e resolução')).toBeDefined();
+    expect(screen.getByText('Ajustar TCP/IP')).toBeDefined();
+    expect(screen.getByText('Alterar DNS')).toBeDefined();
   });
 
-  it('aplica o DNS mais rápido chamando applyDns com o provedor correto', async () => {
-    dns({
-      benchmarks: new Map([
-        ['1.1.1.1', { address: '1.1.1.1', latencyMs: 10 }],
-        ['8.8.8.8', { address: '8.8.8.8', latencyMs: 30 }],
-      ]),
-      benchmarkStatus: 'done',
-      activeDnsIps: [],
-    });
-    script();
-    exec();
-
-    const { applyDns } = store.dns;
-    const cloudflare = DNS_PROVIDERS.find((p) => p.name === 'Cloudflare')!;
+  it('conta os tweaks por seção e não pelo catálogo inteiro', () => {
+    store.scripts = [script('internet-1', 'Ajustar TCP/IP')];
 
     renderPage();
 
-    act(() => fireEvent.click(screen.getByRole('button', { name: 'Aplicar DNS Mais Rápido' })));
-
-    expect(applyDns).toHaveBeenCalledWith(cloudflare);
+    expect(screen.getByText('1 tweaks')).toBeDefined();
+    expect(screen.queryByText('17 tweaks')).toBeNull();
   });
 
-  it('mostra "Ativo" para o provedor já em uso', () => {
-    dns({
-      benchmarks: new Map([['1.1.1.1', { address: '1.1.1.1', latencyMs: 10 }]]),
-      benchmarkStatus: 'done',
-      activeDnsIps: ['1.1.1.1', '1.0.0.1'],
-    });
+  it('executa o script da seção chamando handleConfirmExecute com o script', () => {
+    const internet = script('internet-1', 'Ajustar TCP/IP');
+    store.scripts = [internet];
 
     renderPage();
+    act(() => fireEvent.click(screen.getByRole('button', { name: /Executar/ })));
 
-    expect(screen.getAllByText('Ativo').length).toBeGreaterThan(0);
-    expect(screen.getByText('DNS Ativo')).toBeDefined();
+    expect(store.confirmExecute).toHaveBeenCalledWith(internet);
   });
 
-  it('renderiza a seção de scripts de Internet quando há tweaks', () => {
-    script({
-      filteredScripts: [
-        {
-          id: 'internet-1',
-          name: 'DNS do Google',
-          description: '',
-          category: 'Internet',
-          subcategory: '',
-          content: '',
-          extension: 'reg',
-          requiresAdmin: false,
-          isBuiltIn: true,
-          tags: [] as string[],
-        },
-      ],
-    });
+  it('mostra o esqueleto enquanto carrega', () => {
+    store.page = { status: 'loading' };
+
+    const { container } = renderPage();
+
+    expect(container.querySelector('.animate-pulse')).not.toBeNull();
+    expect(screen.queryByText('Otimização de Rede')).toBeNull();
+  });
+
+  it('mostra o erro quando o catálogo falha', () => {
+    store.page = { status: 'error', error: 'falha ao ler catalogo' };
 
     renderPage();
 
-    expect(screen.getByText('DNS do Google')).toBeDefined();
-    expect(screen.getByText(/1 tweak/)).toBeDefined();
+    expect(screen.getByText('Erro ao carregar tweaks')).toBeDefined();
+    expect(screen.getByText('falha ao ler catalogo')).toBeDefined();
   });
 });

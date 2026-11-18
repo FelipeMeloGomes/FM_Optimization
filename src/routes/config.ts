@@ -3,6 +3,7 @@ import {
   Eraser,
   Gamepad2,
   Gauge,
+  Globe,
   Home,
   type LucideIcon,
   MonitorDown,
@@ -130,6 +131,14 @@ export const ROUTES: AppRoute[] = [
     category: 'rede',
     protected: true,
     component: lazy(() => import('../pages/NetworkPage')),
+  },
+  {
+    path: '/dns',
+    label: 'DNS',
+    icon: Globe,
+    category: 'rede',
+    protected: true,
+    component: lazy(() => import('../pages/DnsPage')),
   },
   {
     path: '/utilities',

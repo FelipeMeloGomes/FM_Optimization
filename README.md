@@ -47,10 +47,10 @@
 - **Essenciais PC** — instalação via winget de CPU-Z, HWMonitor, MSI Afterburner, 7-Zip, WinRAR, Brave, qBittorrent, DirectX (runtime legado) e BCUninstaller, com progresso na própria página. O winget baixa do canal oficial e confere o hash do manifesto antes de rodar o instalador.
 - **Emuladores** — debloat de BlueStacks 4/5 via ADB: seleção de instância, presets de bloatware, backup automático do APK e restauração por instância. Permite remover qualquer app, inclusive de sistema.
 
-### Rede
+### Rede e DNS
 
-- **Benchmark de DNS** com ordenação por latência e aplicação do provedor escolhido.
-- **Tweaks de internet** para reduzir latência e melhorar a estabilidade da conexão.
+- **DNS** — página própria com benchmark de latência, ordenação dos provedores, aplicação do mais rápido e indicador de DNS ativo.
+- **Rede** — tweaks de internet para reduzir latência e melhorar a estabilidade da conexão, incluindo os scripts de DNS, apresentados em seções virtualizadas.
 
 ### Segurança e privacidade
 
@@ -63,7 +63,7 @@
 - **Histórico de execução** — duração, status e origem (manual ou agendada) de cada tweak. Cards aplicados ganham o selo **Aplicado**, inclusive os scripts interativos: o app espera a janela fechar e registra o código de saída real (menu fechado sem aplicar ou handoff sem desfecho fica como `—`, e fechar o console do Spotify aparece como **Interrompido pelo usuário**, não como erro).
 - **Bloqueio de páginas** — oculte páginas da barra lateral e proteja-as com senha mestra criptografada via DPAPI (Emuladores bloqueado por padrão).
 - **Atualização integrada** — download e instalação de novas versões direto do GitHub.
-- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`). Histórico, inicialização, Limpeza, Debloat e os cards de tweaks (Desempenho, Privacidade e Personalização) usam listas virtualizadas: só as linhas visíveis são renderizadas, com a rolagem feita pela página.
+- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`). Histórico, inicialização, Limpeza, Debloat e os cards de tweaks (Desempenho, Privacidade, Personalização e Rede) usam listas virtualizadas: só as linhas visíveis são renderizadas, com a rolagem feita pela página.
 - **Atalhos** — `Ctrl+1`…`Ctrl+9` navegam entre páginas e `Ctrl+,` abre as Configurações.
 
 ## Tecnologias

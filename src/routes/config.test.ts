@@ -30,6 +30,17 @@ describe('rotas da aplicacao', () => {
     expect(route?.protected).toBe(true);
   });
 
+  it('tem DNS como pagina propria na categoria Rede, sem tirar os scripts de /rede', () => {
+    const dns = ROUTES.find((r) => r.path === '/dns');
+    expect(dns?.label).toBe('DNS');
+    expect(dns?.category).toBe('rede');
+    expect(dns?.protected).toBe(true);
+
+    const rede = ROUTES.find((r) => r.path === '/rede');
+    expect(rede?.label).toBe('Rede');
+    expect(rede?.category).toBe('rede');
+  });
+
   it('nao tem mais /tweaks nem /apps', () => {
     expect(paths).not.toContain('/tweaks');
     expect(paths).not.toContain('/apps');

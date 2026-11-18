@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { CATEGORY_ROUTES, getScriptRoute } from './category-routes';
+import { NETWORK_SECTIONS } from './network-sections';
 import { PERFORMANCE_SECTIONS } from './performance-sections';
 import { PERSONALIZATION_SECTIONS } from './personalization-sections';
 import { PRIVACY_SECTIONS } from './privacy-sections';
@@ -85,6 +86,12 @@ describe('cada script mora em uma unica pagina', () => {
 
   it('os cards da pagina Utilitarios cobrem exatamente a categoria Utilities', () => {
     expect(idsOf(UTIL_SECTIONS)).toEqual(idsInCategory('Utilities'));
+  });
+
+  it('os cards da pagina Rede cobrem Internet e DNS Manager sem sobra', () => {
+    expect(idsOf(NETWORK_SECTIONS)).toEqual(
+      [...idsInCategory('Internet'), ...idsInCategory('DNS Manager')].sort()
+    );
   });
 
   it('as secoes da pagina Desempenho cobrem CPU, GPU e Windows, sem sobra', () => {
