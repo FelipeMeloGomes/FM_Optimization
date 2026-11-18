@@ -118,7 +118,7 @@ export function Sidebar({ openCommandPalette, defaultCollapsed = false }: Sideba
               'object-contain transition-all duration-300',
               glowColor
                 ? `drop-shadow-[0_0_8px_${glowColor}]`
-                : 'drop-shadow-[0_0_6px_rgba(59,130,246,0.6)]',
+                : 'drop-shadow-[0_0_6px_var(--color-primary)]',
               collapsed ? 'size-8' : 'size-10'
             )}
           />

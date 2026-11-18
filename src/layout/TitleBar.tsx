@@ -40,7 +40,7 @@ export function TitleBar() {
             <span
               className={cn(
                 'absolute right-1.5 top-1.5 size-1.5 rounded-full',
-                pending > 0 ? 'bg-amber-400' : 'bg-primary'
+                pending > 0 ? 'bg-warning' : 'bg-primary'
               )}
               aria-hidden="true"
             />

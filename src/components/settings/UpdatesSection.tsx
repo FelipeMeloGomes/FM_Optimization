@@ -76,7 +76,7 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
   return (
     <div>
       <div className="mb-4 flex items-center gap-2">
-        <div className="size-1.5 rounded-full bg-emerald-400" />
+        <div className="size-1.5 rounded-full bg-success" />
         <h3 className="text-sm font-semibold text-foreground">Atualizacoes</h3>
       </div>
       <div className="rounded-xl border border-border bg-card p-5">
@@ -105,10 +105,10 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
           <div
             role="status"
             aria-live="polite"
-            className="flex items-center gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3"
+            className="flex items-center gap-3 rounded-lg border border-success/20 bg-success/10 p-3"
           >
-            <Check className="size-4 text-emerald-400" />
-            <p className="text-sm text-emerald-400">Voce ja esta na versao mais recente.</p>
+            <Check className="size-4 text-success" />
+            <p className="text-sm text-success">Voce ja esta na versao mais recente.</p>
           </div>
         )}
 
@@ -153,13 +153,11 @@ export function UpdatesSection({ appVersion, packaged }: UpdatesSectionProps) {
           <div
             role="status"
             aria-live="polite"
-            className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4"
+            className="rounded-lg border border-success/20 bg-success/10 p-4"
           >
             <div className="mb-3 flex items-center gap-2">
-              <Check className="size-4 text-emerald-400" />
-              <p className="text-sm font-medium text-emerald-400">
-                Atualizacao baixada com sucesso!
-              </p>
+              <Check className="size-4 text-success" />
+              <p className="text-sm font-medium text-success">Atualizacao baixada com sucesso!</p>
             </div>
             <Button onClick={handleInstall} size="sm" className="gap-1.5">
               <RotateCcw className="size-3.5" />

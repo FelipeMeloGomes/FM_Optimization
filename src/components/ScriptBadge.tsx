@@ -29,7 +29,7 @@ export function ScriptBadge({ script }: ScriptBadgeProps) {
       {isApplied && (
         <Badge
           variant="outline"
-          className="gap-1 font-mono text-[10px] px-1.5 py-0 shrink-0 border-emerald-500/50 text-emerald-400"
+          className="gap-1 font-mono text-[10px] px-1.5 py-0 shrink-0 border-success/50 text-success"
         >
           <Check className="size-3" />
           Aplicado
@@ -44,7 +44,7 @@ export function ScriptBadge({ script }: ScriptBadgeProps) {
       {script.requiresRestart && (
         <Badge
           variant="outline"
-          className="gap-1 font-mono text-[10px] px-1.5 py-0 shrink-0 border-amber-500/50 text-amber-400"
+          className="gap-1 font-mono text-[10px] px-1.5 py-0 shrink-0 border-warning/50 text-warning"
         >
           <RotateCcw className="size-3" />
           Reiniciar

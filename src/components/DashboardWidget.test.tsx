@@ -69,22 +69,22 @@ describe('DashboardWidget — barra de progresso', () => {
   });
 
   it('colore a barra de verde até 70%', () => {
-    expect(render({ progress: 70 })).toContain(cls('[&>div]:bg-emerald-500'));
-    expect(render({ progress: 70 })).not.toContain(cls('[&>div]:bg-amber-500'));
+    expect(render({ progress: 70 })).toContain(cls('[&>div]:bg-success'));
+    expect(render({ progress: 70 })).not.toContain(cls('[&>div]:bg-warning'));
   });
 
   it('colore a barra de âmbar entre 71% e 90%', () => {
     const html = render({ progress: 90 });
 
-    expect(html).toContain(cls('[&>div]:bg-amber-500'));
-    expect(html).not.toContain(cls('[&>div]:bg-red-500'));
+    expect(html).toContain(cls('[&>div]:bg-warning'));
+    expect(html).not.toContain(cls('[&>div]:bg-destructive'));
   });
 
   it('colore a barra de vermelho acima de 90%', () => {
     const html = render({ progress: 95 });
 
-    expect(html).toContain(cls('[&>div]:bg-red-500'));
-    expect(html).not.toContain(cls('[&>div]:bg-amber-500'));
+    expect(html).toContain(cls('[&>div]:bg-destructive'));
+    expect(html).not.toContain(cls('[&>div]:bg-warning'));
   });
 });
 
@@ -94,37 +94,37 @@ describe('DashboardWidget — status', () => {
 
     expect(html).toContain('bg-muted');
     expect(html).toContain('hover:border-primary/30');
-    expect(html).toContain('hover:shadow-[0_0_20px_rgba(0,68,255,0.1)]');
+    expect(html).toContain('hover:shadow-[0_0_20px_var(--color-selection)]');
   });
 
   it('usa verde para status bom', () => {
     const html = render({ status: 'good' });
 
-    expect(html).toContain('bg-emerald-500/10');
-    expect(html).toContain('text-emerald-400');
-    expect(html).toContain('hover:border-emerald-500/30');
+    expect(html).toContain('bg-success/10');
+    expect(html).toContain('text-success');
+    expect(html).toContain('hover:border-success/30');
   });
 
   it('usa âmbar para status de atenção', () => {
     const html = render({ status: 'warning' });
 
-    expect(html).toContain('bg-amber-500/10');
-    expect(html).toContain('text-amber-400');
-    expect(html).toContain('hover:border-amber-500/30');
+    expect(html).toContain('bg-warning/10');
+    expect(html).toContain('text-warning');
+    expect(html).toContain('hover:border-warning/30');
   });
 
   it('usa vermelho para status crítico', () => {
     const html = render({ status: 'danger' });
 
-    expect(html).toContain('bg-red-500/10');
-    expect(html).toContain('text-red-400');
-    expect(html).toContain('hover:border-red-500/30');
+    expect(html).toContain('bg-destructive/10');
+    expect(html).toContain('text-destructive');
+    expect(html).toContain('hover:border-destructive/30');
   });
 
   it('repassa classes extras sem perder as do status', () => {
     const html = render({ status: 'good', className: 'col-span-2' });
 
     expect(html).toContain('col-span-2');
-    expect(html).toContain('bg-emerald-500/10');
+    expect(html).toContain('bg-success/10');
   });
 });

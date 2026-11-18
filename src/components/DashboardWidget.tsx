@@ -20,19 +20,19 @@ const STATUS_STYLES = {
     border: 'hover:border-primary/30',
   },
   good: {
-    iconBg: 'bg-emerald-500/10',
-    iconColor: 'text-emerald-400',
-    border: 'hover:border-emerald-500/30',
+    iconBg: 'bg-success/10',
+    iconColor: 'text-success',
+    border: 'hover:border-success/30',
   },
   warning: {
-    iconBg: 'bg-amber-500/10',
-    iconColor: 'text-amber-400',
-    border: 'hover:border-amber-500/30',
+    iconBg: 'bg-warning/10',
+    iconColor: 'text-warning',
+    border: 'hover:border-warning/30',
   },
   danger: {
-    iconBg: 'bg-red-500/10',
-    iconColor: 'text-red-400',
-    border: 'hover:border-red-500/30',
+    iconBg: 'bg-destructive/10',
+    iconColor: 'text-destructive',
+    border: 'hover:border-destructive/30',
   },
 };
 
@@ -52,10 +52,7 @@ export const DashboardWidget = memo(function DashboardWidget({
       className={cn(
         'transition-all duration-300',
         styles.border,
-        status === 'good' && 'hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]',
-        status === 'warning' && 'hover:shadow-[0_0_20px_rgba(245,158,11,0.1)]',
-        status === 'danger' && 'hover:shadow-[0_0_20px_rgba(239,68,68,0.1)]',
-        status === 'default' && 'hover:shadow-[0_0_20px_rgba(0,68,255,0.1)]',
+        'hover:shadow-[0_0_20px_var(--color-selection)]',
         className
       )}
     >
@@ -88,9 +85,9 @@ export const DashboardWidget = memo(function DashboardWidget({
               value={progress}
               className={cn(
                 'h-1.5',
-                progress > 90 && '[&>div]:bg-red-500',
-                progress > 70 && progress <= 90 && '[&>div]:bg-amber-500',
-                progress <= 70 && '[&>div]:bg-emerald-500'
+                progress > 90 && '[&>div]:bg-destructive',
+                progress > 70 && progress <= 90 && '[&>div]:bg-warning',
+                progress <= 70 && '[&>div]:bg-success'
               )}
               aria-label={`${label}: ${value}`}
             />

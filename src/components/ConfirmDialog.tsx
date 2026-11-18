@@ -97,7 +97,7 @@ export function ConfirmDialog({
             'relative p-6 pb-4 transition-colors duration-500',
             phase === 'confirm' && 'bg-gradient-to-br from-primary/10 to-transparent',
             phase === 'executing' && 'bg-gradient-to-br from-primary/15 to-primary/5',
-            phase === 'done' && 'bg-gradient-to-br from-emerald-500/15 to-emerald-500/5'
+            phase === 'done' && 'bg-gradient-to-br from-success/15 to-success/5'
           )}
         >
           <div className="flex items-center gap-3">
@@ -106,13 +106,13 @@ export function ConfirmDialog({
                 'flex size-10 items-center justify-center rounded-xl transition-colors duration-500',
                 phase === 'confirm' && 'bg-primary/10',
                 phase === 'executing' && 'bg-primary/20',
-                phase === 'done' && 'bg-emerald-500/20'
+                phase === 'done' && 'bg-success/20'
               )}
             >
               {phase === 'executing' ? (
                 <Loader2 className="size-5 text-primary animate-spin" />
               ) : phase === 'done' ? (
-                <CheckCircle2 className="size-5 text-emerald-400" />
+                <CheckCircle2 className="size-5 text-success" />
               ) : (
                 <Play className="size-5 text-primary" />
               )}
@@ -157,7 +157,7 @@ export function ConfirmDialog({
               {script.requiresRestart && (
                 <Badge
                   variant="outline"
-                  className="gap-1 font-mono text-[10px] px-1.5 py-0 border-amber-500/50 text-amber-400"
+                  className="gap-1 font-mono text-[10px] px-1.5 py-0 border-warning/50 text-warning"
                 >
                   <RotateCcw className="size-3" />
                   Reiniciar
@@ -166,7 +166,7 @@ export function ConfirmDialog({
               {script.interactive && (
                 <Badge
                   variant="outline"
-                  className="gap-1 font-mono text-[10px] px-1.5 py-0 border-blue-500/50 text-blue-400"
+                  className="gap-1 font-mono text-[10px] px-1.5 py-0 border-info/50 text-info"
                 >
                   <Terminal className="size-3" />
                   Interativo
@@ -192,23 +192,23 @@ export function ConfirmDialog({
 
           {/* Warnings — confirm phase only */}
           {phase === 'confirm' && script.requiresAdmin && (
-            <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-2.5 mb-3">
-              <AlertTriangle className="size-3.5 text-amber-400 shrink-0" />
-              <p className="text-[11px] text-amber-400/80">Requer privilégios de administrador.</p>
+            <div className="flex items-center gap-2 rounded-lg bg-warning/10 border border-warning/20 p-2.5 mb-3">
+              <AlertTriangle className="size-3.5 text-warning shrink-0" />
+              <p className="text-[11px] text-warning">Requer privilégios de administrador.</p>
             </div>
           )}
 
           {phase === 'confirm' && script.requiresRestart && (
-            <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-2.5 mb-3">
-              <RotateCcw className="size-3.5 text-amber-400 shrink-0" />
-              <p className="text-[11px] text-amber-400/80">Requer reinício do PC após execução.</p>
+            <div className="flex items-center gap-2 rounded-lg bg-warning/10 border border-warning/20 p-2.5 mb-3">
+              <RotateCcw className="size-3.5 text-warning shrink-0" />
+              <p className="text-[11px] text-warning">Requer reinício do PC após execução.</p>
             </div>
           )}
 
           {phase === 'confirm' && script.interactive && (
-            <div className="flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 p-2.5 mb-3">
-              <Terminal className="size-3.5 text-blue-400 shrink-0" />
-              <p className="text-[11px] text-blue-400/80">
+            <div className="flex items-center gap-2 rounded-lg bg-info/10 border border-info/20 p-2.5 mb-3">
+              <Terminal className="size-3.5 text-info shrink-0" />
+              <p className="text-[11px] text-info">
                 Script interativo — uma janela do CMD será aberta para inputs.
               </p>
             </div>
@@ -234,13 +234,13 @@ export function ConfirmDialog({
 
           {/* Done phase — summary */}
           {phase === 'done' && (
-            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 mb-4">
+            <div className="rounded-lg border border-success/20 bg-success/5 p-3 mb-4">
               <div className="flex items-center gap-3">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10">
-                  <CheckCircle2 className="size-4 text-emerald-400" />
+                <div className="flex size-8 items-center justify-center rounded-lg bg-success/10">
+                  <CheckCircle2 className="size-4 text-success" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-medium text-emerald-400">Executado com sucesso</p>
+                  <p className="text-xs font-medium text-success">Executado com sucesso</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <Clock className="size-3 text-muted-foreground" />
                     <p className="text-[11px] text-muted-foreground">
@@ -250,9 +250,9 @@ export function ConfirmDialog({
                 </div>
               </div>
               {script.requiresRestart && (
-                <div className="mt-2 flex items-center gap-1.5 rounded-md bg-amber-500/10 border border-amber-500/10 p-2">
-                  <RotateCcw className="size-3 text-amber-400 shrink-0" />
-                  <p className="text-[10px] text-amber-400/80">
+                <div className="mt-2 flex items-center gap-1.5 rounded-md bg-warning/10 border border-warning/10 p-2">
+                  <RotateCcw className="size-3 text-warning shrink-0" />
+                  <p className="text-[10px] text-warning">
                     Reinicie o PC para aplicar as mudanças.
                   </p>
                 </div>
@@ -274,7 +274,7 @@ export function ConfirmDialog({
               <Button
                 size="sm"
                 onClick={handleConfirm}
-                className="flex-1 gap-1.5 shadow-[0_0_15px_rgba(0,68,255,0.3)] hover:shadow-[0_0_20px_rgba(0,68,255,0.5)]"
+                className="flex-1 gap-1.5 shadow-[0_0_15px_var(--color-selection)] hover:shadow-[0_0_20px_var(--color-selection)]"
               >
                 <Play className="size-3.5" />
                 {isApplied ? 'Executar novamente' : 'Executar'}

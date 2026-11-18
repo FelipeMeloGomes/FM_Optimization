@@ -7,7 +7,7 @@ export function DataSection() {
   return (
     <div>
       <div className="mb-4 flex items-center gap-2">
-        <div className="size-1.5 rounded-full bg-blue-400" />
+        <div className="size-1.5 rounded-full bg-info" />
         <h3 className="text-sm font-semibold text-foreground">Dados</h3>
       </div>
       <div className="rounded-xl border border-border bg-card p-5">

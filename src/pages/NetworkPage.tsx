@@ -262,7 +262,7 @@ function NetworkPageContent() {
                     isActive(fastest.primary, fastest.secondary) || applyStatus === 'loading'
                   }
                   onClick={() => applyDns(fastest)}
-                  className="gap-2 px-6 font-semibold shadow-[0_0_20px_rgba(0,68,255,0.3)] hover:shadow-[0_0_30px_rgba(0,68,255,0.5)]"
+                  className="gap-2 px-6 font-semibold shadow-[0_0_20px_var(--color-selection)] hover:shadow-[0_0_30px_var(--color-selection)]"
                 >
                   {applyStatus === 'loading' || applyStatus === 'elevating' ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -301,7 +301,7 @@ function NetworkPageContent() {
                 key={provider.name}
                 className={cn(
                   'transition-all duration-200',
-                  active && 'border-primary/50 shadow-[0_0_15px_rgba(0,68,255,0.15)]',
+                  active && 'border-primary/50 shadow-[0_0_15px_var(--color-selection)]',
                   isFastest && benchmarkStatus === 'done' && 'border-success/20'
                 )}
               >

@@ -61,8 +61,8 @@ describe('ScriptBadge — selo Aplicado', () => {
     const html = render(script());
 
     expect(text(html)).toContain('Aplicado');
-    expect(html).toContain('border-emerald-500/50');
-    expect(html).toContain('text-emerald-400');
+    expect(html).toContain('border-success/50');
+    expect(html).toContain('text-success');
   });
 
   it('não mostra o selo quando o script ainda não foi executado', () => {
@@ -98,7 +98,7 @@ describe('ScriptBadge — selos do catálogo', () => {
     const withoutRestart = render(script());
 
     expect(text(withRestart)).toContain('Reiniciar');
-    expect(withRestart).toContain('border-amber-500/50');
+    expect(withRestart).toContain('border-warning/50');
     expect(text(withoutRestart)).not.toContain('Reiniciar');
   });
 
@@ -108,13 +108,13 @@ describe('ScriptBadge — selos do catálogo', () => {
     const deep = render(script({ riskLevel: 'deep' }));
 
     expect(text(safe)).toContain('Seguro');
-    expect(safe).toContain('bg-green-500/20');
+    expect(safe).toContain('bg-success/20');
 
     expect(text(moderate)).toContain('Moderado');
-    expect(moderate).toContain('bg-yellow-500/20');
+    expect(moderate).toContain('bg-warning/20');
 
     expect(text(deep)).toContain('Completo');
-    expect(deep).toContain('bg-red-500/20');
+    expect(deep).toContain('bg-destructive/20');
   });
 
   it('não mostra selo de risco quando o script não declara risco', () => {

@@ -2,16 +2,19 @@ import { useRef } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { CommandPalette } from '../components/CommandPalette';
+import { useSettingsContext } from '../contexts/SettingsContext';
 import { useCommandPalette } from '../hooks/use-command-palette';
 import { useKeyboardShortcuts } from '../hooks/use-keyboard-shortcuts';
 import { useScriptExecutionToast } from '../hooks/use-script-execution-toast';
 import { useSmoothScroll } from '../hooks/use-smooth-scroll';
 import { useUpdateToast } from '../hooks/use-update-toast';
+import { getThemeById } from '../lib/theme-config';
 import { Sidebar } from './Sidebar';
 import { TitleBar } from './TitleBar';
 
 export function AppLayout() {
   const mainRef = useRef<HTMLDivElement>(null);
+  const { settings } = useSettingsContext();
   const { isOpen, open, close } = useCommandPalette();
   useSmoothScroll(mainRef);
   useUpdateToast();
@@ -21,9 +24,8 @@ export function AppLayout() {
   return (
     <div className="relative flex h-screen flex-col overflow-hidden">
       <Toaster
-        richColors
         position="bottom-right"
-        theme="system"
+        theme={getThemeById(settings.theme).isDark ? 'dark' : 'light'}
         toastOptions={{
           style: {
             background: 'var(--color-card)',

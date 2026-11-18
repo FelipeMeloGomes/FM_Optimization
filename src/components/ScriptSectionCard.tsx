@@ -82,9 +82,9 @@ export function ScriptSectionCard({
         </div>
 
         {section.warning && (
-          <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-500/5 border border-amber-500/10 p-3">
-            <AlertTriangle className="size-3.5 text-amber-400 mt-0.5 shrink-0" />
-            <p className="text-[11px] text-amber-400/80 leading-relaxed">{section.warning}</p>
+          <div className="mt-4 flex items-start gap-2 rounded-lg bg-warning/5 border border-warning/10 p-3">
+            <AlertTriangle className="size-3.5 text-warning mt-0.5 shrink-0" />
+            <p className="text-[11px] text-warning leading-relaxed">{section.warning}</p>
           </div>
         )}
 
@@ -96,7 +96,7 @@ export function ScriptSectionCard({
                 key={script.id}
                 className={cn(
                   'flex items-center gap-3 rounded-lg border bg-background p-3 transition-all',
-                  script.requiresAdmin && 'border-yellow-500/20',
+                  script.requiresAdmin && 'border-warning/20',
                   isScriptExecuting && 'ring-2 ring-primary/50'
                 )}
               >

@@ -26,12 +26,15 @@ import { cn } from '../lib/utils';
 import { Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle } from './ui';
 
 export const RISK_STYLES: Record<string, { className: string; label: string }> = {
-  safe: { className: 'bg-green-500/20 text-green-400 border-green-500/30', label: 'Seguro' },
+  safe: { className: 'bg-success/20 text-success border-success/30', label: 'Seguro' },
   moderate: {
-    className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    className: 'bg-warning/20 text-warning border-warning/30',
     label: 'Moderado',
   },
-  deep: { className: 'bg-red-500/20 text-red-400 border-red-500/30', label: 'Completo' },
+  deep: {
+    className: 'bg-destructive/20 text-destructive border-destructive/30',
+    label: 'Completo',
+  },
 };
 
 interface ScriptCardProps {
@@ -47,63 +50,63 @@ const CATEGORY_CONFIG: Record<
 > = {
   Utilities: {
     icon: Wrench,
-    color: 'text-orange-400',
-    bgColor: 'bg-orange-500/10',
-    borderColor: 'border-orange-500/20',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
+    borderColor: 'border-destructive/20',
   },
   Cleaner: {
     icon: Eraser,
-    color: 'text-green-400',
-    bgColor: 'bg-green-500/10',
-    borderColor: 'border-green-500/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/20',
   },
   Debloat: {
     icon: PackageX,
-    color: 'text-pink-400',
-    bgColor: 'bg-pink-500/10',
-    borderColor: 'border-pink-500/20',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    borderColor: 'border-primary/20',
   },
   Segurança: {
     icon: ShieldCheck,
-    color: 'text-emerald-400',
-    bgColor: 'bg-emerald-500/10',
-    borderColor: 'border-emerald-500/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/20',
   },
   Internet: {
     icon: Wifi,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/20',
   },
   'Input Lag': {
     icon: MousePointerClick,
-    color: 'text-yellow-400',
-    bgColor: 'bg-yellow-500/10',
-    borderColor: 'border-yellow-500/20',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/20',
   },
   CPU: {
     icon: Cpu,
-    color: 'text-cyan-400',
-    bgColor: 'bg-cyan-500/10',
-    borderColor: 'border-cyan-500/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/20',
   },
   GPU: {
     icon: Monitor,
-    color: 'text-rose-400',
-    bgColor: 'bg-rose-500/10',
-    borderColor: 'border-rose-500/20',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
+    borderColor: 'border-destructive/20',
   },
   Windows: {
     icon: SlidersHorizontal,
-    color: 'text-amber-400',
-    bgColor: 'bg-amber-500/10',
-    borderColor: 'border-amber-500/20',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/20',
   },
   Personalização: {
     icon: Palette,
-    color: 'text-violet-400',
-    bgColor: 'bg-violet-500/10',
-    borderColor: 'border-violet-500/20',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    borderColor: 'border-primary/20',
   },
 };
 
@@ -150,7 +153,7 @@ export const ScriptCard = memo(function ScriptCard({
       className={cn(
         'group relative rounded-xl border bg-card p-5 transition-all duration-300 hover:shadow-lg',
         config.borderColor,
-        isApplied && 'hover:border-emerald-500/40',
+        isApplied && 'hover:border-success/40',
         isExecuting && 'ring-2 ring-primary/50'
       )}
     >
@@ -177,7 +180,7 @@ export const ScriptCard = memo(function ScriptCard({
               {script.requiresRestart && (
                 <Badge
                   variant="outline"
-                  className="gap-1 font-mono text-[10px] px-1.5 py-0 border-amber-500/50 text-amber-400"
+                  className="gap-1 font-mono text-[10px] px-1.5 py-0 border-warning/50 text-warning"
                 >
                   <RotateCcw className="size-3" aria-hidden="true" />
                   Reiniciar
@@ -186,7 +189,7 @@ export const ScriptCard = memo(function ScriptCard({
               {script.interactive && (
                 <Badge
                   variant="outline"
-                  className="gap-1 font-mono text-[10px] px-1.5 py-0 border-blue-500/50 text-blue-400"
+                  className="gap-1 font-mono text-[10px] px-1.5 py-0 border-info/50 text-info"
                 >
                   <Terminal className="size-3" aria-hidden="true" />
                   Interativo
@@ -207,7 +210,7 @@ export const ScriptCard = memo(function ScriptCard({
           </div>
         </div>
         {isApplied && (
-          <span className="flex shrink-0 items-center gap-1 font-mono text-[10px] text-emerald-400">
+          <span className="flex shrink-0 items-center gap-1 font-mono text-[10px] text-success">
             <CheckCircle2 className="size-3.5" aria-hidden="true" />
             Aplicado
           </span>
@@ -217,24 +220,21 @@ export const ScriptCard = memo(function ScriptCard({
       <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{script.description}</p>
 
       {script.requiresAdmin && (
-        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-yellow-400/80">
+        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-warning">
           <Shield className="size-3" />
           <span>Requer administrador</span>
         </div>
       )}
 
       {script.requiresRestart && (
-        <div
-          aria-live="polite"
-          className="mt-3 flex items-center gap-1.5 text-[10px] text-amber-400/80"
-        >
+        <div aria-live="polite" className="mt-3 flex items-center gap-1.5 text-[10px] text-warning">
           <RotateCcw className="size-3" />
           <span>Requer reinício do PC após execução</span>
         </div>
       )}
 
       {script.interactive && (
-        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-blue-400/80">
+        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-info">
           <Terminal className="size-3" />
           <span>Script interativo — abrirá uma janela do CMD para inputs</span>
         </div>
@@ -267,11 +267,11 @@ export const ScriptCard = memo(function ScriptCard({
       </div>
 
       {showRestartPrompt && (
-        <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+        <div className="mt-4 rounded-lg border border-warning/30 bg-warning/10 p-3">
           <div className="flex items-center gap-2">
-            <RotateCcw className="size-4 text-amber-400" />
+            <RotateCcw className="size-4 text-warning" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-amber-400">Reinício necessário</p>
+              <p className="text-sm font-medium text-warning">Reinício necessário</p>
               <p className="text-xs text-muted-foreground">
                 As mudanças só terão efeito após reiniciar o PC.
               </p>
@@ -309,7 +309,7 @@ export const ScriptCard = memo(function ScriptCard({
                 {script.requiresRestart && (
                   <Badge
                     variant="outline"
-                    className="gap-1 font-mono text-xs border-amber-500/50 text-amber-400"
+                    className="gap-1 font-mono text-xs border-warning/50 text-warning"
                   >
                     <RotateCcw className="size-3" aria-hidden="true" />
                     Reiniciar
@@ -318,7 +318,7 @@ export const ScriptCard = memo(function ScriptCard({
                 {script.interactive && (
                   <Badge
                     variant="outline"
-                    className="gap-1 font-mono text-xs border-blue-500/50 text-blue-400"
+                    className="gap-1 font-mono text-xs border-info/50 text-info"
                   >
                     <Terminal className="size-3" aria-hidden="true" />
                     Interativo
@@ -341,9 +341,9 @@ export const ScriptCard = memo(function ScriptCard({
               {script.description}
             </p>
             {script.requiresRestart && (
-              <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5">
-                <RotateCcw className="size-4 text-amber-400 shrink-0" />
-                <p className="text-xs text-amber-400 font-medium">
+              <div className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 p-2.5">
+                <RotateCcw className="size-4 text-warning shrink-0" />
+                <p className="text-xs text-warning font-medium">
                   Este script requer reinício do PC para que as mudanças tenham efeito.
                 </p>
               </div>

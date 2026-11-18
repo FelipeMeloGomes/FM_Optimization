@@ -45,9 +45,9 @@ const SECTION: AppSection = {
   name: 'Remover Bloatware',
   description: 'Remova aplicativos desnecessários pré-instalados no Windows.',
   icon: 'trash',
-  color: 'text-red-400',
-  bgColor: 'bg-red-500/10',
-  borderColor: 'border-red-500/20',
+  color: 'text-destructive',
+  bgColor: 'bg-destructive/10',
+  borderColor: 'border-destructive/20',
   scriptIds: ['apps-3', 'builtin-14'],
   warning: 'Alguns apps do sistema podem ser removidos. Use com cautela.',
 };

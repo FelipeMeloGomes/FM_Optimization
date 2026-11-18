@@ -111,7 +111,7 @@ export function PageLockSection() {
   return (
     <div>
       <div className="mb-4 flex items-center gap-2">
-        <div className="size-1.5 rounded-full bg-amber-400" />
+        <div className="size-1.5 rounded-full bg-warning" />
         <h3 className="text-sm font-semibold text-foreground">Bloqueio de Paginas</h3>
       </div>
       <div className="rounded-xl border border-border bg-card p-5">
@@ -233,7 +233,7 @@ export function PageLockSection() {
           </div>
         </div>
 
-        {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
+        {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
       </div>
     </div>
   );

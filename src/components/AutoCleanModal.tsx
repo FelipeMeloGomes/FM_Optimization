@@ -123,7 +123,7 @@ export function AutoCleanModal({
                           {option.description}
                         </p>
                         {option.requiresAdmin && (
-                          <span className="mt-1.5 inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium text-amber-400">
+                          <span className="mt-1.5 inline-flex items-center gap-1 rounded bg-warning/10 px-1.5 py-0.5 text-[9px] font-medium text-warning">
                             <ShieldAlert className="size-2.5" aria-hidden="true" />
                             requer admin
                           </span>
@@ -258,12 +258,12 @@ export function AutoCleanModal({
                   <span className="text-muted-foreground">desativada</span>
                 )}
                 {isAdmin ? (
-                  <span className="inline-flex items-center gap-1 text-green-400 sm:ml-auto">
+                  <span className="inline-flex items-center gap-1 text-success sm:ml-auto">
                     <ShieldCheck className="size-3" aria-hidden="true" />
                     admin
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-amber-400 sm:ml-auto">
+                  <span className="inline-flex items-center gap-1 text-warning sm:ml-auto">
                     <ShieldAlert className="size-3" aria-hidden="true" />
                     sem admin
                   </span>
@@ -282,8 +282,8 @@ export function AutoCleanModal({
               </div>
 
               {pending.length > 0 && (
-                <div className="space-y-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
-                  <p className="text-xs font-medium text-amber-400">
+                <div className="space-y-2 rounded-lg border border-warning/20 bg-warning/5 p-3">
+                  <p className="text-xs font-medium text-warning">
                     {pending.length} limpeza(s) aguardando administrador
                   </p>
                   <ul className="flex flex-wrap gap-1.5">

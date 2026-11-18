@@ -7,7 +7,7 @@ export function NotificationsSection() {
   return (
     <div>
       <div className="mb-4 flex items-center gap-2">
-        <div className="size-1.5 rounded-full bg-amber-400" />
+        <div className="size-1.5 rounded-full bg-warning" />
         <h3 className="text-sm font-semibold text-foreground">Notificacoes</h3>
       </div>
       <div className="divide-y divide-border rounded-xl border border-border bg-card">
