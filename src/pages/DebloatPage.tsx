@@ -343,12 +343,17 @@ export default function DebloatPage() {
               className="pl-9"
             />
           </div>
-          <Tabs items={tabs} value={tab} onChange={(id) => setTab(id as TabId)} />
+          <Tabs
+            ariaLabel="Categorias de aplicativos"
+            items={tabs}
+            value={tab}
+            onChange={(id) => setTab(id as TabId)}
+          />
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={selectRecommended} className="gap-1.5">
+            <Button variant="subtle" size="sm" onClick={selectRecommended} className="gap-1.5">
               <Sparkles className="size-3.5" aria-hidden="true" />
               Selecionar recomendados
             </Button>

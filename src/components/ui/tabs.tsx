@@ -1,3 +1,5 @@
+import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 
 export interface TabItem {
@@ -7,10 +9,11 @@ export interface TabItem {
   icon?: React.ReactNode;
 }
 
-interface TabsProps {
+export interface TabsProps {
   items: TabItem[];
   value: string;
   onChange: (id: string) => void;
+  ariaLabel: string;
   className?: string;
 }
 
@@ -18,18 +21,21 @@ interface TabsProps {
  * Abas simples, sem dependência nova: um grupo de botões com `role="tab"` e
  * navegação por teclado (setas), que é o mínimo que o padrão ARIA pede.
  */
-export function Tabs({ items, value, onChange, className }: TabsProps) {
+export function Tabs({ items, value, onChange, ariaLabel, className }: TabsProps) {
+  const refs = React.useRef(new Map<string, HTMLButtonElement>());
+
   function moveFocus(current: string, direction: 1 | -1) {
     const index = items.findIndex((item) => item.id === current);
     if (index < 0) return;
     const next = items[(index + direction + items.length) % items.length];
     onChange(next.id);
+    refs.current.get(next.id)?.focus();
   }
 
   return (
     <div
       role="tablist"
-      aria-label="Seções da inicialização"
+      aria-label={ariaLabel}
       className={cn(
         'inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1',
         className
@@ -40,6 +46,10 @@ export function Tabs({ items, value, onChange, className }: TabsProps) {
         return (
           <button
             key={item.id}
+            ref={(element) => {
+              if (element) refs.current.set(item.id, element);
+              else refs.current.delete(item.id);
+            }}
             type="button"
             role="tab"
             aria-selected={active}
@@ -55,9 +65,9 @@ export function Tabs({ items, value, onChange, className }: TabsProps) {
               }
             }}
             className={cn(
-              'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-200',
+              'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               active
-                ? 'bg-primary/15 text-primary'
+                ? 'bg-primary/20 text-primary'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
           >

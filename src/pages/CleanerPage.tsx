@@ -489,7 +489,7 @@ export default function CleanerPage() {
                 {selected.size} de {selectableItems.length} selecionados
               </span>
             </label>
-            <Button variant="outline" size="sm" onClick={selectRecommended} className="gap-1.5">
+            <Button variant="subtle" size="sm" onClick={selectRecommended} className="gap-1.5">
               <Sparkles className="size-3.5" aria-hidden="true" />
               Selecionar recomendados
             </Button>

@@ -308,6 +308,7 @@ export default function StartupPage() {
       {/* Tabs + filters */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs
+          ariaLabel="Seções da inicialização"
           items={tabItems}
           value={tab}
           onChange={(id) => {
