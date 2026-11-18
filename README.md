@@ -63,7 +63,7 @@
 - **Histórico de execução** — duração, status e origem (manual ou agendada) de cada tweak. Cards aplicados ganham o selo **Aplicado**, inclusive os scripts interativos: o app espera a janela fechar e registra o código de saída real (menu fechado sem aplicar ou handoff sem desfecho fica como `—`).
 - **Bloqueio de páginas** — oculte páginas da barra lateral e proteja-as com senha mestra criptografada via DPAPI (Emuladores bloqueado por padrão).
 - **Atualização integrada** — download e instalação de novas versões direto do GitHub.
-- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`).
+- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`). Histórico, inicialização e os cards de tweaks (Desempenho, Debloat, Privacidade e Personalização) usam listas virtualizadas: só as linhas visíveis são renderizadas.
 - **Atalhos** — `Ctrl+1`…`Ctrl+9` navegam entre páginas e `Ctrl+,` abre as Configurações.
 
 ## Tecnologias
@@ -72,6 +72,7 @@
 | ----------- | ---------------------------------------------------------------------- |
 | Desktop     | Electron 35, electron-vite, electron-builder, electron-updater         |
 | Interface   | React 19, TypeScript, Tailwind CSS 4, Radix UI, Lucide, React Router 7 |
+| Listas      | TanStack Virtual (`@tanstack/react-virtual`)                           |
 | Dados e IPC | Zod, `systeminformation`, contextBridge com API tipada                 |
 | Qualidade   | Vitest, Biome                                                          |
 
