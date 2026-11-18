@@ -1,4 +1,5 @@
 import {
+  Activity,
   Clock,
   Eraser,
   Gamepad2,
@@ -139,6 +140,14 @@ export const ROUTES: AppRoute[] = [
     category: 'rede',
     protected: true,
     component: lazy(() => import('../pages/DnsPage')),
+  },
+  {
+    path: '/velocidade',
+    label: 'Velocidade',
+    icon: Activity,
+    category: 'rede',
+    protected: true,
+    component: lazy(() => import('../pages/SpeedTestPage')),
   },
   {
     path: '/utilities',

@@ -41,6 +41,13 @@ describe('rotas da aplicacao', () => {
     expect(rede?.category).toBe('rede');
   });
 
+  it('tem Velocidade como pagina propria na categoria Rede', () => {
+    const route = ROUTES.find((r) => r.path === '/velocidade');
+    expect(route?.label).toBe('Velocidade');
+    expect(route?.category).toBe('rede');
+    expect(route?.protected).toBe(true);
+  });
+
   it('nao tem mais /tweaks nem /apps', () => {
     expect(paths).not.toContain('/tweaks');
     expect(paths).not.toContain('/apps');

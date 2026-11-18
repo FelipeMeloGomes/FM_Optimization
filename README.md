@@ -50,6 +50,7 @@
 ### Rede e DNS
 
 - **DNS** — página própria com benchmark de latência, ordenação dos provedores, aplicação do mais rápido e indicador de DNS ativo.
+- **Velocidade** — teste real de internet com medidor animado: mede download, upload, ping e jitter contra os servidores da Cloudflare, mostra o progresso de cada fase e mantém o resultado final na tela. Sem histórico e sem salvar medições.
 - **Rede** — tweaks de internet para reduzir latência e melhorar a estabilidade da conexão, incluindo os scripts de DNS, apresentados em seções virtualizadas.
 
 ### Segurança e privacidade
