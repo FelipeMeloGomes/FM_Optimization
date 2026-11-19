@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
 
 /**
- * Regressão da página Utilitários: herói, seções e filtro por SSD (scripts
- * só-SSD somem sem SSD). `use-script-page` e `use-is-script-applied` são
- * mockados na fronteira e `window.electronAPI.hasSSD` controla o estado de SSD.
+ * Regressão da página Utilitários: herói e as quatro seções restantes após
+ * Armazenamento e Reparo do Sistema virarem páginas próprias. `use-script-page`
+ * e `use-is-script-applied` são mockados na fronteira.
  */
 
 vi.mock('../hooks/use-script-page', () => ({
@@ -61,14 +61,6 @@ function renderPage() {
 beforeEach(() => {
   store.page = { status: 'success', data: { scripts: [] } };
   store.scripts = [];
-  const api = {
-    hasSSD: vi.fn(async () => false),
-  };
-  (window as unknown as { electronAPI?: { hasSSD: () => Promise<boolean> } }).electronAPI = api;
-});
-
-afterEach(() => {
-  delete (window as unknown as { electronAPI?: unknown }).electronAPI;
 });
 
 describe('UtilitiesPage', () => {
@@ -94,43 +86,29 @@ describe('UtilitiesPage', () => {
     expect(text).toContain('catálogo indisponível');
   });
 
-  it('renderiza o herói e as seis seções com seus nomes', () => {
+  it('renderiza o herói e apenas as duas seções restantes', () => {
     store.scripts = [script('util-1', 'Manutenção 1')];
 
     renderPage();
 
     expect(screen.getByText('Ferramentas de manutenção e reparo')).toBeDefined();
     expect(screen.getByText('Manutenção do Sistema')).toBeDefined();
-    expect(screen.getByText('Armazenamento')).toBeDefined();
-    expect(screen.getByText('Reparo do Sistema')).toBeDefined();
     expect(screen.getByText('Memória e Processos')).toBeDefined();
-    expect(screen.getByText('Performance')).toBeDefined();
-    expect(screen.getByText('Otimização Completa')).toBeDefined();
+    expect(screen.queryByText('Performance')).toBeNull();
+    expect(screen.queryByText('Otimização Completa')).toBeNull();
+    expect(screen.queryByText('Armazenamento')).toBeNull();
+    expect(screen.queryByText('Reparo do Sistema')).toBeNull();
   });
 
-  it('esconde scripts só-SSD quando não há SSD', async () => {
-    store.scripts = [script('util-4', 'Só SSD'), script('builtin-88', 'Builtin SSD')];
-    const api = (window as unknown as { electronAPI: { hasSSD: ReturnType<typeof vi.fn> } })
-      .electronAPI;
-    api.hasSSD.mockResolvedValue(false);
+  it('mostra os scripts restantes de cada seção', async () => {
+    store.scripts = [
+      script('util-1', 'Relatório de Manutenção'),
+      script('builtin-22', 'Limpeza de RAM'),
+    ];
 
     renderPage();
 
-    await screen.findByText('Armazenamento');
-    expect(screen.queryByText('Só SSD')).toBeNull();
-    expect(screen.queryByText('Builtin SSD')).toBeNull();
-  });
-
-  it('mostra scripts só-SSD quando há SSD', async () => {
-    store.scripts = [script('util-4', 'Só SSD'), script('builtin-88', 'Builtin SSD')];
-    const api = (window as unknown as { electronAPI: { hasSSD: ReturnType<typeof vi.fn> } })
-      .electronAPI;
-    api.hasSSD.mockResolvedValue(true);
-
-    renderPage();
-
-    await screen.findByText('Armazenamento');
-    expect(screen.getByText('Só SSD')).toBeDefined();
-    expect(screen.getByText('Builtin SSD')).toBeDefined();
+    await waitFor(() => expect(screen.getByText('Limpeza de RAM')).toBeDefined());
+    expect(screen.getByText('Relatório de Manutenção')).toBeDefined();
   });
 });

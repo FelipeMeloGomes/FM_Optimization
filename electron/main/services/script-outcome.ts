@@ -21,11 +21,7 @@ const UNKNOWN_HANDOFF_SCRIPT_IDS: ReadonlySet<string> = new Set(['apps-6', 'apps
 const USER_INTERRUPT_SCRIPT_IDS: ReadonlySet<string> = new Set(['apps-6', 'apps-7']);
 
 /** Menus em que `3` significa "saiu sem aplicar". */
-const MENU_WITHOUT_APPLY_SCRIPT_IDS: ReadonlySet<string> = new Set([
-  'tweaks-5',
-  'apps-2',
-  'builtin-13',
-]);
+const MENU_WITHOUT_APPLY_SCRIPT_IDS: ReadonlySet<string> = new Set(['tweaks-5', 'apps-2']);
 
 /**
  * Converte os códigos-sentinela dos scripts interativos em `null` (desfecho

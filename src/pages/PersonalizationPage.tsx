@@ -1,5 +1,7 @@
 import { Palette } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { AnimatedPersonalization } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useScriptPage } from '../hooks/use-script-page';
@@ -45,10 +47,7 @@ export default function PersonalizationPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Palette className="size-28 text-primary" />
-        </div>
+      <HeroBanner visual={<AnimatedPersonalization />}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
             <Palette className="size-4 text-primary" />
@@ -62,7 +61,7 @@ export default function PersonalizationPage() {
             Discord e no Spotify. Os mods de apps incluem a opção de reverter.
           </p>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* Personalization Sections */}
       {PERSONALIZATION_SECTIONS.map((section) => (

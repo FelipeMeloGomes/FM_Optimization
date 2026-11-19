@@ -4,13 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
 
 /**
- * Regressão da página Input Lag.
- *
- * Os selos contam o que a seção realmente renderiza, não o balde de
- * subcategoria do catálogo: `inputlag-9`/`inputlag-11` estão arquivados como
- * "Regedit" em scripts.json mas aparecem nos cards de teclado/mouse. O teste
- * também trava o card recolhido (scripts só aparecem depois de "Ver tweaks") e
- * a execução direta do card com um único script.
+ * Depois que os tweaks de dispositivo foram para as páginas de Mouse, Monitor
+ * e Teclado na seção Sistema, Input Lag mostra apenas os seis ajustes de registro.
+ * Os testes travam que nenhum card de teclado/mouse/monitor volta a aparecer
+ * aqui, mesmo se um script de dispositivo vazar no `categoryScripts`.
  */
 
 const store = vi.hoisted(() => ({
@@ -61,19 +58,16 @@ function script(id: string, name: string): ScriptEntry {
   };
 }
 
-const FULL_CATALOG = [
-  script('inputlag-1', 'Latência de digitação'),
-  script('inputlag-9', 'Resposta de teclas'),
-  script('inputlag-2', 'Mouse sem aceleração'),
-  script('inputlag-11', 'Movimento preciso'),
-  script('inputlag-3', 'Latência do driver de vídeo'),
-  script('inputlag-4', 'Aplicar Todas Otimizações'),
-  script('inputlag-5', 'Reduzir Input Lag USB'),
-  script('inputlag-6', 'TCPNoDelay'),
-  script('inputlag-7', 'Prioridade de Foreground'),
-  script('inputlag-8', 'Desativar LargeSystemCache'),
-  script('inputlag-10', 'Atraso no Menu'),
-];
+const NAMES: Record<string, string> = {
+  'inputlag-4': 'Aplicar Todas Otimizações',
+  'inputlag-5': 'Reduzir Input Lag USB',
+  'inputlag-6': 'TCPNoDelay',
+  'inputlag-7': 'Prioridade de Foreground',
+  'inputlag-8': 'Desativar LargeSystemCache',
+  'inputlag-10': 'Atraso no Menu',
+};
+const REGISTRY_IDS = Object.keys(NAMES);
+const FULL_CATALOG = REGISTRY_IDS.map((id) => script(id, NAMES[id]));
 
 function bodyText(): string {
   return (document.body.textContent ?? '').replace(/\s+/g, ' ').trim();
@@ -113,97 +107,70 @@ describe('InputLagPage — estados', () => {
   });
 });
 
-describe('InputLagPage — hero e dispositivos', () => {
+describe('InputLagPage — hero e registros', () => {
   it('pede ao hook a categoria Input Lag', async () => {
     render(<InputLagPage />);
 
     await waitFor(() => expect(store.page).toHaveBeenCalledWith('Input Lag'));
   });
 
-  it('apresenta o hero e os três cards de dispositivo', async () => {
+  it('mostra o hero e apenas a seção de registros', async () => {
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Teclado'));
+    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
     const text = bodyText();
 
     expect(text).toContain('Reduza o Input Lag do seu PC');
-    expect(text).toContain('Teclado');
-    expect(text).toContain('Mouse');
-    expect(text).toContain('Monitor');
-    // "O que otimiza" aparece uma vez em cada um dos três cards.
-    expect(count(text, 'O que otimiza:')).toBe(3);
-    expect(text).toContain('KeyboardDelay reduzido a zero');
+    expect(text).toContain('Otimizações do Registro');
+    expect(count(text, '6 tweaks')).toBe(1);
+    // Os cards de dispositivo agora vivem em /perifericos.
+    expect(text).not.toContain('Dispositivos');
+    expect(text).not.toContain('O que otimiza:');
+    expect(text).not.toContain('Teclado');
+    expect(text).not.toContain('Mouse');
+    expect(text).not.toContain('Monitor');
+  });
+
+  it('não mostra tweaks de dispositivo que vazem no categoryScripts', async () => {
+    store.scripts = [...FULL_CATALOG, script('inputlag-1', 'Latência de digitação')];
+
+    render(<InputLagPage />);
+
+    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
+    const text = bodyText();
+
+    expect(text).not.toContain('Dispositivos');
+    expect(text).not.toContain('Latência de digitação');
+    expect(count(text, '6 tweaks')).toBe(1);
+    expect(count(text, '1 tweaks')).toBe(0);
   });
 });
 
 describe('InputLagPage — contagem dos selos', () => {
-  it('conta só os scripts curados que os cards mostram', async () => {
-    // Um script extra no balde da categoria não pode inflar o selo de dispositivos.
+  it('conta só os scripts curados que a seção renderiza', async () => {
     store.scripts = [...FULL_CATALOG, script('inputlag-99', 'Sobrando do catálogo')];
 
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Dispositivos'));
+    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
     const text = bodyText();
 
-    expect(count(text, '5 tweaks')).toBe(1); // 2 teclado + 2 mouse + 1 monitor
-    expect(count(text, '6 tweaks')).toBe(1); // registros curados
-    expect(text).not.toContain('12 tweaks');
+    expect(count(text, '6 tweaks')).toBe(1);
+    expect(text).not.toContain('7 tweaks');
     expect(text).not.toContain('Sobrando do catálogo');
   });
 
-  it('encolhe os selos quando o catálogo não traz todos os ids', async () => {
-    store.scripts = [
-      script('inputlag-1', 'Latência de digitação'),
-      script('inputlag-2', 'Mouse sem aceleração'),
-      script('inputlag-3', 'Latência do driver de vídeo'),
-      script('inputlag-4', 'Aplicar Todas Otimizações'),
-    ];
+  it('encolhe o selo quando o catálogo não traz todos os ids', async () => {
+    store.scripts = [script('inputlag-4', 'Aplicar Todas Otimizações')];
 
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Dispositivos'));
+    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
     const text = bodyText();
 
-    expect(count(text, '3 tweaks')).toBe(1); // um script em cada card de dispositivo
-    expect(count(text, '1 tweaks')).toBe(4); // 3 cards + 1 registro
+    expect(count(text, '1 tweaks')).toBe(1);
     expect(text).toContain('Aplicar Todas Otimizações');
     expect(text).not.toContain('Reduzir Input Lag USB');
-  });
-});
-
-describe('InputLagPage — cards recolhidos', () => {
-  it('só renderiza os scripts do card depois de "Ver tweaks"', async () => {
-    render(<InputLagPage />);
-
-    await waitFor(() => expect(bodyText()).toContain('Teclado'));
-    expect(bodyText()).not.toContain('Latência de digitação');
-
-    const [first] = screen.getAllByRole('button', { name: /Ver tweaks/ });
-    fireEvent.click(first);
-
-    expect(bodyText()).toContain('Latência de digitação');
-    expect(bodyText()).toContain('Resposta de teclas');
-    expect(screen.getAllByRole('button', { name: /Ocultar tweaks/ })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: /Ver tweaks/ })).toHaveLength(1);
-  });
-
-  it('executa direto o card que tem um único script', async () => {
-    const monitor = script('inputlag-3', 'Latência do driver de vídeo');
-    // Só os scripts dos dispositivos: teclado e mouse têm dois (mostram
-    // "Ver tweaks"); o monitor tem um só e executa no clique.
-    store.scripts = FULL_CATALOG.filter((s) =>
-      ['inputlag-1', 'inputlag-9', 'inputlag-2', 'inputlag-11', 'inputlag-3'].includes(s.id)
-    );
-
-    render(<InputLagPage />);
-
-    await waitFor(() => expect(bodyText()).toContain('Dispositivos'));
-    expect(screen.getAllByRole('button', { name: /Ver tweaks/ })).toHaveLength(2);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Executar' }));
-
-    expect(store.handleConfirmExecute).toHaveBeenCalledWith(monitor);
   });
 });
 
@@ -237,7 +204,6 @@ describe('InputLagPage — registros', () => {
     const text = bodyText();
 
     expect(text).not.toContain('Desativar LargeSystemCache');
-    // Dispositivos continuam com 5; o selo dos registros caiu de 6 para 5.
-    expect(count(text, '5 tweaks')).toBe(2);
+    expect(count(text, '5 tweaks')).toBe(1);
   });
 });

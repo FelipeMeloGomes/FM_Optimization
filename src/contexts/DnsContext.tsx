@@ -59,7 +59,10 @@ export function DnsProvider({ children }: { children: ReactNode }) {
     });
 
     try {
-      await window.electronAPI.benchmarkDns(providers);
+      // O retorno do IPC é a fonte autoritativa: os eventos de resultado podem
+      // chegar depois da promise e ser perdidos quando os listeners são limpos.
+      const results = await window.electronAPI.benchmarkDns(providers);
+      setBenchmarks(new Map(results.map((result) => [result.address, result])));
       setBenchmarkStatus('done');
     } catch {
       setBenchmarkStatus('done');

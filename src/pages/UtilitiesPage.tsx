@@ -1,7 +1,9 @@
 import { Play, Square, Wrench } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { AnimatedUtilities } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Badge, Button } from '../components/ui';
@@ -10,19 +12,15 @@ import { useScriptPage } from '../hooks/use-script-page';
 import { UTIL_SECTIONS, type UtilSection } from '../lib/util-sections';
 import { cn } from '../lib/utils';
 
-const SSD_ONLY_IDS = ['util-4', 'builtin-88'];
-
 function UtilSectionCard({
   section,
   scripts,
-  hasSSD,
   activeExecution,
   onCancel,
   onConfirmExecute,
 }: {
   section: UtilSection;
   scripts: ScriptEntry[];
-  hasSSD: boolean | null;
   activeExecution: string | null;
   onCancel: (id: string) => void;
   onConfirmExecute: (script: ScriptEntry) => void;
@@ -31,11 +29,8 @@ function UtilSectionCard({
   const isScriptApplied = useIsScriptApplied();
 
   const sectionScripts = useMemo(
-    () =>
-      scripts.filter(
-        (s) => section.scriptIds.includes(s.id) && (hasSSD === true || !SSD_ONLY_IDS.includes(s.id))
-      ),
-    [scripts, section.scriptIds, hasSSD]
+    () => scripts.filter((s) => section.scriptIds.includes(s.id)),
+    [scripts, section.scriptIds]
   );
 
   const isAnyExecuting = section.scriptIds.some((id) => activeExecution === id);
@@ -127,14 +122,6 @@ export default function UtilitiesPage() {
     setConfirmScript,
     handleConfirm,
   } = useScriptPage('Utilities');
-  const [hasSSD, setHasSSD] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    window.electronAPI
-      .hasSSD()
-      .then(setHasSSD)
-      .catch(() => setHasSSD(false));
-  }, []);
 
   if (state.status === 'loading') {
     return (
@@ -162,10 +149,7 @@ export default function UtilitiesPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Wrench className="size-28 text-primary" />
-        </div>
+      <HeroBanner visual={<AnimatedUtilities />}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
             <Wrench className="size-4 text-primary" />
@@ -175,11 +159,11 @@ export default function UtilitiesPage() {
           </div>
           <h2 className="text-lg font-bold text-foreground">Ferramentas de manutenção e reparo</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Mantenha seu sistema saudável com ferramentas de manutenção, reparo de integridade,
-            otimização de armazenamento e gerenciamento de memória.
+            Mantenha seu sistema saudável com ferramentas de manutenção, gerenciamento de memória e
+            otimizações gerais de desempenho.
           </p>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* Util Sections */}
       {UTIL_SECTIONS.map((section) => (
@@ -187,7 +171,6 @@ export default function UtilitiesPage() {
           key={section.id}
           section={section}
           scripts={utilScripts}
-          hasSSD={hasSSD}
           activeExecution={activeExecution}
           onCancel={handleCancel}
           onConfirmExecute={handleConfirmExecute}

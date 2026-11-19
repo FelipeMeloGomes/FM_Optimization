@@ -86,14 +86,15 @@ export function Sidebar({ openCommandPalette, defaultCollapsed = false }: Sideba
   const theme = getThemeById(settings.theme);
   const glowColor = theme.signature?.glowColor;
 
-  const groups = CATEGORIES.filter((category) => category.id !== 'sistema')
+  const groups = CATEGORIES.filter((category) => category.id !== 'configuracoes')
     .map((category) => ({
       category,
       items: routesByCategory(category.id).filter((route) => !isPageLocked(route.path, settings)),
     }))
     .filter((group) => group.items.length > 0);
 
-  const bottomItems = routesByCategory('sistema').filter(
+  const bottomCategory = CATEGORIES.find((category) => category.id === 'configuracoes');
+  const bottomItems = routesByCategory('configuracoes').filter(
     (route) => !isPageLocked(route.path, settings)
   );
 
@@ -184,6 +185,11 @@ export function Sidebar({ openCommandPalette, defaultCollapsed = false }: Sideba
             collapsed && 'items-center'
           )}
         >
+          {bottomCategory && !collapsed && (
+            <h3 className="px-3 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
+              {bottomCategory.label}
+            </h3>
+          )}
           {bottomItems.map((route) => (
             <SidebarLink
               key={route.path}

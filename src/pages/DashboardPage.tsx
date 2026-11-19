@@ -2,7 +2,6 @@ import {
   Activity,
   Clock,
   Cpu,
-  Gauge,
   HardDrive,
   Loader2,
   MemoryStick,
@@ -14,6 +13,8 @@ import {
 import { useEffect, useMemo } from 'react';
 import { formatMemoryTotal } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
+import { AnimatedDashboard } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { Badge, Button, Skeleton } from '../components/ui';
 import { useHistoryContext } from '../contexts/HistoryContext';
 import { useScriptContext } from '../contexts/ScriptContext';
@@ -152,10 +153,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Gauge className="size-28 text-primary" />
-        </div>
+      <HeroBanner visual={<AnimatedDashboard />}>
         <div className="relative p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -218,7 +216,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* Main Stats Grid */}
       <div>

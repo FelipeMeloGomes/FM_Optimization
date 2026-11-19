@@ -34,6 +34,204 @@
   --font-sans: "Inter Variable", system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", monospace;
   --radius: 0.75rem;
+  --animate-mouse-glide: mouse-glide 6s ease-in-out infinite;
+  --animate-monitor-pulse: monitor-pulse 4s ease-in-out infinite;
+  --animate-keyboard-glow: keyboard-glow 3.5s ease-in-out infinite;
+  --animate-key-caret: key-caret 1s steps(1, end) infinite;
+  --animate-key-repeat: key-repeat 0.1s linear infinite;
+  --animate-hero-float: hero-float 4s ease-in-out infinite;
+  --animate-hero-pulse: hero-pulse 4s ease-in-out infinite;
+  --animate-hero-spin: hero-spin 16s linear infinite;
+  --animate-hero-drift: hero-drift 6s ease-in-out infinite;
+  --animate-hero-scan: hero-scan 5s ease-in-out infinite;
+  --animate-hero-scanline: hero-scanline 2.5s ease-in-out infinite;
+  --animate-hero-tilt: hero-tilt 5s ease-in-out infinite;
+  --animate-hero-drop: hero-drop 4.5s ease-in-out infinite;
+  --animate-hero-storage: hero-storage 5s ease-in-out infinite;
+  --animate-hero-repair: hero-repair 4s ease-in-out infinite;
+}
+
+/* Cursor decorativo do banner da página Mouse (não move o ponteiro real). */
+@keyframes mouse-glide {
+  0% {
+    transform: translate(0, 0) rotate(-8deg);
+  }
+  25% {
+    transform: translate(-150px, 22px) rotate(6deg);
+  }
+  50% {
+    transform: translate(-280px, -8px) rotate(-4deg);
+  }
+  75% {
+    transform: translate(-120px, 34px) rotate(8deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(-8deg);
+  }
+}
+
+/* Teclado decorativo e prévia de repetição/piscagem (não mexem no sistema). */
+@keyframes keyboard-glow {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateY(-3px) scale(1.06);
+    opacity: 1;
+  }
+}
+
+@keyframes key-caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes key-repeat {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Visuais decorativos dos banners: só animação CSS, sem mexer no sistema. */
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+    opacity: 1;
+  }
+}
+
+@keyframes hero-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.78;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes hero-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hero-drift {
+  0%,
+  100% {
+    transform: translateX(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateX(-16px) rotate(4deg);
+  }
+}
+
+@keyframes hero-scan {
+  0%,
+  100% {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+}
+
+@keyframes hero-scanline {
+  0%,
+  100% {
+    transform: translateY(-18px);
+    opacity: 0;
+  }
+  20%,
+  80% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(18px);
+    opacity: 1;
+  }
+}
+
+@keyframes hero-tilt {
+  0%,
+  100% {
+    transform: rotate(-8deg) translateY(0);
+  }
+  50% {
+    transform: rotate(8deg) translateY(-3px);
+  }
+}
+
+@keyframes hero-drop {
+  0%,
+  100% {
+    transform: translateY(-6px);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+@keyframes hero-storage {
+  0%,
+  100% {
+    transform: translateY(0) scale(0.98);
+    opacity: 0.78;
+  }
+  50% {
+    transform: translateY(-7px) scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes hero-repair {
+  0%,
+  100% {
+    transform: rotate(-6deg) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: rotate(6deg) scale(1.08);
+    opacity: 1;
+  }
+}
+
+/* Monitor decorativo do banner da página Monitor (puramente visual). */
+@keyframes monitor-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
 }
 
 /*

@@ -2,6 +2,8 @@ import { AlertCircle, FolderCog, Gamepad2, Loader2, MonitorSmartphone } from 'lu
 import { useCallback, useEffect, useState } from 'react';
 import bluestacksLogo from '../assets/bluestacks-logo.png';
 import { showEnhancedToast } from '../components/EnhancedToast';
+import { AnimatedEmuladores } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { Badge, Button, Card, CardContent, Switch } from '../components/ui';
 import { EmulatorProvider, useEmulatorContext } from '../contexts/EmulatorContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
@@ -242,10 +244,7 @@ function EmuladoresPageContent() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Gamepad2 className="size-28 text-primary" />
-        </div>
+      <HeroBanner visual={<AnimatedEmuladores />}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
             <Gamepad2 className="size-4 text-primary" />
@@ -258,7 +257,7 @@ function EmuladoresPageContent() {
             Conecte-se a emuladores Android via ADB para remover apps indesejados
           </p>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* ADB Status */}
       <Card className="border-primary/20">

@@ -1,6 +1,26 @@
 import { z } from 'zod';
 import { CLEANER_ITEM_IDS } from '../shared/cleaner-items';
 import {
+  DISPLAY_MAX_FREQUENCY,
+  DISPLAY_MIN_FREQUENCY,
+  DISPLAY_MIN_HEIGHT,
+  DISPLAY_MIN_WIDTH,
+} from '../shared/display-settings';
+import {
+  KEYBOARD_BLINK_MAX,
+  KEYBOARD_BLINK_MIN,
+  KEYBOARD_REPEAT_DELAY_MAX,
+  KEYBOARD_REPEAT_DELAY_MIN,
+  KEYBOARD_REPEAT_RATE_MAX,
+  KEYBOARD_REPEAT_RATE_MIN,
+} from '../shared/keyboard-settings';
+import {
+  MOUSE_DOUBLE_CLICK_MAX,
+  MOUSE_DOUBLE_CLICK_MIN,
+  MOUSE_POINTER_SPEED_MAX,
+  MOUSE_POINTER_SPEED_MIN,
+} from '../shared/mouse-settings';
+import {
   InterfaceIndexSchema,
   RestorePointNameSchema,
   RestorePointSeqSchema,
@@ -189,6 +209,29 @@ export const StartupStopServiceSchema = z.object({
   id: z.string().min(1, 'Service ID is required').max(2048),
 });
 
+export const MouseSettingsSchema = z.object({
+  pointerSpeed: z.number().int().min(MOUSE_POINTER_SPEED_MIN).max(MOUSE_POINTER_SPEED_MAX),
+  enhancedPrecision: z.boolean(),
+  doubleClickSpeed: z.number().int().min(MOUSE_DOUBLE_CLICK_MIN).max(MOUSE_DOUBLE_CLICK_MAX),
+});
+
+export const DisplayModeSchema = z.object({
+  width: z.number().int().min(DISPLAY_MIN_WIDTH).max(16384),
+  height: z.number().int().min(DISPLAY_MIN_HEIGHT).max(16384),
+  frequency: z.number().int().min(DISPLAY_MIN_FREQUENCY).max(DISPLAY_MAX_FREQUENCY),
+});
+
+export const ApplyDisplaySettingsSchema = z.object({
+  deviceName: z.string().regex(/^\\\\\.\\DISPLAY\d{1,2}$/, 'Monitor inválido'),
+  mode: DisplayModeSchema,
+});
+
+export const KeyboardSettingsSchema = z.object({
+  repeatDelay: z.number().int().min(KEYBOARD_REPEAT_DELAY_MIN).max(KEYBOARD_REPEAT_DELAY_MAX),
+  repeatRate: z.number().int().min(KEYBOARD_REPEAT_RATE_MIN).max(KEYBOARD_REPEAT_RATE_MAX),
+  caretBlinkRate: z.number().int().min(KEYBOARD_BLINK_MIN).max(KEYBOARD_BLINK_MAX),
+});
+
 export const IpcSchemas: Record<string, z.ZodSchema> = {
   'get-system-info': z.undefined(),
   'get-cpu-info': z.undefined(),
@@ -250,6 +293,12 @@ export const IpcSchemas: Record<string, z.ZodSchema> = {
   'startup:set-enabled': StartupSetEnabledSchema,
   'startup:open-location': StartupOpenLocationSchema,
   'startup:stop-service': StartupStopServiceSchema,
+  'mouse:get-settings': z.undefined(),
+  'mouse:apply-settings': MouseSettingsSchema,
+  'display:get-settings': z.undefined(),
+  'display:apply-settings': ApplyDisplaySettingsSchema,
+  'keyboard:get-settings': z.undefined(),
+  'keyboard:apply-settings': KeyboardSettingsSchema,
 };
 
 export function validateIpcInput<T>(

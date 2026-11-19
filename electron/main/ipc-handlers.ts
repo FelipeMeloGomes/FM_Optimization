@@ -2,6 +2,7 @@ import { readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, type OpenDialogOptions, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import type { ApplyDisplaySettingsPayload } from '../shared/display-settings';
 import type {
   AppSettings,
   BenchmarkResult,
@@ -11,6 +12,8 @@ import type {
   StartupSetEnabledPayload,
   StartupStopServicePayload,
 } from '../shared/ipc-types';
+import type { KeyboardSettings } from '../shared/keyboard-settings';
+import type { MouseSettings } from '../shared/mouse-settings';
 import { appState } from './app-state';
 import { auditIpcValidation, auditLog } from './audit-logger';
 import { resolveScriptId } from './legacy-script-ids';
@@ -40,6 +43,7 @@ import {
   saveSettings,
   saveUserData,
 } from './services/data-service';
+import { applyDisplaySettings, readDisplaySettings } from './services/display-settings';
 import { relaunchElevated } from './services/elevation';
 import {
   cancelEssentialInstall,
@@ -47,6 +51,8 @@ import {
   listEssentials,
   openEssentialPage,
 } from './services/essentials';
+import { applyKeyboardSettings, readKeyboardSettings } from './services/keyboard-settings';
+import { applyMouseSettings, readMouseSettings } from './services/mouse-settings';
 import { generateSalt, hashPassword, verifyPassword } from './services/page-lock';
 import { execPowerShell, execPowerShellSafe } from './services/powershell';
 import { checkRateLimit } from './services/rate-limit';
@@ -693,6 +699,39 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('startup:stop-service', (_e, payload: unknown) =>
     handleIpc('startup:stop-service', payload, (validated) =>
       getStartupManager().stopStartupService((validated as StartupStopServicePayload).id)
+    )
+  );
+
+  ipcMain.handle('mouse:get-settings', () =>
+    handleIpcNoInput('mouse:get-settings', () => readMouseSettings())
+  );
+
+  ipcMain.handle('mouse:apply-settings', (_e, payload: unknown) =>
+    handleIpc('mouse:apply-settings', payload, (validated) =>
+      applyMouseSettings(validated as MouseSettings)
+    )
+  );
+
+  ipcMain.handle('display:get-settings', () =>
+    handleIpcNoInput('display:get-settings', () => readDisplaySettings())
+  );
+
+  ipcMain.handle('display:apply-settings', (_e, payload: unknown) =>
+    handleIpc('display:apply-settings', payload, (validated) =>
+      applyDisplaySettings(
+        (validated as ApplyDisplaySettingsPayload).deviceName,
+        (validated as ApplyDisplaySettingsPayload).mode
+      )
+    )
+  );
+
+  ipcMain.handle('keyboard:get-settings', () =>
+    handleIpcNoInput('keyboard:get-settings', () => readKeyboardSettings())
+  );
+
+  ipcMain.handle('keyboard:apply-settings', (_e, payload: unknown) =>
+    handleIpc('keyboard:apply-settings', payload, (validated) =>
+      applyKeyboardSettings(validated as KeyboardSettings)
     )
   );
 }

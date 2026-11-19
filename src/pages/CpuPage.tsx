@@ -1,6 +1,8 @@
 import { AlertTriangle, Cpu } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { AnimatedCpu } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Badge, Button, Card, CardContent } from '../components/ui';
 import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
@@ -137,16 +139,14 @@ export default function CpuPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div
+      <HeroBanner
+        visual={<AnimatedCpu iconClassName={TONE_TEXT[tone]} />}
         className={cn(
           'relative overflow-hidden rounded-xl border bg-gradient-to-br to-transparent',
           TONE_BORDER[tone],
           TONE_BG_FAINT[tone]
         )}
       >
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Cpu className={cn('size-28', TONE_TEXT[tone])} />
-        </div>
         <div className="relative p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -166,7 +166,7 @@ export default function CpuPage() {
             </Badge>
           </div>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* CPU Info Card */}
       <Card className={cn('border', TONE_BORDER[tone])}>

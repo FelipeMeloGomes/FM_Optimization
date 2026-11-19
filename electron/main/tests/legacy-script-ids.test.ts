@@ -46,7 +46,7 @@ describe('resolveScriptId', () => {
       if (n === 12 || n === 24 || n === 29) continue;
       expect(resolveScriptId(`cpu-${n}`)).toBe(`cpu-${n}`);
     }
-    expect(resolveScriptId('builtin-13')).toBe('builtin-13');
+    expect(resolveScriptId('builtin-40')).toBe('builtin-40');
     expect(resolveScriptId('tweaks-4')).toBe('tweaks-4');
   });
 
@@ -145,9 +145,9 @@ describe('rewriteHistoryScriptIds', () => {
   });
 
   it('is a no-op when nothing is legacy', () => {
-    const entries = [entry('cpu-1'), entry('builtin-13')];
+    const entries = [entry('cpu-1'), entry('builtin-40')];
     expect(rewriteHistoryScriptIds(entries)).toBe(false);
-    expect(entries.map((e) => e.scriptId)).toEqual(['cpu-1', 'builtin-13']);
+    expect(entries.map((e) => e.scriptId)).toEqual(['cpu-1', 'builtin-40']);
   });
 
   it('tolerates an empty history', () => {

@@ -170,14 +170,6 @@ describe('scripts interativos devolvem um codigo de saida honesto', () => {
     const content = decode('tweaks-5');
     expect(content).toMatch(/powercfg \/getactivescheme[\s\S]*?pause\s*\r?\n\s*exit \/b 3/i);
   });
-
-  it('builtin-13 sai com 3 quando fecha sem ter aplicado', () => {
-    const content = decode('builtin-13');
-    expect(content).toContain('set "APPLIED=0"');
-    expect(content).toContain('set "APPLIED=1"');
-    expect(content).toContain('if /i "!choice!"=="E" goto finish');
-    expect(content).toMatch(/:finish\s*\r?\nif "!APPLIED!"=="1" exit \/b 0\s*\r?\nexit \/b 3/i);
-  });
 });
 
 /**

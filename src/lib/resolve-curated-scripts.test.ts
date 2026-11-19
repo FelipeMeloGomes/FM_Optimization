@@ -6,9 +6,11 @@ interface FakeScript {
   subcategory: string;
 }
 
-// Mirrors category "Input Lag" in resources/scripts.json. Nine of these carry
-// subcategory "Regedit", but inputlag-9 (keyboard) and inputlag-11 (mouse) are
-// presented by the page under the device cards instead of the registry list.
+// Fixture with the old "Input Lag" category layout: nine entries carry
+// subcategory "Regedit", but inputlag-9 (keyboard) and inputlag-11 (mouse) were
+// presented under device cards. Those device scripts now live in
+// "Periféricos"; the helper is tested with the mixed bucket to prove it counts
+// the curated list rather than the subcategory label.
 const CATALOG: FakeScript[] = [
   { id: 'inputlag-1', subcategory: 'Teclado' },
   { id: 'inputlag-2', subcategory: 'Mouse' },
@@ -35,7 +37,7 @@ const REGISTRY_ITEMS = [
   { id: 'r7', scriptId: 'inputlag-12' },
 ];
 
-// Mirrors DEVICE_CARDS scriptIds in InputLagPage.tsx.
+// Mirrors DEVICE_CARDS scriptIds in PeripheralsPage.tsx.
 const DEVICE_GROUPS = [['inputlag-1', 'inputlag-9'], ['inputlag-2', 'inputlag-11'], ['inputlag-3']];
 
 describe('resolveCuratedItems', () => {

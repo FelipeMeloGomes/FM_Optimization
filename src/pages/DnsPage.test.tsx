@@ -55,6 +55,16 @@ function renderPage() {
   return render(<DnsPage />);
 }
 
+function cardFor(name: string): HTMLElement {
+  const card = screen.getByRole('heading', { level: 3, name }).closest('.rounded-lg');
+  if (!card) throw new Error(`card do provedor ${name} não encontrado`);
+  return card as HTMLElement;
+}
+
+function resultado(address: string, latencyMs: number | null) {
+  return [address, { address, latencyMs }] as const;
+}
+
 beforeEach(() => dns());
 afterEach(() => vi.restoreAllMocks());
 
@@ -73,6 +83,20 @@ describe('DnsPage', () => {
     expect(screen.getByText('AdGuard')).toBeDefined();
     expect(screen.getByText('CleanBrowsing')).toBeDefined();
     expect(screen.getByText('DHCP (Padrão)')).toBeDefined();
+  });
+
+  it('exibe os provedores adicionais na página', () => {
+    renderPage();
+
+    for (const name of [
+      'Cloudflare Security',
+      'Cloudflare Family',
+      'DNS4EU Protective',
+      'DNS.WATCH',
+      'SafeDNS',
+    ]) {
+      expect(screen.getByText(name)).toBeDefined();
+    }
   });
 
   it('usa o hero banner padrão, com o benchmark dentro dele', () => {
@@ -123,5 +147,158 @@ describe('DnsPage', () => {
 
     expect(screen.getAllByText('Ativo').length).toBeGreaterThan(0);
     expect(screen.getByText('DNS Ativo')).toBeDefined();
+  });
+
+  it('coloca o provedor ativo em primeiro depois do benchmark', () => {
+    dns({
+      benchmarks: new Map([
+        resultado('1.1.1.1', 8),
+        resultado('1.0.0.1', 8),
+        resultado('8.8.8.8', 40),
+        resultado('8.8.4.4', 40),
+      ]),
+      benchmarkStatus: 'done',
+      activeDnsIps: ['8.8.8.8', '8.8.4.4'],
+    });
+
+    renderPage();
+
+    const nomes = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+    expect(nomes[0]).toBe('Google');
+  });
+
+  it('coloca o provedor ativo em primeiro durante a varredura', () => {
+    dns({
+      benchmarkStatus: 'loading',
+      benchmarks: new Map([resultado('1.1.1.1', 8), resultado('1.0.0.1', 8)]),
+      activeDnsIps: ['8.8.8.8', '8.8.4.4'],
+    });
+
+    renderPage();
+
+    const nomes = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+    expect(nomes[0]).toBe('Google');
+  });
+
+  it('coloca o DHCP em primeiro quando é o DNS ativo', () => {
+    dns({ activeDnsIps: [], benchmarkStatus: 'done' });
+
+    renderPage();
+
+    const nomes = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+    expect(nomes[0]).toBe('DHCP (Padrão)');
+  });
+
+  it('mantém o provedor mais rápido correto quando o ativo não é o mais rápido', () => {
+    dns({
+      benchmarks: new Map([
+        resultado('1.1.1.1', 8),
+        resultado('1.0.0.1', 8),
+        resultado('8.8.8.8', 40),
+        resultado('8.8.4.4', 40),
+      ]),
+      benchmarkStatus: 'done',
+      activeDnsIps: ['8.8.8.8', '8.8.4.4'],
+    });
+
+    renderPage();
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Cloudflare' })).toBeDefined();
+  });
+
+  it('não reordena os demais provedores enquanto a varredura está em andamento', () => {
+    dns({
+      benchmarkStatus: 'loading',
+      activeDnsIps: ['195.46.39.39', '195.46.39.40'],
+      benchmarks: new Map([
+        resultado('1.1.1.1', 200),
+        resultado('1.0.0.1', 200),
+        resultado('8.8.8.8', 8),
+        resultado('8.8.4.4', 8),
+      ]),
+    });
+
+    renderPage();
+
+    const nomes = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+    expect(nomes[0]).toBe('SafeDNS');
+    expect(nomes[1]).toBe('Cloudflare');
+    expect(nomes[2]).toBe('Google');
+  });
+
+  it('marca somente o próximo provedor como em teste, com a varredura no próprio card', () => {
+    dns({
+      benchmarkStatus: 'loading',
+      benchmarks: new Map([resultado('1.1.1.1', 8), resultado('1.0.0.1', 8)]),
+    });
+
+    renderPage();
+
+    expect(screen.getAllByText('Testando', { exact: true })).toHaveLength(1);
+    const card = cardFor('Google');
+    expect(card.textContent).toContain('Testando');
+    expect(card.className).toContain('dns-scan-card');
+    expect(card.querySelector('.dns-scan-line')).not.toBeNull();
+  });
+
+  it('mostra o resultado no próprio card assim que o provedor é medido', () => {
+    dns({
+      benchmarkStatus: 'loading',
+      benchmarks: new Map([resultado('1.1.1.1', 8), resultado('1.0.0.1', 8)]),
+    });
+
+    renderPage();
+
+    const card = cardFor('Cloudflare');
+    expect(card.textContent).toContain('8');
+    expect(card.textContent).not.toContain('Testando');
+    expect(card.className).toContain('dns-result-in');
+  });
+
+  it('considera medido um DNS cuja latência falhou e segue para o próximo', () => {
+    dns({
+      benchmarkStatus: 'loading',
+      benchmarks: new Map([resultado('1.1.1.1', null), resultado('1.0.0.1', null)]),
+    });
+
+    renderPage();
+
+    expect(
+      screen.getByText('Testando', { exact: true }).closest('.rounded-lg')?.textContent
+    ).toContain('Google');
+  });
+
+  it('substitui o painel genérico por uma trilha com um segmento por DNS', () => {
+    dns({ benchmarkStatus: 'loading' });
+
+    renderPage();
+
+    expect(screen.queryByText('Testando velocidade dos DNSs…')).toBeNull();
+    const rail = screen.getByRole('progressbar', { name: 'Varredura de DNS' });
+    expect(rail.getAttribute('aria-valuemin')).toBe('0');
+    expect(rail.getAttribute('aria-valuemax')).toBe('19');
+    expect(rail.getAttribute('aria-valuenow')).toBe('0');
+    expect(rail.querySelectorAll('span')).toHaveLength(19);
+    expect(screen.getByText('Varredura em andamento')).toBeDefined();
+  });
+
+  it('preenche a trilha conforme os resultados chegam e a remove ao terminar', () => {
+    dns({
+      benchmarkStatus: 'loading',
+      benchmarks: new Map([resultado('1.1.1.1', 8), resultado('1.0.0.1', 8)]),
+    });
+    const { rerender } = renderPage();
+
+    const rail = screen.getByRole('progressbar', { name: 'Varredura de DNS' });
+    expect(rail.getAttribute('aria-valuenow')).toBe('1');
+    expect(rail.querySelectorAll('.bg-primary')).toHaveLength(1);
+
+    dns({
+      benchmarkStatus: 'done',
+      benchmarks: new Map([resultado('1.1.1.1', 8), resultado('1.0.0.1', 8)]),
+    });
+    rerender(<DnsPage />);
+
+    expect(screen.queryByRole('progressbar', { name: 'Varredura de DNS' })).toBeNull();
   });
 });

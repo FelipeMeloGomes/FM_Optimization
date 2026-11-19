@@ -1,5 +1,7 @@
 import { ShieldCheck } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { AnimatedPrivacySecurity } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useScriptPage } from '../hooks/use-script-page';
@@ -45,10 +47,7 @@ export default function PrivacySecurityPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <ShieldCheck className="size-28 text-primary" />
-        </div>
+      <HeroBanner visual={<AnimatedPrivacySecurity />}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck className="size-4 text-primary" />
@@ -62,7 +61,7 @@ export default function PrivacySecurityPage() {
             pelo sistema. Estes ajustes não alteram o Windows Defender nem o Windows Update.
           </p>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* Privacy Sections */}
       {PRIVACY_SECTIONS.map((section) => (

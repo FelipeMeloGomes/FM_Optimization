@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getShortcutRoute, PAGE_ROUTES } from '../hooks/use-keyboard-shortcuts';
 import { CATEGORY_ROUTES } from '../lib/category-routes';
 import { ALWAYS_VISIBLE_ROUTES } from '../lib/page-lock';
-import { ROUTES, routesByCategory } from './config';
+import { CATEGORIES, ROUTES, routesByCategory } from './config';
 
 /**
  * Menu, Ctrl+K, atalhos e Page Lock precisam enxergar o mesmo conjunto de
@@ -26,8 +26,46 @@ describe('rotas da aplicacao', () => {
   it('inclui Personalizacao como pagina propria e protegida', () => {
     const route = ROUTES.find((r) => r.path === '/personalizacao');
     expect(route?.label).toBe('Personalização');
-    expect(route?.category).toBe('manutencao');
+    expect(route?.category).toBe('formatacao');
     expect(route?.protected).toBe(true);
+  });
+
+  it('reúne Debloat, Essenciais PC e Personalização na seção Formatação', () => {
+    expect(CATEGORIES.find((category) => category.id === 'formatacao')?.label).toBe('Formatação');
+    expect(routesByCategory('formatacao').map((route) => route.path)).toEqual([
+      '/debloat',
+      '/essenciais',
+      '/personalizacao',
+    ]);
+    expect(routesByCategory('manutencao').map((route) => route.path)).toEqual(['/cleaner']);
+  });
+
+  it('usa Sistema para as três páginas de periféricos e Configurações para o rodapé', () => {
+    expect(CATEGORIES.find((category) => category.id === 'sistema')?.label).toBe('Sistema');
+    expect(CATEGORIES.find((category) => category.id === 'configuracoes')?.label).toBe(
+      'Configurações'
+    );
+
+    expect(
+      routesByCategory('sistema')
+        .map((route) => route.path)
+        .sort()
+    ).toEqual(['/monitor', '/mouse', '/teclado']);
+    expect(
+      routesByCategory('configuracoes')
+        .map((route) => route.path)
+        .sort()
+    ).toEqual(['/history', '/restore-points', '/settings']);
+
+    for (const path of ['/mouse', '/monitor', '/teclado']) {
+      const route = ROUTES.find((r) => r.path === path);
+      expect(route?.category, path).toBe('sistema');
+      expect(route?.protected, path).toBe(true);
+    }
+    expect(ROUTES.find((r) => r.category === 'sistema')?.label).toBe('Mouse');
+    expect(CATEGORY_ROUTES.Mouse).toBe('/mouse');
+    expect(CATEGORY_ROUTES.Monitor).toBe('/monitor');
+    expect(CATEGORY_ROUTES.Teclado).toBe('/teclado');
   });
 
   it('tem DNS como pagina propria na categoria Rede, sem tirar os scripts de /rede', () => {
@@ -39,6 +77,19 @@ describe('rotas da aplicacao', () => {
     const rede = ROUTES.find((r) => r.path === '/rede');
     expect(rede?.label).toBe('Rede');
     expect(rede?.category).toBe('rede');
+  });
+
+  it('tem Armazenamento e Reparo do sistema como páginas próprias em Ferramentas', () => {
+    expect(routesByCategory('ferramentas').map((route) => route.path)).toContain('/armazenamento');
+    expect(routesByCategory('ferramentas').map((route) => route.path)).toContain(
+      '/reparo-do-sistema'
+    );
+
+    for (const path of ['/armazenamento', '/reparo-do-sistema']) {
+      const route = ROUTES.find((r) => r.path === path);
+      expect(route?.category, path).toBe('ferramentas');
+      expect(route?.protected, path).toBe(true);
+    }
   });
 
   it('tem Velocidade como pagina propria na categoria Rede', () => {
@@ -53,10 +104,27 @@ describe('rotas da aplicacao', () => {
     expect(paths).not.toContain('/apps');
   });
 
-  it('coloca Restauracao e Historico em Sistema, nao em Seguranca', () => {
-    expect(routesByCategory('seguranca').map((r) => r.path)).toEqual(['/privacidade-seguranca']);
-    expect(routesByCategory('sistema').map((r) => r.path)).toContain('/restore-points');
-    expect(routesByCategory('sistema').map((r) => r.path)).toContain('/history');
+  it('coloca Restauracao e Historico em Configurações', () => {
+    expect(routesByCategory('configuracoes').map((r) => r.path)).toContain('/restore-points');
+    expect(routesByCategory('configuracoes').map((r) => r.path)).toContain('/history');
+  });
+
+  it('move Privacidade para Ferramentas e remove a categoria Segurança vazia', () => {
+    const privacidade = ROUTES.find((r) => r.path === '/privacidade-seguranca');
+    expect(privacidade?.label).toBe('Privacidade');
+    expect(privacidade?.category).toBe('ferramentas');
+    expect(privacidade?.protected).toBe(true);
+    expect(routesByCategory('ferramentas').map((r) => r.path)).toContain('/privacidade-seguranca');
+    expect(CATEGORIES.map((c) => c.id)).not.toContain('seguranca');
+  });
+
+  it('move Emuladores para Ferramentas e remove a categoria Programas vazia', () => {
+    const emuladores = ROUTES.find((r) => r.path === '/emuladores');
+    expect(emuladores?.label).toBe('Emuladores');
+    expect(emuladores?.category).toBe('ferramentas');
+    expect(emuladores?.protected).toBe(true);
+    expect(routesByCategory('ferramentas').map((r) => r.path)).toContain('/emuladores');
+    expect(CATEGORIES.map((c) => c.id)).not.toContain('programas');
   });
 
   it('todo destino de categoria do Ctrl+K existe no menu', () => {

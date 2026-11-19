@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { useMemo, useRef } from 'react';
 import { EXIT_INTERRUPTED_SENTINEL } from '../../electron/shared/exit-codes';
+import { AnimatedHistory } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import {
   Badge,
   EmptyState,
@@ -165,10 +167,7 @@ export default function HistoryPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <History className="size-28 text-primary" />
-        </div>
+      <HeroBanner visual={<AnimatedHistory />}>
         <div className="relative p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -188,7 +187,7 @@ export default function HistoryPage() {
             </Badge>
           </div>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* Stats Cards */}
       {stats && stats.total > 0 && (

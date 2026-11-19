@@ -32,7 +32,7 @@ describe('normalizeInteractiveExitCode', () => {
   });
 
   it('trata o sentinela de menu fechado sem aplicar como desconhecido', () => {
-    for (const id of ['tweaks-5', 'apps-2', 'builtin-13']) {
+    for (const id of ['tweaks-5', 'apps-2']) {
       expect(normalizeInteractiveExitCode(id, EXIT_MENU_CLOSED_WITHOUT_APPLY)).toBeNull();
     }
   });
@@ -47,7 +47,7 @@ describe('normalizeInteractiveExitCode', () => {
 
   it('nao confunde sucesso com os sentinelas', () => {
     expect(normalizeInteractiveExitCode('apps-6', 0)).toBe(0);
-    expect(normalizeInteractiveExitCode('builtin-13', 0)).toBe(0);
+    expect(normalizeInteractiveExitCode('tweaks-5', 0)).toBe(0);
   });
 
   it('trata Ctrl+C (fechar janela) como interrompido pelo usuário', () => {

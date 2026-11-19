@@ -1,5 +1,7 @@
 import { Wifi } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { AnimatedNetwork } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useScriptPage } from '../hooks/use-script-page';
@@ -48,10 +50,7 @@ export default function NetworkPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Wifi className="size-28 text-primary" aria-hidden="true" />
-        </div>
+      <HeroBanner visual={<AnimatedNetwork />}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
             <Wifi className="size-4 text-primary" aria-hidden="true" />
@@ -65,7 +64,7 @@ export default function NetworkPage() {
             escolher e aplicar um provedor DNS, use a página DNS.
           </p>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* Network Sections */}
       {NETWORK_SECTIONS.map((section) => (

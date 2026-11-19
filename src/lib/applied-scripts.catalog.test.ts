@@ -9,7 +9,7 @@ import {
 
 /**
  * Este teste usa o catálogo real que o app empacota, não uma cópia transcrita à
- * mão: é o que liga a regra do selo/contador aos 104 scripts de verdade. Se
+ * mão: é o que liga a regra do selo/contador aos scripts de verdade. Se
  * alguém marcar um script como interativo ou mexer na lista de exclusões, o
  * número aqui muda e o teste avisa.
  */
@@ -31,9 +31,9 @@ function entry(scriptId: string): ExecutionHistoryEntry {
 }
 
 describe('catálogo real (resources/scripts.json)', () => {
-  it('tem 83 ajustes contáveis num catálogo de 98 scripts', () => {
-    expect(scripts).toHaveLength(98);
-    expect(scripts.filter(isCountableScript)).toHaveLength(83);
+  it('tem 81 ajustes contáveis num catálogo de 96 scripts', () => {
+    expect(scripts).toHaveLength(96);
+    expect(scripts.filter(isCountableScript)).toHaveLength(81);
   });
 
   it('conta os interativos que aplicam algo, mas não reverters nem utilitários', () => {
@@ -42,7 +42,7 @@ describe('catálogo real (resources/scripts.json)', () => {
       .map((s) => s.id)
       .sort();
     expect(countableInteractive).toEqual(
-      ['apps-2', 'apps-4', 'apps-6', 'builtin-13', 'dns-1', 'tweaks-5'].sort()
+      ['apps-2', 'apps-4', 'apps-6', 'dns-1', 'tweaks-5'].sort()
     );
   });
 
@@ -53,9 +53,9 @@ describe('catálogo real (resources/scripts.json)', () => {
   });
 
   it('o rodapé não conta limpeza como tweak, mas conta Utilitarios', () => {
-    // builtin-15 (Prioridade CPU/GPU para Jogos) conta como ajuste; cleaner-3
+    // util-1 (Manutenção) conta como ajuste; cleaner-3
     // (Limpeza de Navegadores) não: limpeza tem página própria e não é tweak.
-    const summary = summarizeAppliedScripts(scripts, [entry('builtin-15'), entry('cleaner-3')]);
-    expect(summary).toEqual({ applied: 1, total: 79 });
+    const summary = summarizeAppliedScripts(scripts, [entry('util-1'), entry('cleaner-3')]);
+    expect(summary).toEqual({ applied: 1, total: 77 });
   });
 });

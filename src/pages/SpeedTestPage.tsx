@@ -1,5 +1,7 @@
 import { Activity, AlertCircle, Play, RotateCcw, Square, Wifi } from 'lucide-react';
 import type { SpeedTestPhase } from '../../electron/shared/ipc-types';
+import { AnimatedSpeedTest } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { SpeedGauge } from '../components/SpeedGauge';
 import { Button, Card, CardContent, Progress } from '../components/ui';
 import { SpeedProvider, useSpeedContext } from '../contexts/SpeedContext';
@@ -48,10 +50,7 @@ function SpeedTestPageContent() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Activity className="size-28 text-primary" aria-hidden="true" />
-        </div>
+      <HeroBanner visual={<AnimatedSpeedTest />}>
         <div className="relative p-6">
           <div className="mb-2 flex items-center gap-2">
             <Activity className="size-4 text-primary" aria-hidden="true" />
@@ -64,7 +63,7 @@ function SpeedTestPageContent() {
             Meça download, upload, ping e jitter da sua conexão
           </p>
         </div>
-      </div>
+      </HeroBanner>
 
       <Card className="border-primary/20">
         <CardContent className="flex flex-col items-center gap-5 p-6 sm:p-8">

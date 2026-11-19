@@ -12,6 +12,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppxPackageInfo } from '../../electron/shared/ipc-types';
 import { ConfirmRemoveAppsDialog } from '../components/ConfirmRemoveAppsDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
+import { AnimatedDebloat } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { Button, Input, Tabs } from '../components/ui';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { useAppxInventory } from '../hooks/use-appx-inventory';
@@ -252,10 +254,7 @@ export default function DebloatPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <PackageX className="size-28 text-primary" aria-hidden="true" />
-        </div>
+      <HeroBanner visual={<AnimatedDebloat />}>
         <div className="relative p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -292,7 +291,7 @@ export default function DebloatPage() {
             </p>
           )}
         </div>
-      </div>
+      </HeroBanner>
 
       {error && packages.length > 0 && (
         <div

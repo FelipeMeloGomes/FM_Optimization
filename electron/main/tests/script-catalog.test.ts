@@ -42,9 +42,30 @@ const gpuPage = scripts.filter((s) => s.category === 'GPU');
 const windowsPage = scripts.filter((s) => s.category === 'Windows');
 const cpuFamily = scripts.filter((s) => /^cpu-\d+$/.test(s.id));
 
+describe('tweaks de input lag', () => {
+  const teclado = ['inputlag-1', 'inputlag-9'];
+  const mouse = ['inputlag-2', 'inputlag-11'];
+  const monitor = ['inputlag-3'];
+  const registro = [
+    'inputlag-4',
+    'inputlag-5',
+    'inputlag-6',
+    'inputlag-7',
+    'inputlag-8',
+    'inputlag-10',
+  ];
+
+  it('distribui os tweaks de dispositivo entre as páginas de cada periférico', () => {
+    for (const id of teclado) expect(find(id).category, id).toBe('Teclado');
+    for (const id of mouse) expect(find(id).category, id).toBe('Mouse');
+    for (const id of monitor) expect(find(id).category, id).toBe('Monitor');
+    for (const id of registro) expect(find(id).category, id).toBe('Input Lag');
+  });
+});
+
 describe('merged processor catalog', () => {
-  it('has 98 entries with 34 scripts on the CPU category and 34 cpu-N ids', () => {
-    expect(scripts).toHaveLength(98);
+  it('has 96 entries with 34 scripts on the CPU category and 34 cpu-N ids', () => {
+    expect(scripts).toHaveLength(96);
     expect(cpuPage).toHaveLength(34);
     expect(cpuFamily).toHaveLength(34);
   });
@@ -258,12 +279,11 @@ describe('GPU-specific tweaks are not gated on the CPU vendor', () => {
 });
 
 describe('catalog deny-list exposure', () => {
-  it('keeps the number of bcdedit scripts at 9', () => {
+  it('keeps the number of bcdedit scripts at 8', () => {
     // Was 16 across the duplicated vendor sets; the merge collapses the 14 CPU
     // ones to 7.
     const withBcdedit = scripts.filter((s) => decode(s.id).includes('bcdedit'));
     expect(withBcdedit.map((s) => s.id).sort()).toEqual([
-      'builtin-13',
       'cpu-1',
       'cpu-15',
       'cpu-3',
@@ -276,7 +296,7 @@ describe('catalog deny-list exposure', () => {
   });
 
   it('CHARACTERISATION: bcdedit is a violation, but blocking stays opt-in', () => {
-    // O catálogo é conteúdo interno e versionado: 9 scripts usam bcdedit de
+    // O catálogo é conteúdo interno e versionado: 8 scripts usam bcdedit de
     // propósito. A detecção agora reporta a violação de verdade, e o bloqueio
     // só entra quando `enableDenyListBlock` está ligado (default false).
     const { allowed, violations } = checkScriptContent('@echo off\r\nbcdedit /set testsigning yes');

@@ -103,3 +103,45 @@ describe('Sidebar expandida', () => {
     expect(html).not.toContain('mx-auto');
   });
 });
+
+describe('Sidebar com seção Formatação', () => {
+  const html = renderSidebar(false);
+
+  it('mostra o grupo com Debloat, Essenciais PC e Personalização', () => {
+    expect(html).toContain('Formatação');
+    for (const path of ['/debloat', '/essenciais', '/personalizacao']) {
+      expect(html).toContain(`href="${path}"`);
+    }
+  });
+});
+
+describe('Sidebar com seção Ferramentas', () => {
+  const html = renderSidebar(false);
+
+  it('mostra Privacidade dentro de Ferramentas e não mostra o grupo Segurança', () => {
+    expect(html).toContain('Ferramentas');
+    expect(html).toContain('href="/privacidade-seguranca"');
+    expect(html).not.toContain('Segurança');
+  });
+
+  it('não mostra o grupo Programas', () => {
+    // Emuladores continua oculto na configuração padrão por causa do Page Lock;
+    // a categoria da rota é validada em routes/config.test.ts.
+    expect(html).not.toContain('Programas');
+  });
+});
+
+describe('Sidebar com seção Sistema', () => {
+  const html = renderSidebar(false);
+
+  it('mostra Mouse, Monitor e Teclado em Sistema e Configurações no rodapé', () => {
+    expect(html).toContain('Sistema');
+    for (const path of ['/mouse', '/monitor', '/teclado']) {
+      expect(html, path).toContain(`href="${path}"`);
+    }
+    for (const label of ['Mouse', 'Monitor', 'Teclado']) {
+      expect(html, label).toContain(label);
+    }
+    expect(html).toContain('Configurações');
+  });
+});

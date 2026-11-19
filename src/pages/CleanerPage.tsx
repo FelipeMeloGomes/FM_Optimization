@@ -19,6 +19,8 @@ import type { CleanerItemId } from '../../electron/shared/cleaner-items';
 import type { CleanerItemStats } from '../../electron/shared/ipc-types';
 import { ConfirmCleanDialog } from '../components/ConfirmCleanDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
+import { AnimatedCleaner } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { Button } from '../components/ui';
 import { useAutoCleanContext } from '../contexts/AutoCleanContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
@@ -382,10 +384,7 @@ export default function CleanerPage() {
       )}
 
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Eraser className="size-28 text-primary" aria-hidden="true" />
-        </div>
+      <HeroBanner visual={<AnimatedCleaner />}>
         <div className="relative p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -429,7 +428,7 @@ export default function CleanerPage() {
             </p>
           )}
         </div>
-      </div>
+      </HeroBanner>
 
       <div aria-live="polite" className="sr-only">
         {cleaning

@@ -5,7 +5,7 @@
 <h1 align="center">FM Optimize</h1>
 
 <p align="center">
-  <strong>98 scripts de otimização do Windows em um único app desktop.</strong><br />
+  <strong>96 scripts de otimização do Windows em um único app desktop.</strong><br />
   Desempenho, privacidade, limpeza e debloat em uma interface só.
 </p>
 
@@ -27,9 +27,9 @@
 
 ### Desempenho
 
-- **Dashboard** — uso de CPU, GPU, memória e armazenamento, tempo de atividade e quantos ajustes já estão aplicados (`N de 75`).
+- **Dashboard** — uso de CPU, GPU, memória e armazenamento, tempo de atividade e quantos ajustes já estão aplicados (`N de 77`).
 - **42 tweaks de desempenho** — 34 de processador, 4 de GPU AMD e 4 de Windows (energia, serviços, prioridade e modo de jogo). A seção de GPU tem card próprio com aviso de hardware.
-- **Input Lag** — 11 ajustes de teclado, mouse, monitor, USB e resposta do sistema.
+- **Input Lag** — 6 ajustes de registro e resposta do sistema (todos os tweaks, USB, TCPNoDelay, prioridade, cache e atraso de menu). Os tweaks de teclado, mouse e monitor ficam em **Sistema**.
 - **Inicialização** — apps, tarefas agendadas e serviços que abrem com o Windows, com interruptor reversível. Serviços essenciais ficam somente leitura.
 - **Pontos de restauração** — criação, listagem e restauração de backups do Windows, com opção de criar automaticamente antes de executar tweaks.
 
@@ -37,29 +37,33 @@
 
 - **Limpeza** — lista item por item (temporários, Prefetch, Windows Update, shaders DirectX e cache de Chrome, Edge, Firefox e Brave) com tamanho em tempo real, seleção individual, atalho “Selecionar recomendados” (temporários, Prefetch e caches de navegador) e um botão único para limpar o que estiver marcado. A lista é virtualizada e acompanha a rolagem da página.
 - **Limpeza automática** — agendamento diário, semanal ou mensal, com escolha das categorias. Com a automação ligada, fechar a janela libera a memória dela e o app continua na bandeja (~90 MB, sem renderer), podendo iniciar com o Windows já escondido e voltar na última página ao ser reaberto. Scripts finalizados com a janela fechada avisam por notificação nativa do Windows.
-- **Debloat** — inventário dos apps Appx instalados e provisionados, um por linha, com busca, abas (Todos, Recomendados e Protegidos), atalho “Selecionar recomendados”, seleção individual ou em lote e remoção confirmada. A lista é virtualizada e acompanha a rolagem da página. Os nomes vêm do manifesto do Windows; componentes de sistema com nome GUID são identificados pelo caminho de instalação, em vez de aparecerem como texto quebrado. Apps de sistema, frameworks, drivers de placa de vídeo (AMD, Intel e NVIDIA) e componentes marcados como não removíveis aparecem com cadeado e são recusados pelo main mesmo se a interface insistir. Sem administrador é possível selecionar itens para consulta, mas a remoção fica bloqueada e a página oferece reiniciar como admin.
-- **Personalização** — barra de tarefas e menu Iniciar limpos, menu de contexto clássico, animações, transparência e efeitos visuais. Inclui os mods de Discord (Equicord + FakeNitro) e Spotify (Spicetify), cada um com o card de reverter ao lado.
-- **Utilitários** — SFC, DISM, CHKDSK, TRIM de SSD, limpeza do WinSxS, compactação do sistema e outros comandos de manutenção.
-- **Armazenamento** — Limpeza de Disco do Windows e otimizações de SSD, exibidas apenas quando um SSD é detectado.
-
-### Programas
-
-- **Essenciais PC** — instalação via winget de CPU-Z, HWMonitor, MSI Afterburner, 7-Zip, WinRAR, Brave, qBittorrent, DirectX (runtime legado) e BCUninstaller, com progresso na própria página. O winget baixa do canal oficial e confere o hash do manifesto antes de rodar o instalador.
+- **Utilitários** — manutenção do sistema e gerenciamento de memória e processos.
+- **Armazenamento** — Limpeza de Disco do Windows, limpeza do WinSxS, otimizações de SSD e compactação do sistema; os tweaks exclusivos de SSD aparecem apenas quando um SSD é detectado.
+- **Reparo do sistema** — SFC Scannow, DISM RestoreHealth e CHKDSK (Verificar Disco).
+- **Privacidade** — telemetria, ID de anúncio, reconhecimento de fala e Timeline; bloqueio de domínios via arquivo Hosts e da instalação forçada de apps sugeridos pelo Windows.
 - **Emuladores** — debloat de BlueStacks 4/5 via ADB: seleção de instância, presets de bloatware, backup automático do APK e restauração por instância. Permite remover qualquer app, inclusive de sistema.
+
+### Formatação
+
+- **Debloat** — inventário dos apps Appx instalados e provisionados, um por linha, com busca, abas (Todos, Recomendados e Protegidos), atalho “Selecionar recomendados”, seleção individual ou em lote e remoção confirmada. A lista é virtualizada e acompanha a rolagem da página. Os nomes vêm do manifesto do Windows; componentes de sistema com nome GUID são identificados pelo caminho de instalação, em vez de aparecerem como texto quebrado. Apps de sistema, frameworks, drivers de placa de vídeo (AMD, Intel e NVIDIA) e componentes marcados como não removíveis aparecem com cadeado e são recusados pelo main mesmo se a interface insistir. Sem administrador é possível selecionar itens para consulta, mas a remoção fica bloqueada e a página oferece reiniciar como admin.
+- **Essenciais PC** — instalação via winget de CPU-Z, HWMonitor, MSI Afterburner, 7-Zip, WinRAR, Brave, qBittorrent, DirectX (runtime legado) e BCUninstaller, com progresso na própria página. O winget baixa do canal oficial e confere o hash do manifesto antes de rodar o instalador.
+- **Personalização** — barra de tarefas e menu Iniciar limpos, menu de contexto clássico, animações, transparência e efeitos visuais. Inclui os mods de Discord (Equicord + FakeNitro) e Spotify (Spicetify), cada um com o card de reverter ao lado.
 
 ### Rede e DNS
 
-- **DNS** — página própria com benchmark de latência, ordenação dos provedores, aplicação do mais rápido e indicador de DNS ativo.
+- **DNS** — página própria com 19 provedores (privacidade, segurança, bloqueio de anúncios e controle parental), benchmark de latência com varredura animada provedor a provedor, provedor em uso fixado no topo da lista, ordenação dos demais por velocidade, aplicação do melhor e indicador de DNS ativo.
 - **Velocidade** — teste real de internet com medidor animado: mede download, upload, ping e jitter contra a rede de servidores do Speedtest.net (o servidor mais próximo é escolhido automaticamente), move a agulha em tempo real com transições suaves entre fases e mantém o resultado final na tela. Sem histórico e sem salvar medições.
 - **Rede** — tweaks de internet para reduzir latência e melhorar a estabilidade da conexão, incluindo os scripts de DNS, apresentados em seções virtualizadas.
 
-### Segurança e privacidade
-
-- Telemetria, ID de anúncio, reconhecimento de fala e Timeline.
-- Bloqueio de domínios via arquivo Hosts.
-- Bloqueio da instalação forçada de apps sugeridos pelo Windows.
-
 ### Sistema
+
+- **Mouse** — página própria com os 2 tweaks de mouse que saíram do Input Lag (`inputlag-2` e `inputlag-11`). A lista de tweaks abre só quando você quer. O painel **Ajustes do Windows** lê e aplica, via `SystemParametersInfo`, a velocidade do ponteiro (1–20), a aceleração (**Melhorar precisão do ponteiro**) e o tempo de duplo clique (100–5000 ms) — os mesmos valores do painel do Windows, com botões **Aplicar**, **Restaurar padrão** e **Cancelar alterações**. O cursor do cabeçalho é decorativo e uma prévia com rastro responde ao movimento real do mouse dentro do painel.
+- **Monitor** — página própria com o tweak de latência do driver de vídeo (`inputlag-3`), executado direto. O painel **Ajustes do Windows** enumera **todos os monitores ativos** (`EnumDisplayDevices` + `EnumDisplaySettingsEx`), mostra um card por monitor com seus modos reais e permite escolher resolução e taxa de atualização de cada um, aplicando com `ChangeDisplaySettingsEx` e persistindo a mudança no registro. O monitor do cabeçalho é decorativo.
+- **Teclado** — página própria com os 2 tweaks de teclado (`inputlag-1` e `inputlag-9`). O painel **Ajustes do Windows** lê e aplica via `SystemParametersInfo` o atraso até repetir (250–1000 ms), a velocidade de repetição (0–31) e a piscagem do cursor (`SetCaretBlinkTime` + `CursorBlinkRate`, 100–2500 ms), com prévia visual dos três ajustes. O teclado do cabeçalho é decorativo.
+
+**Banners animados:** o componente reutilizável `HeroBanner` (`src/components/hero/HeroBanner.tsx`) centraliza o gradiente e o slot do visual animado; cada página passa seu próprio conteúdo e um visual de `src/components/hero/AnimatedHero.tsx`. Todas as páginas têm um visual decorativo próprio no cabeçalho (painel, CPU, limpeza, debloat, DNS, rede, velocidade, emuladores, essenciais, histórico, input lag, personalização, privacidade, restauração, configurações, inicialização e utilitários), no mesmo estilo do cursor do Mouse, do monitor e do teclado. São animações CSS puras: não executam scripts, não leem nem alteram configuração do Windows e são ignoradas por leitores de tela (`aria-hidden`).
+
+### Configurações
 
 - **Histórico de execução** — duração, status e origem (manual ou agendada) de cada tweak. Cards aplicados ganham o selo **Aplicado**, inclusive os scripts interativos: o app espera a janela fechar e registra o código de saída real (menu fechado sem aplicar ou handoff sem desfecho fica como `—`, e fechar o console do Spotify aparece como **Interrompido pelo usuário**, não como erro).
 - **Bloqueio de páginas** — oculte páginas da barra lateral e proteja-as com senha mestra criptografada via DPAPI (Emuladores bloqueado por padrão).
@@ -161,6 +165,6 @@ src/
   contexts/    # estado de sistema, scripts, histórico e configurações
   components/  # UI reutilizável
 resources/
-  scripts.json # catálogo dos 98 scripts
+  scripts.json # catálogo dos 96 scripts
   icon.svg
 ```

@@ -6,6 +6,8 @@ import { NETWORK_SECTIONS } from './network-sections';
 import { PERFORMANCE_SECTIONS } from './performance-sections';
 import { PERSONALIZATION_SECTIONS } from './personalization-sections';
 import { PRIVACY_SECTIONS } from './privacy-sections';
+import { REPAIR_SECTIONS } from './repair-sections';
+import { STORAGE_SECTIONS } from './storage-sections';
 import { UTIL_SECTIONS } from './util-sections';
 
 /**
@@ -54,6 +56,8 @@ describe('cada script mora em uma unica pagina', () => {
     const sectioned = [
       ...idsOf(PRIVACY_SECTIONS),
       ...idsOf(PERSONALIZATION_SECTIONS),
+      ...idsOf(STORAGE_SECTIONS),
+      ...idsOf(REPAIR_SECTIONS),
       ...idsOf(UTIL_SECTIONS),
     ];
     expect(new Set(sectioned).size).toBe(sectioned.length);
@@ -64,6 +68,8 @@ describe('cada script mora em uma unica pagina', () => {
     const missing = [
       ...idsOf(PRIVACY_SECTIONS),
       ...idsOf(PERSONALIZATION_SECTIONS),
+      ...idsOf(STORAGE_SECTIONS),
+      ...idsOf(REPAIR_SECTIONS),
       ...idsOf(UTIL_SECTIONS),
     ].filter((id) => !known.has(id));
     expect(missing).toEqual([]);
@@ -86,6 +92,11 @@ describe('cada script mora em uma unica pagina', () => {
 
   it('os cards da pagina Utilitarios cobrem exatamente a categoria Utilities', () => {
     expect(idsOf(UTIL_SECTIONS)).toEqual(idsInCategory('Utilities'));
+  });
+
+  it('os cards de Armazenamento e Reparo cobrem suas categorias sem sobra', () => {
+    expect(idsOf(STORAGE_SECTIONS)).toEqual(idsInCategory('Armazenamento'));
+    expect(idsOf(REPAIR_SECTIONS)).toEqual(idsInCategory('Reparo do Sistema'));
   });
 
   it('os cards da pagina Rede cobrem Internet e DNS Manager sem sobra', () => {
@@ -117,7 +128,7 @@ describe('cada script mora em uma unica pagina', () => {
     expect(getScriptRoute({ id: 'apps-1', category: 'Segurança' })).toBe('/privacidade-seguranca');
     expect(getScriptRoute({ id: 'apps-4', category: 'Personalização' })).toBe('/personalizacao');
     expect(getScriptRoute({ id: 'builtin-18', category: 'Internet' })).toBe('/rede');
-    expect(getScriptRoute({ id: 'builtin-13', category: 'Utilities' })).toBe('/utilities');
+    expect(getScriptRoute({ id: 'util-1', category: 'Utilities' })).toBe('/utilities');
     expect(getScriptRoute({ id: 'tweaks-4', category: 'Windows' })).toBe('/cpu');
     expect(getScriptRoute({ id: 'builtin-4', category: 'GPU' })).toBe('/cpu');
     expect(getScriptRoute({ id: 'tweaks-1', category: 'Personalização' })).toBe('/personalizacao');
@@ -149,7 +160,7 @@ describe('destino dos scripts movidos pela refatoracao', () => {
     ['apps-6', 'Personalização'],
     ['apps-7', 'Personalização'],
     // Utilitarios
-    ['builtin-13', 'Utilities'],
+    ['util-1', 'Utilities'],
     // Pagina nova de Privacidade
     ['apps-1', 'Segurança'],
     ['apps-2', 'Segurança'],
@@ -167,7 +178,7 @@ describe('destino dos scripts movidos pela refatoracao', () => {
   });
 
   it('mantem os scripts restantes no catalogo', () => {
-    expect(scripts).toHaveLength(98);
+    expect(scripts).toHaveLength(96);
   });
 
   it('aposenta o debloat por script e o Chris Titus', () => {

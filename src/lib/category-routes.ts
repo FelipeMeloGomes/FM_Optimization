@@ -15,7 +15,12 @@ export const CATEGORY_ROUTES: Record<string, string> = {
   Internet: '/rede',
   'DNS Manager': '/rede',
   'Input Lag': '/input-lag',
+  Mouse: '/mouse',
+  Monitor: '/monitor',
+  Teclado: '/teclado',
   Utilities: '/utilities',
+  Armazenamento: '/armazenamento',
+  'Reparo do Sistema': '/reparo-do-sistema',
   Personalização: '/personalizacao',
   Segurança: '/privacidade-seguranca',
 };

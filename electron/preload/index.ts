@@ -1,4 +1,5 @@
 import { contextBridge, type IpcRendererEvent, ipcRenderer } from 'electron';
+import type { DisplaySettings } from '../shared/display-settings';
 import type {
   AdbApp,
   AdbChoosePathResult,
@@ -36,6 +37,8 @@ import type {
   UpdateInfo,
   UpdateStatus,
 } from '../shared/ipc-types';
+import type { KeyboardSettings } from '../shared/keyboard-settings';
+import type { MouseSettings } from '../shared/mouse-settings';
 
 function ipc<T>(channel: string, ...args: unknown[]): Promise<T> {
   return ipcRenderer.invoke(channel, ...args).then((r: unknown) => {
@@ -272,6 +275,12 @@ const electronAPI: ElectronAPI = {
   startupSetEnabled: (payload) => ipc<StartupSnapshot>('startup:set-enabled', payload),
   startupOpenLocation: (payload) => ipcVoid('startup:open-location', payload),
   startupStopService: (payload) => ipc<StartupSnapshot>('startup:stop-service', payload),
+  getMouseSettings: () => ipc<MouseSettings>('mouse:get-settings'),
+  applyMouseSettings: (settings) => ipc<MouseSettings>('mouse:apply-settings', settings),
+  getDisplaySettings: () => ipc<DisplaySettings>('display:get-settings'),
+  applyDisplaySettings: (mode) => ipc<DisplaySettings>('display:apply-settings', mode),
+  getKeyboardSettings: () => ipc<KeyboardSettings>('keyboard:get-settings'),
+  applyKeyboardSettings: (settings) => ipc<KeyboardSettings>('keyboard:apply-settings', settings),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

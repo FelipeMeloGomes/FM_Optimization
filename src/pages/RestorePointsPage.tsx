@@ -10,6 +10,8 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { AnimatedRestorePoints } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import {
   Badge,
   Button,
@@ -115,10 +117,7 @@ export default function RestorePointsPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Shield className="size-28 text-primary" />
-        </div>
+      <HeroBanner visual={<AnimatedRestorePoints />}>
         <div className="relative p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -140,7 +139,7 @@ export default function RestorePointsPage() {
             </Badge>
           </div>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* Create Section */}
       <div className="rounded-xl border border-border bg-card p-4">

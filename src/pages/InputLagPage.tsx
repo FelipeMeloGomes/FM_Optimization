@@ -1,88 +1,15 @@
-import {
-  ChevronDown,
-  Keyboard,
-  Monitor,
-  Mouse,
-  MousePointerClick,
-  Play,
-  Square,
-  Terminal,
-  Zap,
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
-import type { ScriptEntry } from '../../electron/shared/ipc-types';
+import { Play, Square, Terminal, Zap } from 'lucide-react';
+import { useMemo } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { AnimatedInputLag } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Badge, Button } from '../components/ui';
 import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
-import { countCuratedScripts, resolveCuratedItems } from '../lib/resolve-curated-scripts';
+import { resolveCuratedItems } from '../lib/resolve-curated-scripts';
 import { cn } from '../lib/utils';
-
-interface DeviceCard {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ElementType;
-  color: string;
-  dotColor: string;
-  bgColor: string;
-  borderColor: string;
-  scriptIds: string[];
-  whatItOptimizes: string[];
-}
-
-const DEVICE_CARDS: DeviceCard[] = [
-  {
-    id: 'keyboard',
-    name: 'Teclado',
-    description: 'Reduza a latência de digitação e resposta instantânea de teclas.',
-    icon: Keyboard,
-    color: 'text-info',
-    dotColor: 'bg-info',
-    bgColor: 'bg-info/10',
-    borderColor: 'border-info/20',
-    scriptIds: ['inputlag-1', 'inputlag-9'],
-    whatItOptimizes: [
-      'KeyboardDelay reduzido a zero',
-      'Resposta instantânea de teclas',
-      'Remoção de atraso de menu',
-    ],
-  },
-  {
-    id: 'mouse',
-    name: 'Mouse',
-    description: 'Desative aceleração e obtenha movimento 1:1 preciso.',
-    icon: Mouse,
-    color: 'text-warning',
-    dotColor: 'bg-warning',
-    bgColor: 'bg-warning/10',
-    borderColor: 'border-warning/20',
-    scriptIds: ['inputlag-2', 'inputlag-11'],
-    whatItOptimizes: [
-      'Aceleração do mouse desativada',
-      'Movimento 1:1 precisão absoluta',
-      'Tracking consistente em jogos',
-    ],
-  },
-  {
-    id: 'monitor',
-    name: 'Monitor',
-    description: 'Minimize a latência de tolerância do driver de vídeo.',
-    icon: Monitor,
-    color: 'text-primary',
-    dotColor: 'bg-primary',
-    bgColor: 'bg-primary/10',
-    borderColor: 'border-primary/20',
-    scriptIds: ['inputlag-3'],
-    whatItOptimizes: [
-      'Tolerância DXGKrnl reduzida',
-      'Menor latência de renderização',
-      'Quadros exibidos mais rápido',
-    ],
-  },
-];
 
 interface RegistryItem {
   id: string;
@@ -133,168 +60,6 @@ const REGISTRY_SCRIPTS: RegistryItem[] = [
   },
 ];
 
-function DeviceSection({
-  card,
-  scripts,
-  activeExecution,
-  onCancel,
-  onConfirmExecute,
-}: {
-  card: DeviceCard;
-  scripts: ScriptEntry[];
-  activeExecution: string | null;
-  onCancel: (id: string) => void;
-  onConfirmExecute: (script: ScriptEntry) => void;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const Icon = card.icon;
-  const isScriptApplied = useIsScriptApplied();
-
-  const cardScripts = useMemo(
-    () => scripts.filter((s) => card.scriptIds.includes(s.id)),
-    [scripts, card.scriptIds]
-  );
-
-  const isAnyExecuting = card.scriptIds.some((id) => activeExecution === id);
-  const executingScript = cardScripts.find((s) => activeExecution === s.id);
-
-  const hasMultiple = cardScripts.length > 1;
-
-  return (
-    <div
-      className={cn(
-        'rounded-xl border bg-card transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg overflow-hidden',
-        card.borderColor,
-        isAnyExecuting && 'ring-2 ring-primary/50'
-      )}
-    >
-      <div className="p-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className={cn('flex size-10 items-center justify-center rounded-lg', card.bgColor)}
-            >
-              <Icon className={cn('size-5', card.color)} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground">{card.name}</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">{card.description}</p>
-            </div>
-          </div>
-          <Badge variant="secondary" className="text-[10px] shrink-0">
-            {cardScripts.length} tweaks
-          </Badge>
-        </div>
-
-        <div className="mt-4">
-          <p className="text-xs font-medium text-foreground mb-2">O que otimiza:</p>
-          <ul className="space-y-1">
-            {card.whatItOptimizes.map((item, i) => (
-              <li
-                // biome-ignore lint/suspicious/noArrayIndexKey: static list items, stable order
-                key={`opt-${i}`}
-                className="flex items-center gap-2 text-xs text-muted-foreground"
-              >
-                <span className={cn('size-1 rounded-full', card.dotColor)} />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="mt-4 flex gap-2">
-          {isAnyExecuting ? (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => executingScript && onCancel(executingScript.id)}
-              className="flex-1 gap-2"
-            >
-              <Square className="size-3.5" />
-              Cancelar
-            </Button>
-          ) : (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => {
-                if (hasMultiple) {
-                  setExpanded(!expanded);
-                } else {
-                  onConfirmExecute(cardScripts[0]);
-                }
-              }}
-              className="flex-1 gap-2"
-            >
-              {hasMultiple ? (
-                <>
-                  <ChevronDown
-                    className={cn('size-3.5 transition-transform', expanded && 'rotate-180')}
-                  />
-                  {expanded ? 'Ocultar tweaks' : 'Ver tweaks'}
-                </>
-              ) : (
-                <>
-                  <Play className="size-3.5" />
-                  {cardScripts.some((s) => isScriptApplied(s)) ? 'Executar novamente' : 'Executar'}
-                </>
-              )}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {expanded && cardScripts.length > 1 && (
-        <div className="border-t border-border bg-muted/30 p-4 space-y-2">
-          {cardScripts.map((script) => {
-            const isScriptExecuting = activeExecution === script.id;
-            return (
-              <div
-                key={script.id}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg border bg-card p-3 transition-[color,background-color,border-color,box-shadow,opacity]',
-                  script.requiresAdmin && 'border-warning/20',
-                  isScriptExecuting && 'ring-2 ring-primary/50'
-                )}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium truncate">{script.name}</p>
-                    <ScriptBadge script={script} />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                    {script.description}
-                  </p>
-                </div>
-                <Button
-                  variant={isScriptExecuting ? 'destructive' : 'secondary'}
-                  size="sm"
-                  onClick={() =>
-                    isScriptExecuting ? onCancel(script.id) : onConfirmExecute(script)
-                  }
-                  className="gap-1.5 shrink-0"
-                >
-                  {isScriptExecuting ? (
-                    <>
-                      <Square className="size-3" />
-                      Cancelar
-                    </>
-                  ) : (
-                    <>
-                      <Play className="size-3" />
-                      {isScriptApplied(script) ? 'Executar novamente' : 'Executar'}
-                    </>
-                  )}
-                </Button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function InputLagPage() {
   const {
     state,
@@ -308,21 +73,10 @@ export default function InputLagPage() {
   } = useScriptPage('Input Lag');
   const isScriptApplied = useIsScriptApplied();
 
-  // Both section badges count what their section actually renders. The catalog's
-  // subcategory buckets cannot be used for this: inputlag-9 and inputlag-11 are
-  // filed as "Regedit" in scripts.json but presented under the keyboard and
-  // mouse cards, which is why the badges used to read 9/3 against 7/5 rendered.
+  // O selo conta os itens curados que a página realmente renderiza, não o
+  // balde de subcategoria do catálogo.
   const registryItems = useMemo(
     () => resolveCuratedItems(inputLagScripts, REGISTRY_SCRIPTS),
-    [inputLagScripts]
-  );
-
-  const deviceScriptCount = useMemo(
-    () =>
-      countCuratedScripts(
-        inputLagScripts,
-        DEVICE_CARDS.map((c) => c.scriptIds)
-      ),
     [inputLagScripts]
   );
 
@@ -330,13 +84,7 @@ export default function InputLagPage() {
     return (
       <div className="space-y-4">
         <div className="h-24 rounded-xl bg-muted animate-pulse" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
-            <ScriptCardSkeleton key={`skeleton-${i}`} />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
             <ScriptCardSkeleton key={`skeleton-${i}`} />
@@ -358,10 +106,7 @@ export default function InputLagPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-10">
-          <MousePointerClick className="size-24 text-primary" />
-        </div>
+      <HeroBanner visual={<AnimatedInputLag />}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="size-4 text-primary" />
@@ -371,36 +116,11 @@ export default function InputLagPage() {
           </div>
           <h2 className="text-lg font-bold text-foreground">Reduza o Input Lag do seu PC</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Cada milissegundo conta. Estas otimizações reduzem a latência do teclado, mouse e
-            monitor para uma experiência de jogo mais responsiva e competitiva.
+            Ajustes de registro e do sistema que reduzem a latência de resposta, USB e rede para uma
+            experiência de jogo mais competitiva.
           </p>
         </div>
-      </div>
-
-      {/* Device Cards */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="size-1.5 rounded-full bg-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Dispositivos</h3>
-          </div>
-          <Badge variant="secondary" className="text-[10px]">
-            {deviceScriptCount} tweaks
-          </Badge>
-        </div>
-        <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {DEVICE_CARDS.map((card) => (
-            <DeviceSection
-              key={card.id}
-              card={card}
-              scripts={inputLagScripts}
-              activeExecution={activeExecution}
-              onCancel={handleCancel}
-              onConfirmExecute={handleConfirmExecute}
-            />
-          ))}
-        </div>
-      </div>
+      </HeroBanner>
 
       {/* Registry Section */}
       <div>

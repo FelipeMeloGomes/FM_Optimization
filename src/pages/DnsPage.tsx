@@ -10,6 +10,8 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
+import { AnimatedDns } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { Badge, Button, Card, CardContent } from '../components/ui';
 import { DnsProvider, useDnsContext } from '../contexts/DnsContext';
 import { DNS_PROVIDERS } from '../lib/dns-providers';
@@ -36,6 +38,8 @@ function getLatencyLabel(ms: number): string {
   return 'Regular';
 }
 
+const DNS_PROVIDERS_TO_TEST = DNS_PROVIDERS.filter((provider) => !provider.isDhcp);
+
 export default function DnsPage() {
   return (
     <DnsProvider>
@@ -49,7 +53,6 @@ function DnsPageContent() {
     networkInfo,
     benchmarks,
     benchmarkStatus,
-    benchmarkProgress,
     applyStatus,
     applyError,
     activeDnsIps,
@@ -78,33 +81,88 @@ function DnsPageContent() {
     [activeDnsIps]
   );
 
-  const sortedProviders = useMemo(() => {
-    return [...DNS_PROVIDERS].sort((a, b) => {
-      if (a.isDhcp) return 1;
-      if (b.isDhcp) return -1;
-      const la = getLatency(a.primary, a.secondary);
-      const lb = getLatency(b.primary, b.secondary);
-      if (la === null && lb === null) return 0;
-      if (la === null) return 1;
-      if (lb === null) return -1;
-      return la - lb;
-    });
-  }, [getLatency]);
+  // Ranking por latência, usado para escolher o mais rápido e como base da
+  // listagem depois da varredura. Não inclui o pin do ativo.
+  const rankedProviders = useMemo(
+    () =>
+      [...DNS_PROVIDERS].sort((a, b) => {
+        if (a.isDhcp) return 1;
+        if (b.isDhcp) return -1;
+        const la = getLatency(a.primary, a.secondary);
+        const lb = getLatency(b.primary, b.secondary);
+        if (la === null && lb === null) return 0;
+        if (la === null) return 1;
+        if (lb === null) return -1;
+        return la - lb;
+      }),
+    [getLatency]
+  );
 
-  const fastest = useMemo(() => {
-    const nonDhcp = sortedProviders.filter((p) => !p.isDhcp);
-    return nonDhcp.find((p) => getLatency(p.primary, p.secondary) !== null) || null;
-  }, [sortedProviders, getLatency]);
+  const sortedProviders = useMemo(() => {
+    // Durante a varredura a ordem original importa: o scanner percorre a lista
+    // de cima para baixo. A ordenação por latência só faz sentido no fim.
+    const base = benchmarkStatus === 'loading' ? [...DNS_PROVIDERS] : rankedProviders;
+    // O provedor em uso aparece sempre no topo, inclusive o DHCP quando é o ativo.
+    return [...base].sort((a, b) => {
+      const ativoA = isActive(a.primary, a.secondary);
+      const ativoB = isActive(b.primary, b.secondary);
+      if (ativoA && !ativoB) return -1;
+      if (!ativoA && ativoB) return 1;
+      return 0;
+    });
+  }, [benchmarkStatus, rankedProviders, isActive]);
+
+  const fastest = useMemo(
+    () =>
+      rankedProviders.find((p) => !p.isDhcp && getLatency(p.primary, p.secondary) !== null) || null,
+    [rankedProviders, getLatency]
+  );
 
   const fastestLatency = fastest ? getLatency(fastest.primary, fastest.secondary) : null;
 
+  // O backend mede os provedores em ordem e publica os dois endereços de cada
+  // um. Um DNS com latência null também está medido — não pode travar o scanner.
+  const scan = useMemo(() => {
+    const medidos = new Set<string>();
+    let proximo: string | null = null;
+    for (const provider of DNS_PROVIDERS_TO_TEST) {
+      if (benchmarks.has(provider.primary) && benchmarks.has(provider.secondary)) {
+        medidos.add(provider.name);
+      } else if (proximo === null) {
+        proximo = provider.name;
+      }
+    }
+    return { medidos, proximo, total: DNS_PROVIDERS_TO_TEST.length };
+  }, [benchmarks]);
+
   return (
     <div className="space-y-6">
+      <style>{`
+        @keyframes dns-sweep {
+          from { transform: translateX(-110%); }
+          to   { transform: translateX(320%); }
+        }
+        @keyframes dns-result-pop {
+          from { opacity: 0; transform: scale(0.86); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes dns-dot {
+          0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
+          40%           { opacity: 1; transform: translateY(-2px); }
+        }
+        .dns-scan-line { animation: dns-sweep 1.25s linear infinite; }
+        .dns-result-in { animation: dns-result-pop 320ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .dns-dot-1 { animation: dns-dot 1.05s ease-in-out infinite; }
+        .dns-dot-2 { animation: dns-dot 1.05s ease-in-out 150ms infinite; }
+        .dns-dot-3 { animation: dns-dot 1.05s ease-in-out 300ms infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .dns-scan-line, .dns-result-in,
+          .dns-dot-1, .dns-dot-2, .dns-dot-3 { animation: none; }
+        }
+      `}</style>
+
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Wifi className="size-28 text-primary" aria-hidden="true" />
-        </div>
+      <HeroBanner visual={<AnimatedDns />}>
         <div className="relative p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -135,7 +193,7 @@ function DnsPageContent() {
             </Button>
           </div>
         </div>
-      </div>
+      </HeroBanner>
 
       <Card className="border-primary/20">
         <CardContent className="p-4">
@@ -164,25 +222,30 @@ function DnsPageContent() {
       </Card>
 
       {benchmarkStatus === 'loading' && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="mt-4 flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3"
-        >
-          <Loader2 className="size-4 animate-spin text-primary" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">Testando velocidade dos DNSs…</p>
-            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary transition-[width,background-color] duration-500"
-                style={{
-                  width: `${benchmarkProgress.total > 0 ? (benchmarkProgress.current / benchmarkProgress.total) * 100 : 0}%`,
-                }}
+        <div className="mt-4 flex items-center gap-3" role="status" aria-live="polite">
+          <span className="shrink-0 text-xs font-medium text-primary">Varredura em andamento</span>
+          <div
+            role="progressbar"
+            aria-label="Varredura de DNS"
+            aria-valuemin={0}
+            aria-valuemax={scan.total}
+            aria-valuenow={scan.medidos.size}
+            className="flex flex-1 gap-1"
+          >
+            {DNS_PROVIDERS_TO_TEST.map((provider) => (
+              <span
+                key={provider.name}
+                className={cn(
+                  'h-1.5 flex-1 rounded-full transition-colors duration-300',
+                  scan.medidos.has(provider.name)
+                    ? 'bg-primary shadow-[0_0_6px_var(--color-primary)]'
+                    : 'bg-muted'
+                )}
               />
-            </div>
+            ))}
           </div>
-          <span className="text-xs text-muted-foreground">
-            {benchmarkProgress.current}/{benchmarkProgress.total}
+          <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+            {scan.medidos.size}/{scan.total}
           </span>
         </div>
       )}
@@ -277,6 +340,10 @@ function DnsPageContent() {
           const latency = getLatency(provider.primary, provider.secondary);
           const active = isActive(provider.primary, provider.secondary);
           const isFastest = fastest?.name === provider.name && !provider.isDhcp;
+          const medido = scan.medidos.has(provider.name);
+          const testing = benchmarkStatus === 'loading' && scan.proximo === provider.name;
+          const aguardando =
+            benchmarkStatus === 'loading' && !provider.isDhcp && !medido && !testing;
           const Icon = provider.icon;
 
           return (
@@ -285,19 +352,36 @@ function DnsPageContent() {
               className={cn(
                 'transition-[color,background-color,border-color,box-shadow,opacity] duration-200',
                 active && 'border-primary/50 shadow-[0_0_15px_var(--color-selection)]',
-                isFastest && benchmarkStatus === 'done' && 'border-success/20'
+                isFastest && benchmarkStatus === 'done' && 'border-success/20',
+                testing &&
+                  'dns-scan-card relative overflow-hidden border-primary/50 shadow-[0_0_18px_var(--color-selection)]',
+                aguardando && 'opacity-50',
+                medido && 'dns-result-in'
               )}
             >
+              {testing && (
+                <span
+                  aria-hidden="true"
+                  className="dns-scan-line pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-primary/10 to-primary/25 shadow-[2px_0_12px_var(--color-selection)]"
+                />
+              )}
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
                       'flex size-9 items-center justify-center rounded-lg',
-                      active ? 'bg-primary/20' : 'bg-muted'
+                      active
+                        ? 'bg-primary/20'
+                        : testing
+                          ? 'animate-pulse bg-primary/15 ring-1 ring-primary/40'
+                          : 'bg-muted'
                     )}
                   >
                     <Icon
-                      className={cn('size-4', active ? 'text-primary' : 'text-muted-foreground')}
+                      className={cn(
+                        'size-4',
+                        active || testing ? 'text-primary' : 'text-muted-foreground'
+                      )}
                     />
                   </div>
 
@@ -329,6 +413,15 @@ function DnsPageContent() {
                           Padrão
                         </span>
                       </div>
+                    ) : testing ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                        Testando
+                        <span className="flex gap-0.5" aria-hidden="true">
+                          <span className="dns-dot-1 size-1 rounded-full bg-primary" />
+                          <span className="dns-dot-2 size-1 rounded-full bg-primary" />
+                          <span className="dns-dot-3 size-1 rounded-full bg-primary" />
+                        </span>
+                      </span>
                     ) : latency !== null ? (
                       <div
                         className={cn(
@@ -344,8 +437,10 @@ function DnsPageContent() {
                         </span>
                         <span className="text-[11px] text-muted-foreground">ms</span>
                       </div>
-                    ) : benchmarkStatus === 'loading' ? (
-                      <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                    ) : medido ? (
+                      <span className="text-[11px] text-muted-foreground">Falhou</span>
+                    ) : aguardando ? (
+                      <span className="text-[11px] text-muted-foreground">Aguardando</span>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
                     )}

@@ -1,6 +1,9 @@
 export type CpuVendor = 'intel' | 'amd' | 'unknown';
 
 import type { CleanerItemGroup, CleanerItemId } from './cleaner-items';
+import type { ApplyDisplaySettingsPayload, DisplaySettings } from './display-settings';
+import type { KeyboardSettings } from './keyboard-settings';
+import type { MouseSettings } from './mouse-settings';
 
 export interface CpuInfo {
   /** Nome padronizado para exibição (ex.: "AMD Ryzen 7 5700X"). */
@@ -555,4 +558,10 @@ export interface ElectronAPI {
   startupSetEnabled(payload: StartupSetEnabledPayload): Promise<StartupSnapshot>;
   startupOpenLocation(payload: StartupOpenLocationPayload): Promise<void>;
   startupStopService(payload: StartupStopServicePayload): Promise<StartupSnapshot>;
+  getMouseSettings(): Promise<MouseSettings>;
+  applyMouseSettings(settings: MouseSettings): Promise<MouseSettings>;
+  getDisplaySettings(): Promise<DisplaySettings>;
+  applyDisplaySettings(payload: ApplyDisplaySettingsPayload): Promise<DisplaySettings>;
+  getKeyboardSettings(): Promise<KeyboardSettings>;
+  applyKeyboardSettings(settings: KeyboardSettings): Promise<KeyboardSettings>;
 }

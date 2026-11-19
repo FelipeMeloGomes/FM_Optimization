@@ -19,6 +19,8 @@ import type {
   StartupAppSource,
   StartupServiceEntry,
 } from '../../electron/shared/ipc-types';
+import { AnimatedStartup } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import {
   Badge,
   Button,
@@ -252,10 +254,7 @@ export default function StartupPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Rocket className="size-28 text-primary" />
-        </div>
+      <HeroBanner visual={<AnimatedStartup />}>
         <div className="relative p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -285,7 +284,7 @@ export default function StartupPage() {
             <HeroStat label="serviços automáticos" value={String(automaticServices)} />
           </div>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* Admin notice */}
       {!data.isAdmin && (

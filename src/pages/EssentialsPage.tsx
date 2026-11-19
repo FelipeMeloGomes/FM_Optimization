@@ -20,6 +20,8 @@ import type {
   EssentialInstallResult,
   EssentialListItem,
 } from '../../electron/shared/ipc-types';
+import { AnimatedEssentials } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Badge, Button, Progress } from '../components/ui';
 import { useEssentials } from '../hooks/use-essentials';
@@ -262,10 +264,7 @@ export default function EssentialsPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <MonitorDown className="size-28 text-primary" />
-        </div>
+      <HeroBanner visual={<AnimatedEssentials />}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
             <MonitorDown className="size-4 text-primary" />
@@ -281,7 +280,7 @@ export default function EssentialsPage() {
             manifesto antes de rodar.
           </p>
         </div>
-      </div>
+      </HeroBanner>
 
       {/* Programas */}
       {state.data.map((item) => (

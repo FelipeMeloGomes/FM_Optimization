@@ -5,9 +5,11 @@ import {
   Gamepad2,
   Gauge,
   Globe,
+  HardDrive,
   Home,
   type LucideIcon,
   MonitorDown,
+  Mouse,
   MousePointerClick,
   PackageX,
   Palette,
@@ -15,21 +17,22 @@ import {
   Settings,
   Shield,
   ShieldCheck,
-  Smartphone,
+  Sparkles,
   Wifi,
   Wrench,
 } from 'lucide-react';
 import { type ComponentType, type LazyExoticComponent, lazy } from 'react';
+import { DEVICE_PAGES, type DeviceCategory } from '../lib/device-pages';
 
 export type CategoryId =
   | 'inicio'
   | 'desempenho'
   | 'manutencao'
-  | 'programas'
+  | 'formatacao'
   | 'rede'
   | 'ferramentas'
-  | 'seguranca'
-  | 'sistema';
+  | 'sistema'
+  | 'configuracoes';
 
 export interface Category {
   id: CategoryId;
@@ -51,12 +54,18 @@ export const CATEGORIES: Category[] = [
   { id: 'inicio', label: 'Inicio', hideLabel: true, icon: Home },
   { id: 'desempenho', label: 'Desempenho', icon: Gauge },
   { id: 'manutencao', label: 'Manutencao', icon: Eraser },
-  { id: 'programas', label: 'Programas', icon: Smartphone },
+  { id: 'formatacao', label: 'Formatação', icon: Sparkles },
   { id: 'rede', label: 'Rede', icon: Wifi },
   { id: 'ferramentas', label: 'Ferramentas', icon: Wrench },
-  { id: 'seguranca', label: 'Segurança', icon: ShieldCheck },
-  { id: 'sistema', label: 'Sistema', icon: Settings },
+  { id: 'sistema', label: 'Sistema', icon: Mouse },
+  { id: 'configuracoes', label: 'Configurações', icon: Settings },
 ];
+
+const DEVICE_COMPONENTS: Record<DeviceCategory, LazyExoticComponent<ComponentType>> = {
+  Mouse: lazy(() => import('../pages/MousePage')),
+  Monitor: lazy(() => import('../pages/MonitorPage')),
+  Teclado: lazy(() => import('../pages/KeyboardPage')),
+};
 
 export const ROUTES: AppRoute[] = [
   {
@@ -105,7 +114,7 @@ export const ROUTES: AppRoute[] = [
     path: '/debloat',
     label: 'Debloat',
     icon: PackageX,
-    category: 'manutencao',
+    category: 'formatacao',
     protected: true,
     component: lazy(() => import('../pages/DebloatPage')),
   },
@@ -113,7 +122,7 @@ export const ROUTES: AppRoute[] = [
     path: '/essenciais',
     label: 'Essenciais PC',
     icon: MonitorDown,
-    category: 'programas',
+    category: 'formatacao',
     protected: true,
     component: lazy(() => import('../pages/EssentialsPage')),
   },
@@ -121,7 +130,7 @@ export const ROUTES: AppRoute[] = [
     path: '/emuladores',
     label: 'Emuladores',
     icon: Gamepad2,
-    category: 'programas',
+    category: 'ferramentas',
     protected: true,
     component: lazy(() => import('../pages/EmuladoresPage')),
   },
@@ -158,34 +167,60 @@ export const ROUTES: AppRoute[] = [
     component: lazy(() => import('../pages/UtilitiesPage')),
   },
   {
+    path: '/armazenamento',
+    label: 'Armazenamento',
+    icon: HardDrive,
+    category: 'ferramentas',
+    protected: true,
+    component: lazy(() => import('../pages/StoragePage')),
+  },
+  {
+    path: '/reparo-do-sistema',
+    label: 'Reparo do sistema',
+    icon: ShieldCheck,
+    category: 'ferramentas',
+    protected: true,
+    component: lazy(() => import('../pages/SystemRepairPage')),
+  },
+  {
     path: '/privacidade-seguranca',
     label: 'Privacidade',
     icon: ShieldCheck,
-    category: 'seguranca',
+    category: 'ferramentas',
     protected: true,
     component: lazy(() => import('../pages/PrivacySecurityPage')),
   },
+  // Cada periférico tem sua própria página na seção Sistema; os ids dos scripts
+  // e o destino do Ctrl+K saem da mesma configuração usada pelas páginas.
+  ...DEVICE_PAGES.map((device) => ({
+    path: device.path,
+    label: device.name,
+    icon: device.icon,
+    category: 'sistema' as const,
+    protected: true,
+    component: DEVICE_COMPONENTS[device.category],
+  })),
   {
-    // Restauracao e historico sao sistema, nao seguranca: nao protegem nada,
-    // apenas registram/recuperam o estado anterior.
+    // Restauracao e historico nao protegem nada: apenas registram/recuperam o
+    // estado anterior. Ficam no rodape, em Configuracoes.
     path: '/restore-points',
     label: 'Restauracao',
     icon: Shield,
-    category: 'sistema',
+    category: 'configuracoes',
     component: lazy(() => import('../pages/RestorePointsPage')),
   },
   {
     path: '/history',
     label: 'Historico',
     icon: Clock,
-    category: 'sistema',
+    category: 'configuracoes',
     component: lazy(() => import('../pages/HistoryPage')),
   },
   {
     path: '/personalizacao',
     label: 'Personalização',
     icon: Palette,
-    category: 'manutencao',
+    category: 'formatacao',
     protected: true,
     component: lazy(() => import('../pages/PersonalizationPage')),
   },
@@ -193,7 +228,7 @@ export const ROUTES: AppRoute[] = [
     path: '/settings',
     label: 'Configuracoes',
     icon: Settings,
-    category: 'sistema',
+    category: 'configuracoes',
     component: lazy(() => import('../pages/SettingsPage')),
   },
 ];

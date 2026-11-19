@@ -1,5 +1,7 @@
 import { Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { AnimatedSettings } from '../components/hero/AnimatedHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { DataSection } from '../components/settings/DataSection';
 import { NotificationsSection } from '../components/settings/NotificationsSection';
 import { PageLockSection } from '../components/settings/PageLockSection';
@@ -20,10 +22,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-lg">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
-          <Settings className="size-28 text-primary" aria-hidden="true" />
-        </div>
+      <HeroBanner visual={<AnimatedSettings />}>
         <div className="relative p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -45,7 +44,7 @@ export default function SettingsPage() {
             </Badge>
           </div>
         </div>
-      </div>
+      </HeroBanner>
 
       <ThemeSection />
       <PreferencesSection />
