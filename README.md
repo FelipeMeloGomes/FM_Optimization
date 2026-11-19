@@ -27,7 +27,7 @@
 
 ### Otimização do Sistema
 
-- **Dashboard** — uso de CPU, GPU, memória e armazenamento, tempo de atividade e quantos ajustes já estão aplicados (`N de 50`).
+- **Dashboard** — uso de processador, placa de vídeo, memória RAM e armazenamento, com a unidade identificada como SSD NVMe, SSD ou HD, tempo de atividade e quantos ajustes já estão aplicados (`N de 50`).
 - **19 ajustes de otimização** — 12 de processador, 4 de GPU AMD e 3 de Windows (hardware, modo gamer e planos de energia). A seção de GPU tem card próprio com aviso de hardware.
 - **Input Lag** — 6 ajustes de registro e resposta do sistema (todos os tweaks, USB, TCPNoDelay, prioridade, cache e atraso de menu). Os tweaks de teclado, mouse e monitor ficam em **Sistema**.
 - **Inicialização** — apps, tarefas agendadas e serviços que abrem com o Windows, com interruptor reversível. Serviços essenciais ficam somente leitura.
@@ -37,11 +37,6 @@
 
 - **Limpeza** — lista item por item (temporários, Prefetch, Windows Update, shaders DirectX e cache de Chrome, Edge, Firefox e Brave) com tamanho em tempo real, seleção individual, atalho “Selecionar recomendados” (temporários, Prefetch e caches de navegador) e um botão único para limpar o que estiver marcado. A lista é virtualizada e acompanha a rolagem da página.
 - **Limpeza automática** — agendamento diário, semanal ou mensal, com escolha das categorias. Com a automação ligada, fechar a janela libera a memória dela e o app continua na bandeja (~90 MB, sem renderer), podendo iniciar com o Windows já escondido e voltar na última página ao ser reaberto. Scripts finalizados com a janela fechada avisam por notificação nativa do Windows.
-- **Utilitários** — manutenção do sistema e gerenciamento de memória e processos.
-- **Armazenamento** — Limpeza de Disco do Windows, limpeza do WinSxS, otimizações de SSD e compactação do sistema; os tweaks exclusivos de SSD aparecem apenas quando um SSD é detectado.
-- **Reparo do sistema** — SFC Scannow, DISM RestoreHealth e CHKDSK (Verificar Disco).
-- **Privacidade** — telemetria, ID de anúncio, reconhecimento de fala e Timeline; bloqueio de domínios via arquivo Hosts e da instalação forçada de apps sugeridos pelo Windows.
-- **Emuladores** — debloat de BlueStacks 4/5 via ADB: seleção de instância, presets de bloatware, backup automático do APK e restauração por instância. Permite remover qualquer app, inclusive de sistema.
 
 ### Formatação
 
@@ -55,13 +50,28 @@
 - **Velocidade** — teste real de internet com medidor animado: mede download, upload, ping e jitter contra a rede de servidores do Speedtest.net (o servidor mais próximo é escolhido automaticamente), move a agulha em tempo real com transições suaves entre fases e mantém o resultado final na tela. Sem histórico e sem salvar medições.
 - **Internet** — tweaks para reduzir latência e melhorar a estabilidade da conexão, apresentados em seções virtualizadas.
 
+### Ferramentas
+
+- **Comparar Placas** — comparador nativo de placas de vídeo com busca por nome nos dois seletores, tabela de especificações lado a lado e barras de desempenho relativo. A placa detectada no PC abre na Placa A com o selo **Detectada**; se ela não estiver no catálogo, o app a busca no [Technical City](https://technical.city/pt/gpu) e inclui na comparação da sessão. Os dados vêm de um catálogo público versionado (`resources/gpu-dataset.json`), servido por CDN e carregado no processo principal; enquanto o arquivo não estiver publicado no branch `main` (ou se a rede falhar), o app usa o cache local ou o dataset incluído no instalador. As pontuações são do PassMark e as especificações foram coletadas do Technical City, com link para a fonte no rodapé da página.
+- **Overlay de jogo** — pill translúcido e mínimo (número + `FPS`) com o **FPS real** do jogo, capturado pelo [PresentMon](https://github.com/GameTechDev/PresentMon) 2.3.1 (MIT). Cadastre cada jogo escolhendo o `.exe`; o app descobre o processo e inicia a captura sozinho ao abrir o jogo, sem precisar abrir a página. O botão **Iniciar** no card abre esse executável direto, sem passar pela Steam — como o atalho usa o `.exe` escolhido, plataformas podem não registrar tempo de jogo ou conquistas. A engrenagem única da página ajusta o atalho global (padrão `Ctrl+Shift+F`, gravável), a posição, a opacidade, o FPS alvo (verde acima, vermelho abaixo) e a opção **mostrar somente quando o jogo estiver em foco**. A prévia acompanha posição, opacidade e cor do FPS alvo em tempo real, antes mesmo de salvar. O atalho mostra/oculta o pill; com o foco ligado ele desaparece no Alt+Tab, e desligado permanece visível enquanto o jogo estiver aberto. A média suavizada usa cerca de 1 s de amostras para não piscar a cada frame.
+
+  **Requisitos:** Windows, jogo em **borderless em tela cheia** (tela cheia exclusiva não é suportada) e privilégio de administrador ou associação ao grupo _Performance Log Users_ — se faltar, a página mostra o aviso e oferece reiniciar elevado reaproveitando o fluxo já usado pelo app. Para o Batman Arkham Knight, a página lê `GFXSettings.BatmanArkhamKnight.xml`: se o jogo estiver em tela cheia exclusiva, aparece um aviso com o botão **Usar borderless**, que guarda um backup (`.bak`) e troca apenas o valor `Display_Mode` de `2` para `1`; basta reiniciar o jogo. O binário do PresentMon é baixado na primeira captura e validado por SHA256. Com vários jogos cadastrados abertos, apenas o jogo em foco é capturado; os outros aparecem como "rodando" na página. As capas vêm da Steam sem chave de API: o app descobre o `appid` pelos `appmanifest` instalados ou pela busca da loja, baixa `library_600x900.jpg` e guarda em `%APPDATA%\fm-optimize\covers\`; jogos fora da Steam usam as iniciais. Enquanto houver jogos habilitados, o app permanece na bandeja ao fechar a janela.
+
 ### Sistema
 
+Todos os itens aparecem em ordem alfabética na barra lateral.
+
+- **Armazenamento** — Limpeza de Disco do Windows, limpeza do WinSxS, otimizações de SSD e compactação do sistema; os tweaks exclusivos de SSD aparecem apenas quando um SSD é detectado.
+- **Emuladores** — debloat de BlueStacks 4/5 via ADB: seleção de instância, presets de bloatware, backup automático do APK e restauração por instância. Permite remover qualquer app, inclusive de sistema.
+- **Meu PC** — hardware lido direto do Windows: processador, caches (L1/L2/L3), placa-mãe, memória, slots de memória, gráficos e armazenamento, com a unidade identificada como SSD NVMe, SSD ou HD. O botão **Exportar relatório...** gera os dois relatórios (hardware e bateria) na Área de Trabalho, sem menu de opções.
+- **Privacidade** — telemetria, ID de anúncio, reconhecimento de fala e Timeline; bloqueio de domínios via arquivo Hosts e da instalação forçada de apps sugeridos pelo Windows.
+- **Reparo do sistema** — SFC Scannow, DISM RestoreHealth e CHKDSK (Verificar Disco).
+- **Utilitários** — manutenção do sistema e gerenciamento de memória e processos. O relatório de sistema saiu daqui e agora fica em **Meu PC**.
 - **Mouse** — página própria com os 2 tweaks de mouse que saíram do Input Lag (`inputlag-2` e `inputlag-11`). A lista de tweaks abre só quando você quer. O painel **Ajustes do Windows** lê e aplica, via `SystemParametersInfo`, a velocidade do ponteiro (1–20), a aceleração (**Melhorar precisão do ponteiro**) e o tempo de duplo clique (100–5000 ms) — os mesmos valores do painel do Windows, com botões **Aplicar**, **Restaurar padrão** e **Cancelar alterações**. O cursor do cabeçalho é decorativo e uma prévia com rastro responde ao movimento real do mouse dentro do painel.
 - **Monitor** — página própria com o tweak de latência do driver de vídeo (`inputlag-3`), executado direto. O painel **Ajustes do Windows** enumera **todos os monitores ativos** (`EnumDisplayDevices` + `EnumDisplaySettingsEx`), mostra um card por monitor com seus modos reais e permite escolher resolução e taxa de atualização de cada um, aplicando com `ChangeDisplaySettingsEx` e persistindo a mudança no registro. O monitor do cabeçalho é decorativo.
 - **Teclado** — página própria com os 2 tweaks de teclado (`inputlag-1` e `inputlag-9`). O painel **Ajustes do Windows** lê e aplica via `SystemParametersInfo` o atraso até repetir (250–1000 ms), a velocidade de repetição (0–31) e a piscagem do cursor (`SetCaretBlinkTime` + `CursorBlinkRate`, 100–2500 ms), com prévia visual dos três ajustes. O teclado do cabeçalho é decorativo.
 
-**Banners animados:** o componente reutilizável `HeroBanner` (`src/components/hero/HeroBanner.tsx`) centraliza o gradiente e o slot do visual animado; cada página passa seu próprio conteúdo e um visual de `src/components/hero/AnimatedHero.tsx`. Todas as páginas têm um visual decorativo próprio no cabeçalho (painel, CPU, limpeza, debloat, DNS, rede, velocidade, emuladores, essenciais, histórico, input lag, personalização, privacidade, restauração, configurações, inicialização e utilitários), no mesmo estilo do cursor do Mouse, do monitor e do teclado. São animações CSS puras: não executam scripts, não leem nem alteram configuração do Windows e são ignoradas por leitores de tela (`aria-hidden`).
+**Banners animados:** o componente reutilizável `HeroBanner` (`src/components/hero/HeroBanner.tsx`) centraliza o gradiente e o slot do visual animado; cada página passa seu próprio conteúdo e um visual de `src/components/hero/AnimatedHero.tsx`. Todas as páginas têm um visual decorativo próprio no cabeçalho (painel, CPU, limpeza, debloat, DNS, rede, velocidade, emuladores, essenciais, histórico, input lag, meu PC, personalização, privacidade, restauração, configurações, inicialização, utilitários, comparador e overlay), no mesmo estilo do cursor do Mouse, do monitor e do teclado. São animações CSS puras: não executam scripts, não leem nem alteram configuração do Windows e são ignoradas por leitores de tela (`aria-hidden`).
 
 ### Configurações
 
