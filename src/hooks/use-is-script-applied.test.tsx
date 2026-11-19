@@ -44,7 +44,7 @@ describe('useIsScriptApplied', () => {
   it('não marca nada enquanto o histórico carrega', () => {
     const { result } = renderHook(() => useIsScriptApplied());
 
-    expect(result.current({ id: 'cpu-1' })).toBe(false);
+    expect(result.current({ id: 'cpu-16' })).toBe(false);
   });
 
   it('não marca nada quando o histórico falha', () => {
@@ -52,68 +52,68 @@ describe('useIsScriptApplied', () => {
 
     const { result } = renderHook(() => useIsScriptApplied());
 
-    expect(result.current({ id: 'cpu-1' })).toBe(false);
+    expect(result.current({ id: 'cpu-16' })).toBe(false);
   });
 
   it('marca o script com execução bem-sucedida', () => {
-    store.state = { status: 'success', data: [entry('cpu-1')] };
+    store.state = { status: 'success', data: [entry('cpu-16')] };
 
     const { result } = renderHook(() => useIsScriptApplied());
 
-    expect(result.current({ id: 'cpu-1' })).toBe(true);
-    expect(result.current({ id: 'cpu-2' })).toBe(false);
+    expect(result.current({ id: 'cpu-16' })).toBe(true);
+    expect(result.current({ id: 'cpu-18' })).toBe(false);
   });
 
   it('ignora exit code diferente de zero', () => {
-    store.state = { status: 'success', data: [entry('cpu-1', { exitCode: 1 })] };
+    store.state = { status: 'success', data: [entry('cpu-16', { exitCode: 1 })] };
 
     const { result } = renderHook(() => useIsScriptApplied());
 
-    expect(result.current({ id: 'cpu-1' })).toBe(false);
+    expect(result.current({ id: 'cpu-16' })).toBe(false);
   });
 
   it('ignora exit code nulo (processo não terminou)', () => {
-    store.state = { status: 'success', data: [entry('cpu-1', { exitCode: null })] };
+    store.state = { status: 'success', data: [entry('cpu-16', { exitCode: null })] };
 
     const { result } = renderHook(() => useIsScriptApplied());
 
-    expect(result.current({ id: 'cpu-1' })).toBe(false);
+    expect(result.current({ id: 'cpu-16' })).toBe(false);
   });
 
   it('ignora execução cancelada mesmo com exit code 0', () => {
-    store.state = { status: 'success', data: [entry('cpu-1', { wasCancelled: true })] };
+    store.state = { status: 'success', data: [entry('cpu-16', { wasCancelled: true })] };
 
     const { result } = renderHook(() => useIsScriptApplied());
 
-    expect(result.current({ id: 'cpu-1' })).toBe(false);
+    expect(result.current({ id: 'cpu-16' })).toBe(false);
   });
 
   it('basta uma execução bem-sucedida entre as falhas', () => {
     store.state = {
       status: 'success',
       data: [
-        entry('cpu-1', { exitCode: 1 }),
-        entry('cpu-1', { id: 'history-2', wasCancelled: true }),
-        entry('cpu-1', { id: 'history-3' }),
+        entry('cpu-16', { exitCode: 1 }),
+        entry('cpu-16', { id: 'history-2', wasCancelled: true }),
+        entry('cpu-16', { id: 'history-3' }),
       ],
     };
 
     const { result } = renderHook(() => useIsScriptApplied());
 
-    expect(result.current({ id: 'cpu-1' })).toBe(true);
+    expect(result.current({ id: 'cpu-16' })).toBe(true);
   });
 
   it('não marca scripts não contáveis, mesmo com histórico de sucesso', () => {
     store.state = {
       status: 'success',
-      data: [entry('internet-11'), entry('apps-5'), entry('cpu-2')],
+      data: [entry('internet-11'), entry('apps-5'), entry('util-3')],
     };
 
     const { result } = renderHook(() => useIsScriptApplied());
 
     expect(result.current({ id: 'internet-11' })).toBe(false);
     expect(result.current({ id: 'apps-5' })).toBe(false);
-    expect(result.current({ id: 'cpu-2' })).toBe(false);
+    expect(result.current({ id: 'util-3' })).toBe(false);
   });
 
   it('marca scripts contáveis que dividem categoria com os não contáveis', () => {
@@ -128,12 +128,12 @@ describe('useIsScriptApplied', () => {
   it('recalcula quando o histórico muda', () => {
     const { result, rerender } = renderHook(() => useIsScriptApplied());
 
-    expect(result.current({ id: 'cpu-1' })).toBe(false);
+    expect(result.current({ id: 'cpu-16' })).toBe(false);
 
-    store.state = { status: 'success', data: [entry('cpu-1')] };
+    store.state = { status: 'success', data: [entry('cpu-16')] };
     rerender();
 
-    expect(result.current({ id: 'cpu-1' })).toBe(true);
+    expect(result.current({ id: 'cpu-16' })).toBe(true);
   });
 
   it('devolve a mesma função enquanto o histórico não muda', () => {

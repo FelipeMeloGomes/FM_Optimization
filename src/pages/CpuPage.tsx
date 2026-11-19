@@ -1,10 +1,10 @@
-import { AlertTriangle, Cpu } from 'lucide-react';
+import { AlertTriangle, Cpu, Gauge } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { AnimatedCpu } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
-import { Badge, Button, Card, CardContent } from '../components/ui';
+import { Button, Card, CardContent } from '../components/ui';
 import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useCpuContext, useMemoryContext } from '../contexts/SystemContext';
 import { useCpuVendor } from '../hooks/use-cpu-vendor';
@@ -22,20 +22,10 @@ const TONE_BG = {
   blue: 'bg-info/10',
   amber: 'bg-warning/10',
 } as const;
-const TONE_BG_FAINT = {
-  red: 'from-destructive/10',
-  blue: 'from-info/10',
-  amber: 'from-warning/10',
-} as const;
 const TONE_BORDER = {
   red: 'border-destructive/20',
   blue: 'border-info/20',
   amber: 'border-warning/20',
-} as const;
-const TONE_BADGE = {
-  red: 'bg-destructive/10 text-destructive',
-  blue: 'bg-info/10 text-info',
-  amber: 'bg-warning/10 text-warning',
 } as const;
 
 export default function CpuPage() {
@@ -79,11 +69,13 @@ export default function CpuPage() {
     handleConfirm,
   } = useScriptPage(categories);
 
-  // The RAM ladder is one script per capacity; only the tier that matches the
-  // installed memory is listed, as before. RAM scripts only exist in the CPU
-  // category, so this filter cannot touch the GPU/Windows sections.
+  // `categoryScripts` holds every category routed to this page (CPU, GPU and
+  // Windows). The processor section must take only the CPU ones — otherwise
+  // GPU/Windows scripts show up here as well as in their own cards. On top of
+  // that, the RAM ladder lists only the tier matching the installed memory.
   const cpuScripts = useMemo(() => {
     return categoryScripts.filter((s) => {
+      if (s.category !== CPU_CATEGORY) return false;
       if (s.subcategory === 'RAM') {
         return s.id === recommendedRamScriptId;
       }
@@ -139,32 +131,18 @@ export default function CpuPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner
-        visual={<AnimatedCpu iconClassName={TONE_TEXT[tone]} />}
-        className={cn(
-          'relative overflow-hidden rounded-xl border bg-gradient-to-br to-transparent',
-          TONE_BORDER[tone],
-          TONE_BG_FAINT[tone]
-        )}
-      >
+      <HeroBanner visual={<AnimatedCpu />}>
         <div className="relative p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Cpu className={cn('size-4', TONE_TEXT[tone])} />
-                <span
-                  className={cn('text-xs font-semibold uppercase tracking-wider', TONE_TEXT[tone])}
-                >
-                  Desempenho · {vendorLabel}
-                </span>
-              </div>
-              <h2 className="text-lg font-bold text-foreground">Desempenho do PC</h2>
-              <p className="text-sm text-muted-foreground mt-1">{cpuModel ?? '—'}</p>
-            </div>
-            <Badge variant="secondary" className={cn('text-xs px-3 py-1', TONE_BADGE[tone])}>
-              {categoryScripts.length} tweaks
-            </Badge>
+          <div className="mb-2 flex items-center gap-2">
+            <Gauge className="size-4 text-primary" aria-hidden="true" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+              Desempenho
+            </span>
           </div>
+          <h2 className="text-lg font-bold text-foreground">Otimização do Sistema</h2>
+          <p className="mt-1 max-w-lg text-sm text-muted-foreground">
+            Ajustes de hardware e do Windows para extrair mais desempenho e estabilidade do seu PC.
+          </p>
         </div>
       </HeroBanner>
 
@@ -242,7 +220,7 @@ export default function CpuPage() {
                 {cpuModel
                   ? `Nenhum fabricante Intel ou AMD reconhecido em "${cpuModel}". `
                   : 'Nenhum fabricante Intel ou AMD reconhecido. '}
-                A identificação só define o rótulo desta página: os ajustes de processador valem
+                A identificação não muda quais ajustes aparecem: os ajustes de processador valem
                 para os dois fabricantes e os cards de GPU e Windows não dependem dela.
               </p>
             </div>

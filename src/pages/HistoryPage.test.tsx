@@ -22,8 +22,8 @@ const store = vi.hoisted<{ state: AsyncState<ExecutionHistoryEntry[]> }>(() => (
 function entry(overrides: Partial<ExecutionHistoryEntry> = {}): ExecutionHistoryEntry {
   return {
     id: 'h-1',
-    scriptId: 'cpu-10',
-    scriptName: 'cpu-10',
+    scriptId: 'cpu-16',
+    scriptName: 'cpu-16',
     startTime: '2026-01-05T10:00:00.000Z',
     endTime: '2026-01-05T10:00:01.500Z',
     durationMs: 1500,
@@ -103,7 +103,7 @@ describe('HistoryPage', () => {
 
     const html = render();
 
-    expect(html).toContain('cpu-10');
+    expect(html).toContain('cpu-16');
     expect(html).toContain('Automática');
     expect(html).toContain('1s');
     expect(html).toContain('Sucesso');

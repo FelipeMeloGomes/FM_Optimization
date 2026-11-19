@@ -1,7 +1,7 @@
 import type { AppSection } from './app-sections';
 
 /**
- * Secoes da pagina Desempenho (rota `/cpu`).
+ * Secoes da pagina Otimização do Sistema (rota `/cpu`).
  *
  * A pagina agrupa tres categorias do catalogo, cada uma com o seu proprio card:
  * ajustes de processador (AMD e Intel), ajustes de GPU AMD e ajustes do Windows

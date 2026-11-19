@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
 const SCRIPTS = [
-  { id: 'cpu-1', name: 'Limpeza Rápida', category: 'Essenciais', subcategory: 'Geral' },
+  { id: 'cpu-16', name: 'Limpeza Rápida', category: 'Essenciais', subcategory: 'Geral' },
   { id: 'net-1', name: 'DNS Cloudflare', category: 'Rede', subcategory: 'Rede' },
 ];
 

@@ -161,11 +161,6 @@ describe('scripts interativos devolvem um codigo de saida honesto', () => {
     expect(decode('util-6')).toContain('start /wait "" cleanmgr');
   });
 
-  it('cpu-2 pausa antes de fechar em todos os modos', () => {
-    const pauses = decode('cpu-2').match(/pause\r?\nEXIT/gi) ?? [];
-    expect(pauses).toHaveLength(3);
-  });
-
   it('tweaks-5 sai com 3 quando apenas mostra o plano atual', () => {
     const content = decode('tweaks-5');
     expect(content).toMatch(/powercfg \/getactivescheme[\s\S]*?pause\s*\r?\n\s*exit \/b 3/i);
@@ -174,7 +169,7 @@ describe('scripts interativos devolvem um codigo de saida honesto', () => {
 
 /**
  * O .reg é importado pelo regedit, que aborta o arquivo inteiro na primeira
- * linha inválida. Uma linha de texto solta (cpu-28), um comentário com `#`
+ * linha inválida. Uma linha de texto solta, um comentário com `#`
  * (builtin-4/6) ou um espaço antes da chave não são comentários tolerados:
  * viram erro de importação. Este teste olha o catálogo real.
  */

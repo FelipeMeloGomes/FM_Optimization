@@ -1,12 +1,13 @@
 import type { AppSection } from './app-sections';
 
 /**
- * Cards da página Rede. Cobre exatamente as categorias "Internet" e
+ * Cards da página Internet. Cobre exatamente as categorias "Internet" e
  * "DNS Manager" do catálogo — o teste em script-pages.test.ts garante que
  * nenhum script fica sem card e nenhum id sobra.
  *
- * A configuração visual de DNS saiu daqui para a página /dns; aqui ficam os
- * scripts, incluindo os que antes eram ocultados por `DNS_SCRIPT_IDS`.
+ * A configuração visual de DNS vive em /dns e os scripts de troca de
+ * provedor/cache do resolutor saíram do catálogo: aqui ficam os ajustes de
+ * rede e os scripts de reparo de resolução de nomes.
  */
 export const NETWORK_SECTIONS: AppSection[] = [
   {
@@ -29,17 +30,6 @@ export const NETWORK_SECTIONS: AppSection[] = [
     bgColor: 'bg-primary/10',
     borderColor: 'border-primary/20',
     scriptIds: ['internet-7', 'internet-10'],
-  },
-  {
-    id: 'dns-scripts',
-    name: 'DNS e resolução',
-    description:
-      'Scripts para trocar provedores DNS, ajustar cache e prioridade e limpar o cache do resolutor.',
-    icon: 'monitor',
-    color: 'text-info',
-    bgColor: 'bg-info/10',
-    borderColor: 'border-info/20',
-    scriptIds: ['internet-6', 'internet-8', 'dns-1', 'dns-4', 'builtin-71'],
   },
   {
     id: 'repair',

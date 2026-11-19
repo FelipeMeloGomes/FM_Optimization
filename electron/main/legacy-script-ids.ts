@@ -1,10 +1,12 @@
 import type { ExecutionHistoryEntry } from '../shared/ipc-types';
 
 /**
- * Maps every retired AMD/Intel catalog id to the neutral `cpu-N` script that
- * replaced it. The 74-entry split existed only as folder organisation: the
- * merged pairs were byte-identical or differed solely in banner/credit lines,
- * so no id had to survive on its own merits.
+ * Maps retired AMD/Intel catalog ids to the neutral `cpu-N` script that
+ * replaced them. The split existed only as folder organisation: the merged
+ * pairs were byte-identical or differed solely in banner/credit lines, so no
+ * id had to survive on its own merits. Aliases for scripts later retired from
+ * the catalog are dropped — pointing history at a script that no longer ships
+ * would only invent an "applied" tweak the user never ran.
  *
  * Every lookup path must resolve through {@link resolveScriptId} *before*
  * comparing against the catalog, not after. There are three such guards, and
@@ -15,62 +17,16 @@ import type { ExecutionHistoryEntry } from '../shared/ipc-types';
  * on both elevated paths.
  */
 export const LEGACY_SCRIPT_ID_ALIASES: Record<string, string> = {
-  'amd-1': 'cpu-1',
-  'intel-1': 'cpu-1',
-  'amd-2': 'cpu-2',
-  'intel-15': 'cpu-2',
-  'amd-3': 'cpu-3',
-  'intel-14': 'cpu-3',
-  'amd-4': 'cpu-4',
-  'intel-2': 'cpu-4',
-  'amd-5': 'cpu-5',
-  'intel-9': 'cpu-5',
-  'amd-6': 'cpu-6',
-  'intel-10': 'cpu-6',
-  'amd-7': 'cpu-7',
-  'intel-11': 'cpu-7',
-  'amd-8': 'cpu-8',
-  'intel-12': 'cpu-8',
-  'amd-9': 'cpu-9',
-  'intel-13': 'cpu-9',
-  'amd-10': 'cpu-10',
-  'intel-3': 'cpu-10',
-  'amd-11': 'cpu-11',
-  'intel-4': 'cpu-11',
-  'amd-12': 'cpu-11',
-  'intel-5': 'cpu-11',
-  'amd-13': 'cpu-13',
-  'intel-7': 'cpu-13',
-  'amd-14': 'cpu-14',
-  'intel-6': 'cpu-14',
-  'amd-15': 'cpu-15',
-  'intel-8': 'cpu-15',
   'amd-16': 'cpu-16',
   'intel-24': 'cpu-16',
-  'amd-17': 'cpu-17',
-  'intel-23': 'cpu-17',
   'amd-18': 'cpu-18',
   'intel-22': 'cpu-18',
-  'amd-19': 'cpu-19',
-  'intel-21': 'cpu-19',
   'amd-20': 'cpu-20',
   'intel-20': 'cpu-20',
   'amd-21': 'cpu-21',
   'intel-19': 'cpu-21',
-  'amd-22': 'cpu-22',
-  'intel-18': 'cpu-22',
-  'amd-23': 'cpu-23',
-  'intel-17': 'cpu-23',
   'amd-24': 'cpu-21',
   'intel-16': 'cpu-21',
-  'amd-25': 'cpu-25',
-  'intel-29': 'cpu-25',
-  'amd-26': 'cpu-26',
-  'intel-28': 'cpu-26',
-  'amd-27': 'cpu-27',
-  'intel-27': 'cpu-27',
-  'amd-28': 'cpu-28',
-  'intel-26': 'cpu-28',
   'amd-29': 'cpu-21',
   'intel-25': 'cpu-21',
   'amd-30': 'cpu-30',
@@ -91,7 +47,6 @@ export const LEGACY_SCRIPT_ID_ALIASES: Record<string, string> = {
   'intel-37': 'cpu-37',
   // Ids aposentados na dedup da beta. Não removidos do mapa: histórico e
   // preferências antigas continuam resolvendo para o sobrevivente.
-  'cpu-12': 'cpu-11',
   'cpu-24': 'cpu-21',
   'cpu-29': 'cpu-21',
 };

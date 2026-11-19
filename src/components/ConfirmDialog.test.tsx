@@ -34,7 +34,7 @@ interface Item {
 }
 
 const SCRIPT: Item = {
-  id: 'cpu-1',
+  id: 'cpu-16',
   name: 'Tweak de CPU',
   description: 'Ajusta o agendamento de threads.',
   extension: 'ps1',
@@ -132,7 +132,7 @@ describe('ConfirmDialog — fase de confirmação', () => {
   });
 
   it('usa "Executar novamente" quando o script já foi aplicado', () => {
-    store.applied.add('cpu-1');
+    store.applied.add('cpu-16');
 
     setup();
 

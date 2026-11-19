@@ -96,16 +96,27 @@ describe('NetworkPage', () => {
   it('mostra o herói e as seções de scripts no padrão das outras páginas', () => {
     store.scripts = [
       script('internet-1', 'Ajustar TCP/IP'),
-      script('dns-1', 'Alterar DNS', 'DNS Manager'),
+      script('dns-2', 'Restaurar pilha de rede', 'DNS Manager'),
     ];
 
     renderPage();
 
-    expect(screen.getByText('Otimização de Rede')).toBeDefined();
+    expect(screen.getByText('Internet')).toBeDefined();
     expect(screen.getByText('TCP/IP e MTU')).toBeDefined();
-    expect(screen.getByText('DNS e resolução')).toBeDefined();
+    expect(screen.getByText('Reparo e diagnóstico')).toBeDefined();
     expect(screen.getByText('Ajustar TCP/IP')).toBeDefined();
-    expect(screen.getByText('Alterar DNS')).toBeDefined();
+    expect(screen.getByText('Restaurar pilha de rede')).toBeDefined();
+  });
+
+  it('não mostra mais a seção DNS e resolução', () => {
+    renderPage();
+
+    expect(screen.queryByText('DNS e resolução')).toBeNull();
+    expect(
+      screen.queryByText(
+        'Scripts para trocar provedores DNS, ajustar cache e prioridade e limpar o cache do resolutor.'
+      )
+    ).toBeNull();
   });
 
   it('conta os tweaks por seção e não pelo catálogo inteiro', () => {
@@ -133,7 +144,7 @@ describe('NetworkPage', () => {
     const { container } = renderPage();
 
     expect(container.querySelector('.animate-pulse')).not.toBeNull();
-    expect(screen.queryByText('Otimização de Rede')).toBeNull();
+    expect(screen.queryByText('Internet')).toBeNull();
   });
 
   it('mostra o erro quando o catálogo falha', () => {

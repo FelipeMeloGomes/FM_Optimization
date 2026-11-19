@@ -23,7 +23,7 @@ import { ScriptBadge } from './ScriptBadge';
 
 function script(overrides: Partial<ScriptEntry> = {}): ScriptEntry {
   return {
-    id: 'cpu-1',
+    id: 'cpu-18',
     name: 'Tweak de CPU',
     description: 'Descrição',
     category: 'CPU',
@@ -56,7 +56,7 @@ beforeEach(() => {
 
 describe('ScriptBadge — selo Aplicado', () => {
   it('mostra o selo quando o histórico tem execução bem-sucedida', () => {
-    store.applied.add('cpu-1');
+    store.applied.add('cpu-18');
 
     const html = render(script());
 
@@ -76,10 +76,10 @@ describe('ScriptBadge — selo Aplicado', () => {
   it('não confunde o id do script com o de outra entrada', () => {
     // Regressão: o selo já foi pintado para todos os cards quando a comparação
     // olhava apenas se o histórico estava carregado.
-    store.applied.add('cpu-2');
+    store.applied.add('cpu-16');
 
-    expect(text(render(script({ id: 'cpu-1' })))).not.toContain('Aplicado');
-    expect(text(render(script({ id: 'cpu-2' })))).toContain('Aplicado');
+    expect(text(render(script({ id: 'cpu-18' })))).not.toContain('Aplicado');
+    expect(text(render(script({ id: 'cpu-16' })))).toContain('Aplicado');
   });
 });
 
@@ -126,7 +126,7 @@ describe('ScriptBadge — selos do catálogo', () => {
   });
 
   it('mantém a ordem Aplicado, Admin, Reiniciar e risco', () => {
-    store.applied.add('cpu-1');
+    store.applied.add('cpu-18');
 
     const html = render(
       script({ requiresAdmin: true, requiresRestart: true, riskLevel: 'moderate' })

@@ -74,12 +74,12 @@ const MEMORY: MemoryInfo = {
   frequency: '3200 MHz',
 };
 
-const CPU_TWEAK = script('cpu-1', 'Agendador de CPU');
+const CPU_TWEAK = script('cpu-18', 'Agendador de CPU');
 const CLEANER = script('cleaner-1', 'Limpar Cache', 'Cleaner');
 const RAM_4 = script('cpu-30', 'Limite do svchost (4 GB)', 'CPU', 'RAM');
 const RAM_16 = script('cpu-34', 'Limite do svchost (16 GB)', 'CPU', 'RAM');
 const RAM_RESET = script('cpu-37', 'Restaurar Limite do svchost', 'CPU', 'RAM');
-const CPU_COMMON = script('cpu-10', 'Ajuste comum de CPU');
+const CPU_COMMON = script('cpu-16', 'Ajuste comum de CPU');
 
 function setup(isOpen = true) {
   const onClose = vi.fn();

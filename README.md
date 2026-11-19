@@ -5,7 +5,7 @@
 <h1 align="center">FM Optimize</h1>
 
 <p align="center">
-  <strong>96 scripts de otimização do Windows em um único app desktop.</strong><br />
+  <strong>68 scripts de otimização do Windows em um único app desktop.</strong><br />
   Desempenho, privacidade, limpeza e debloat em uma interface só.
 </p>
 
@@ -25,10 +25,10 @@
 
 ## Funcionalidades
 
-### Desempenho
+### Otimização do Sistema
 
-- **Dashboard** — uso de CPU, GPU, memória e armazenamento, tempo de atividade e quantos ajustes já estão aplicados (`N de 77`).
-- **42 tweaks de desempenho** — 34 de processador, 4 de GPU AMD e 4 de Windows (energia, serviços, prioridade e modo de jogo). A seção de GPU tem card próprio com aviso de hardware.
+- **Dashboard** — uso de CPU, GPU, memória e armazenamento, tempo de atividade e quantos ajustes já estão aplicados (`N de 50`).
+- **19 ajustes de otimização** — 12 de processador, 4 de GPU AMD e 3 de Windows (hardware, modo gamer e planos de energia). A seção de GPU tem card próprio com aviso de hardware.
 - **Input Lag** — 6 ajustes de registro e resposta do sistema (todos os tweaks, USB, TCPNoDelay, prioridade, cache e atraso de menu). Os tweaks de teclado, mouse e monitor ficam em **Sistema**.
 - **Inicialização** — apps, tarefas agendadas e serviços que abrem com o Windows, com interruptor reversível. Serviços essenciais ficam somente leitura.
 - **Pontos de restauração** — criação, listagem e restauração de backups do Windows, com opção de criar automaticamente antes de executar tweaks.
@@ -53,7 +53,7 @@
 
 - **DNS** — página própria com 19 provedores (privacidade, segurança, bloqueio de anúncios e controle parental), benchmark de latência com varredura animada provedor a provedor, provedor em uso fixado no topo da lista, ordenação dos demais por velocidade, aplicação do melhor e indicador de DNS ativo.
 - **Velocidade** — teste real de internet com medidor animado: mede download, upload, ping e jitter contra a rede de servidores do Speedtest.net (o servidor mais próximo é escolhido automaticamente), move a agulha em tempo real com transições suaves entre fases e mantém o resultado final na tela. Sem histórico e sem salvar medições.
-- **Rede** — tweaks de internet para reduzir latência e melhorar a estabilidade da conexão, incluindo os scripts de DNS, apresentados em seções virtualizadas.
+- **Internet** — tweaks para reduzir latência e melhorar a estabilidade da conexão, apresentados em seções virtualizadas.
 
 ### Sistema
 
@@ -165,6 +165,6 @@ src/
   contexts/    # estado de sistema, scripts, histórico e configurações
   components/  # UI reutilizável
 resources/
-  scripts.json # catálogo dos 96 scripts
+  scripts.json # catálogo dos 68 scripts
   icon.svg
 ```

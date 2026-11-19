@@ -31,9 +31,9 @@ function entry(scriptId: string): ExecutionHistoryEntry {
 }
 
 describe('catálogo real (resources/scripts.json)', () => {
-  it('tem 81 ajustes contáveis num catálogo de 96 scripts', () => {
-    expect(scripts).toHaveLength(96);
-    expect(scripts.filter(isCountableScript)).toHaveLength(81);
+  it('tem 54 ajustes contáveis num catálogo de 68 scripts', () => {
+    expect(scripts).toHaveLength(68);
+    expect(scripts.filter(isCountableScript)).toHaveLength(54);
   });
 
   it('conta os interativos que aplicam algo, mas não reverters nem utilitários', () => {
@@ -41,9 +41,7 @@ describe('catálogo real (resources/scripts.json)', () => {
       .filter((s) => s.interactive === true && isCountableScript(s))
       .map((s) => s.id)
       .sort();
-    expect(countableInteractive).toEqual(
-      ['apps-2', 'apps-4', 'apps-6', 'dns-1', 'tweaks-5'].sort()
-    );
+    expect(countableInteractive).toEqual(['apps-2', 'apps-4', 'apps-6', 'tweaks-5'].sort());
   });
 
   it('toda exclusão aponta para um script que existe (sem lista fantasma)', () => {
@@ -56,6 +54,6 @@ describe('catálogo real (resources/scripts.json)', () => {
     // util-1 (Manutenção) conta como ajuste; cleaner-3
     // (Limpeza de Navegadores) não: limpeza tem página própria e não é tweak.
     const summary = summarizeAppliedScripts(scripts, [entry('util-1'), entry('cleaner-3')]);
-    expect(summary).toEqual({ applied: 1, total: 77 });
+    expect(summary).toEqual({ applied: 1, total: 50 });
   });
 });

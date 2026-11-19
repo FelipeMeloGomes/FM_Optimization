@@ -82,11 +82,11 @@ describe('isCountableScript', () => {
   });
 
   it('conta interativos: o app agora observa a janela ate o fim', () => {
-    expect(isCountableScript(script('dns-1', { interactive: true }))).toBe(true);
+    expect(isCountableScript(script('apps-2', { interactive: true }))).toBe(true);
   });
 
   it('não conta os interativos que não representam um ajuste ativo', () => {
-    for (const id of ['apps-5', 'apps-7', 'util-3', 'cpu-2']) {
+    for (const id of ['apps-5', 'apps-7', 'util-3']) {
       expect(isCountableScript(script(id, { interactive: true }))).toBe(false);
     }
   });
@@ -108,7 +108,7 @@ describe('summarizeAppliedScripts', () => {
     script('tweaks-1'),
     script('cleaner-3', { category: 'Cleaner' }),
     script('util-1', { category: 'Utilities' }),
-    script('dns-1', { interactive: true }),
+    script('apps-2', { interactive: true }),
     script('cpu-37'),
   ];
 
@@ -117,14 +117,14 @@ describe('summarizeAppliedScripts', () => {
       entry({ scriptId: 'tweaks-1' }),
       entry({ scriptId: 'cleaner-3' }),
     ]);
-    // elegíveis: tweaks-1, util-1 e dns-1 (limpeza e cpu-37 fora)
+    // elegíveis: tweaks-1, util-1 e apps-2 (limpeza e cpu-37 fora)
     expect(summary).toEqual({ applied: 1, total: 3 });
   });
 
   it('só conta no numerador o que é elegível', () => {
     const summary = summarizeAppliedScripts(catalog, [
       entry({ scriptId: 'cpu-37' }),
-      entry({ scriptId: 'dns-1' }),
+      entry({ scriptId: 'apps-2' }),
     ]);
     expect(summary.applied).toBe(1);
   });
@@ -134,7 +134,7 @@ describe('summarizeAppliedScripts', () => {
       entry({ id: 'a', scriptId: 'tweaks-1' }),
       entry({ id: 'b', scriptId: 'cleaner-3' }),
       entry({ id: 'c', scriptId: 'util-1' }),
-      entry({ id: 'd', scriptId: 'dns-1' }),
+      entry({ id: 'd', scriptId: 'apps-2' }),
       entry({ id: 'e', scriptId: 'cpu-37' }),
     ]);
     expect(summary.applied).toBe(summary.total);

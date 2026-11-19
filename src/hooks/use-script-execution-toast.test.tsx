@@ -59,7 +59,7 @@ describe('useScriptExecutionToast', () => {
     const { callbacks } = installApi();
     renderHook(() => useScriptExecutionToast());
 
-    act(() => callbacks[0]({ id: 'cpu-1', code: 0, scriptName: 'Desativar telemetria' }));
+    act(() => callbacks[0]({ id: 'cpu-16', code: 0, scriptName: 'Desativar telemetria' }));
 
     expect(store.toast).toHaveBeenCalledTimes(1);
     expect(store.toast).toHaveBeenCalledWith({
@@ -75,7 +75,7 @@ describe('useScriptExecutionToast', () => {
     const { callbacks } = installApi();
     renderHook(() => useScriptExecutionToast());
 
-    act(() => callbacks[0]({ id: 'cpu-1', code: 1, scriptName: 'Desativar telemetria' }));
+    act(() => callbacks[0]({ id: 'cpu-16', code: 1, scriptName: 'Desativar telemetria' }));
 
     expect(store.toast).not.toHaveBeenCalled();
   });
@@ -84,7 +84,7 @@ describe('useScriptExecutionToast', () => {
     const { callbacks } = installApi();
     renderHook(() => useScriptExecutionToast());
 
-    act(() => callbacks[0]({ id: 'cpu-1', code: null, scriptName: 'Desativar telemetria' }));
+    act(() => callbacks[0]({ id: 'cpu-16', code: null, scriptName: 'Desativar telemetria' }));
 
     expect(store.toast).not.toHaveBeenCalled();
   });
@@ -93,7 +93,7 @@ describe('useScriptExecutionToast', () => {
     const { callbacks } = installApi();
     renderHook(() => useScriptExecutionToast());
 
-    act(() => callbacks[0]({ id: 'cpu-1', code: 0 }));
+    act(() => callbacks[0]({ id: 'cpu-16', code: 0 }));
 
     expect(store.toast).not.toHaveBeenCalled();
   });
@@ -102,7 +102,7 @@ describe('useScriptExecutionToast', () => {
     const { callbacks } = installApi();
     renderHook(() => useScriptExecutionToast());
 
-    act(() => callbacks[0]({ id: 'cpu-1', code: 0, scriptName: '' }));
+    act(() => callbacks[0]({ id: 'cpu-16', code: 0, scriptName: '' }));
 
     expect(store.toast).not.toHaveBeenCalled();
   });
@@ -112,7 +112,7 @@ describe('useScriptExecutionToast', () => {
     const { callbacks } = installApi();
     renderHook(() => useScriptExecutionToast());
 
-    act(() => callbacks[0]({ id: 'cpu-1', code: 0, scriptName: 'Desativar telemetria' }));
+    act(() => callbacks[0]({ id: 'cpu-16', code: 0, scriptName: 'Desativar telemetria' }));
 
     expect(store.toast).toHaveBeenCalledWith(expect.objectContaining({ sound: false }));
   });
@@ -138,7 +138,7 @@ describe('useScriptExecutionToast', () => {
     expect(unsubscribes[0]).toHaveBeenCalledTimes(1);
     expect(callbacks).toHaveLength(2);
 
-    act(() => callbacks[1]({ id: 'cpu-1', code: 0, scriptName: 'Desativar telemetria' }));
+    act(() => callbacks[1]({ id: 'cpu-16', code: 0, scriptName: 'Desativar telemetria' }));
 
     expect(store.toast).toHaveBeenCalledWith(expect.objectContaining({ sound: false }));
   });

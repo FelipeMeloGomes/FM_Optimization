@@ -18,7 +18,7 @@ describe('HeroBanner', () => {
     expect(screen.getByRole('heading', { name: 'Painel do Sistema' })).toBeTruthy();
   });
 
-  it('aceita classes próprias no contêiner e no conteúdo (tons da página CPU)', () => {
+  it('aceita classes próprias no contêiner e no conteúdo', () => {
     const { container } = render(
       <HeroBanner
         visual={<span data-testid="visual" />}

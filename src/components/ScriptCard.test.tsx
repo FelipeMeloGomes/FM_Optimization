@@ -30,7 +30,7 @@ import { ScriptCard } from './ScriptCard';
 
 function script(overrides: Partial<ScriptEntry> = {}): ScriptEntry {
   return {
-    id: 'cpu-1',
+    id: 'cpu-16',
     name: 'Tweak de CPU',
     description: 'Ajusta o agendamento de threads.',
     category: 'CPU',
@@ -113,7 +113,7 @@ describe('ScriptCard — informações do script', () => {
   });
 
   it('marca o script já aplicado', () => {
-    store.applied.add('cpu-1');
+    store.applied.add('cpu-16');
 
     setup(script());
 

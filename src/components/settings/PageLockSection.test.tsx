@@ -171,7 +171,7 @@ describe('PageLockSection — verificação de senha', () => {
       expect(screen.getByText('Escolha quais paginas ficam bloqueadas:')).not.toBeNull()
     );
     expect(screen.getByLabelText('Input Lag')).not.toBeNull();
-    expect(screen.getByLabelText('Desempenho')).not.toBeNull();
+    expect(screen.getByLabelText('Otimização do Sistema')).not.toBeNull();
     expect(screen.getByLabelText('Personalização')).not.toBeNull();
   });
 
@@ -223,10 +223,10 @@ describe('PageLockSection — verificação de senha', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
     });
-    await waitFor(() => expect(screen.getByLabelText('Rede')).not.toBeNull());
+    await waitFor(() => expect(screen.getByLabelText('Internet')).not.toBeNull());
 
-    expect((screen.getByLabelText('Rede') as HTMLInputElement).checked).toBe(true);
-    fireEvent.click(screen.getByLabelText('Rede'));
+    expect((screen.getByLabelText('Internet') as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(screen.getByLabelText('Internet'));
 
     expect(state.update).toHaveBeenCalledWith({
       pageLock: {

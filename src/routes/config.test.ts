@@ -16,11 +16,16 @@ describe('rotas da aplicacao', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it('rotula /cpu como Desempenho sem mudar a rota', () => {
+  it('rotula /cpu como Otimização do Sistema sem mudar a rota', () => {
     // A rota fica estavel para Page Lock e links antigos; so o rotulo muda.
     const route = ROUTES.find((r) => r.path === '/cpu');
-    expect(route?.label).toBe('Desempenho');
+    expect(route?.label).toBe('Otimização do Sistema');
     expect(route?.category).toBe('desempenho');
+  });
+
+  it('mantém a categoria da sidebar com o nome original', () => {
+    // A renomeação é só da página: o agrupamento da sidebar continua Desempenho.
+    expect(CATEGORIES.find((category) => category.id === 'desempenho')?.label).toBe('Desempenho');
   });
 
   it('inclui Personalizacao como pagina propria e protegida', () => {
@@ -74,9 +79,10 @@ describe('rotas da aplicacao', () => {
     expect(dns?.category).toBe('rede');
     expect(dns?.protected).toBe(true);
 
-    const rede = ROUTES.find((r) => r.path === '/rede');
-    expect(rede?.label).toBe('Rede');
-    expect(rede?.category).toBe('rede');
+    const internet = ROUTES.find((r) => r.path === '/rede');
+    expect(internet?.label).toBe('Internet');
+    expect(internet?.category).toBe('rede');
+    expect(CATEGORIES.find((category) => category.id === 'rede')?.label).toBe('Rede');
   });
 
   it('tem Armazenamento e Reparo do sistema como páginas próprias em Ferramentas', () => {
@@ -90,6 +96,19 @@ describe('rotas da aplicacao', () => {
       expect(route?.category, path).toBe('ferramentas');
       expect(route?.protected, path).toBe(true);
     }
+  });
+
+  it('usa um icone distinto para cada pagina da sidebar', () => {
+    const seen = new Map<(typeof ROUTES)[number]['icon'], string>();
+    const duplicates: string[] = [];
+
+    for (const route of ROUTES) {
+      const first = seen.get(route.icon);
+      if (first) duplicates.push(`${first} e ${route.path}`);
+      else seen.set(route.icon, route.path);
+    }
+
+    expect(duplicates).toEqual([]);
   });
 
   it('tem Velocidade como pagina propria na categoria Rede', () => {

@@ -27,7 +27,6 @@ export const NON_COUNTABLE_SCRIPT_IDS: ReadonlySet<string> = new Set([
   'apps-5', // Reverter Discord — desfaz o apps-4
   'apps-7', // Reverter Spotify — desfaz o apps-6
   'util-3', // Relatorios do Sistema — utilitario, nao aplica ajuste
-  'cpu-2', // Super Limpeza — limpeza profunda, nao e tweak
 ]);
 
 interface CountableScriptLike {

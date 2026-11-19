@@ -6,7 +6,7 @@ import type { AppSection, SectionIconName } from '../lib/app-sections';
 
 /**
  * Regressão do card virtualizado (usado em Debloat/Privacidade/Personalização/
- * Desempenho).
+ * Otimização do Sistema).
  *
  * O componente é o substituto virtualizado do `ScriptSectionCard`, então ele
  * precisa manter o mesmo comportamento observável: filtrar o catálogo da

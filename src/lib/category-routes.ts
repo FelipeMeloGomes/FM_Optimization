@@ -2,7 +2,7 @@ import type { ScriptEntry } from '../../electron/shared/ipc-types';
 
 /**
  * Uma categoria do catalogo corresponde a uma unica pagina (ou, no caso das
- * tres categorias da pagina Desempenho, a mesma rota). A pagina Aplicativos e a
+ * tres categorias da pagina Otimização do Sistema, a mesma rota). A pagina Aplicativos e a
  * pagina Ajustes foram removidas na refatoracao: seus scripts ganharam a
  * categoria da pagina que os mostra, entao a busca do Ctrl+K acha o destino so
  * pela categoria.

@@ -40,7 +40,7 @@ describe('normalizeInteractiveExitCode', () => {
   it('nao apaga codigos reais de outros scripts', () => {
     expect(normalizeInteractiveExitCode('apps-2', EXIT_UNKNOWN_HANDOFF)).toBe(2);
     expect(normalizeInteractiveExitCode('apps-6', EXIT_MENU_CLOSED_WITHOUT_APPLY)).toBe(3);
-    expect(normalizeInteractiveExitCode('dns-1', 0)).toBe(0);
+    expect(normalizeInteractiveExitCode('apps-2', 0)).toBe(0);
     expect(normalizeInteractiveExitCode('apps-4', 1)).toBe(1);
     expect(normalizeInteractiveExitCode('apps-4', null)).toBeNull();
   });
@@ -62,7 +62,7 @@ describe('normalizeInteractiveExitCode', () => {
     expect(normalizeInteractiveExitCode('apps-2', EXIT_USER_INTERRUPTED)).toBe(
       EXIT_USER_INTERRUPTED
     );
-    expect(normalizeInteractiveExitCode('dns-1', EXIT_USER_INTERRUPTED)).toBe(
+    expect(normalizeInteractiveExitCode('apps-2', EXIT_USER_INTERRUPTED)).toBe(
       EXIT_USER_INTERRUPTED
     );
   });

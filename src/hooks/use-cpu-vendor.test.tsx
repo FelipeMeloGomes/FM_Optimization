@@ -74,7 +74,7 @@ describe('useCpuVendor — detecção', () => {
     expect(result.current.effective).toBe('unknown');
   });
 
-  it('lista as categorias da página Desempenho', () => {
+  it('lista as categorias da página Otimização do Sistema', () => {
     const { result } = renderHook(() => useCpuVendor());
 
     expect(result.current.categories).toEqual(['CPU', 'GPU', 'Windows']);

@@ -31,10 +31,10 @@ function decode(id: string): string {
 }
 
 /**
- * A pagina Desempenho (rota `/cpu`) lista tres categorias: `CPU` (34 scripts),
- * `GPU` (4 tweaks de placa AMD) e `Windows` (4 ajustes de energia/servicos). A
+ * A pagina Desempenho (rota `/cpu`) lista tres categorias: `CPU` (12 scripts),
+ * `GPU` (4 tweaks de placa AMD) e `Windows` (3 ajustes de energia/servicos). A
  * antiga pagina Ajustes foi dissolvida e nada mais usa a categoria `Tweaks`. A
- * familia `cpu-N` — o antigo par AMD/Intel fundido — continua com 34 ids e e ela
+ * familia `cpu-N` — o antigo par AMD/Intel fundido — continua com 12 ids e e ela
  * que carrega a invariante de neutralidade de fabricante.
  */
 const cpuPage = scripts.filter((s) => s.category === 'CPU');
@@ -64,10 +64,43 @@ describe('tweaks de input lag', () => {
 });
 
 describe('merged processor catalog', () => {
-  it('has 96 entries with 34 scripts on the CPU category and 34 cpu-N ids', () => {
-    expect(scripts).toHaveLength(96);
-    expect(cpuPage).toHaveLength(34);
-    expect(cpuFamily).toHaveLength(34);
+  it('has 68 entries with 12 scripts on the CPU category and 12 cpu-N ids', () => {
+    expect(scripts).toHaveLength(68);
+    expect(cpuPage).toHaveLength(12);
+    expect(cpuFamily).toHaveLength(12);
+  });
+
+  it('no longer ships the retired cleanup and startup CPU scripts', () => {
+    const retired = [
+      'cpu-2',
+      'cpu-3',
+      'cpu-4',
+      'cpu-5',
+      'cpu-6',
+      'cpu-7',
+      'cpu-8',
+      'cpu-9',
+      'cpu-10',
+      'cpu-13',
+      'cpu-14',
+      'cpu-15',
+      'cpu-22',
+      'cpu-23',
+      'cpu-25',
+      'cpu-26',
+      'cpu-27',
+    ];
+    expect(scripts.filter((s) => retired.includes(s.id)).map((s) => s.id)).toEqual([]);
+  });
+
+  it('no longer ships the retired boot, cores, services and FPS scripts', () => {
+    const retired = ['cpu-1', 'cpu-11', 'cpu-17', 'cpu-19', 'cpu-28', 'tweaks-6'];
+    expect(scripts.filter((s) => retired.includes(s.id)).map((s) => s.id)).toEqual([]);
+  });
+
+  it('no longer ships the retired DNS resolution scripts', () => {
+    const retired = ['internet-6', 'internet-8', 'dns-1', 'dns-4', 'builtin-71'];
+    expect(scripts.filter((s) => retired.includes(s.id)).map((s) => s.id)).toEqual([]);
   });
 
   it('files the AMD GPU tweaks under their own GPU category', () => {
@@ -83,14 +116,9 @@ describe('merged processor catalog', () => {
   });
 
   it('files the Windows-level tweaks outside the CPU category', () => {
-    // Energia, servicos e prioridade valem em qualquer processador: sao do
-    // Windows, nao do hardware.
-    expect(windowsPage.map((s) => s.id).sort()).toEqual([
-      'tweaks-3',
-      'tweaks-4',
-      'tweaks-5',
-      'tweaks-6',
-    ]);
+    // Energia e prioridade valem em qualquer processador: sao do Windows, nao
+    // do hardware.
+    expect(windowsPage.map((s) => s.id).sort()).toEqual(['tweaks-3', 'tweaks-4', 'tweaks-5']);
   });
 
   it('retires every amd-* and intel-* id', () => {
@@ -98,9 +126,36 @@ describe('merged processor catalog', () => {
   });
 
   it('keeps the surviving processor ids without renumbering', () => {
-    // A dedup da beta aposentou cpu-12, cpu-24 e cpu-29. Os ids restantes
-    // continuam com o mesmo número: renumerar quebraria histórico e aliases.
-    const RETIRED = new Set(['cpu-12', 'cpu-24', 'cpu-29']);
+    // A dedup da beta aposentou cpu-12, cpu-24 e cpu-29; as limpezas posteriores
+    // tiraram mais 22 ids. Os restantes mantêm o número original: renumerar
+    // quebraria histórico e aliases.
+    const RETIRED = new Set([
+      'cpu-1',
+      'cpu-11',
+      'cpu-12',
+      'cpu-17',
+      'cpu-19',
+      'cpu-24',
+      'cpu-28',
+      'cpu-29',
+      'cpu-2',
+      'cpu-3',
+      'cpu-4',
+      'cpu-5',
+      'cpu-6',
+      'cpu-7',
+      'cpu-8',
+      'cpu-9',
+      'cpu-10',
+      'cpu-13',
+      'cpu-14',
+      'cpu-15',
+      'cpu-22',
+      'cpu-23',
+      'cpu-25',
+      'cpu-26',
+      'cpu-27',
+    ]);
     expect(cpuFamily.map((s) => s.id)).toEqual(
       Array.from({ length: 37 }, (_, i) => `cpu-${i + 1}`).filter((id) => !RETIRED.has(id))
     );
@@ -120,12 +175,6 @@ describe('merged processor catalog', () => {
     expect(
       cpuFamily.filter((s) => s.tags.some((t) => t === 'amd' || t === 'intel')).map((s) => s.id)
     ).toEqual([]);
-  });
-
-  it('merges the two vendor tag sets rather than dropping one', () => {
-    // cpu-1's AMD copy carried `hpet` and the Intel copy carried `otimizacao`.
-    // Both describe the same merged script, so the union is what survives.
-    expect(find('cpu-1').tags.sort()).toEqual(['bcdedit', 'boot', 'hpet', 'otimizacao']);
   });
 
   it('exposes no remaining byte-identical pair', () => {
@@ -175,17 +224,7 @@ describe('registry files are importable by regedit', () => {
 describe('merged script content selection', () => {
   // Pairs whose decoded content differed. Each winner is the copy without the
   // defect noted below, so the merge can never reintroduce it.
-  const EQUIVALENT_PAIRS = [
-    'cpu-2',
-    'cpu-9',
-    'cpu-11',
-    'cpu-16',
-    'cpu-18',
-    'cpu-19',
-    'cpu-21',
-    'cpu-23',
-    'cpu-28',
-  ];
+  const EQUIVALENT_PAIRS = ['cpu-16', 'cpu-18', 'cpu-21'];
 
   it.each(EQUIVALENT_PAIRS.filter((id) => find(id).extension === 'reg'))(
     '%s starts with the registry header regedit requires',
@@ -212,50 +251,6 @@ describe('merged script content selection', () => {
       .map((s) => s.id);
     expect(offenders).toEqual([]);
   });
-
-  it('cpu-2 keeps the AMD copy, which omits the VBS prompt', () => {
-    // The Intel copy appended ten echo lines that ran a VBS msgbox, so running
-    // the "clean up" script could interrupt the user with a dialog.
-    const content = decode('cpu-2');
-    expect(content).not.toMatch(/vbscript|msgbox/i);
-  });
-
-  it('cpu-23 is described in terms of the value it actually writes', () => {
-    // The AMD copy described responsiveness in general terms; the Intel copy
-    // names SystemResponsiveness, which is the key the .reg sets.
-    expect(find('cpu-23').description).toContain('SystemResponsiveness');
-    expect(decode('cpu-23')).toContain('SystemResponsiveness');
-  });
-
-  it('cpu-4 is filed as a cleanup, matching its name and behaviour', () => {
-    expect(find('cpu-4').subcategory).toBe('Limpeza');
-  });
-});
-
-describe('cpu-1 general optimization', () => {
-  it('does not disable DEP', () => {
-    // `bcdedit /set nx optout` turns off Data Execution Prevention. The legacy
-    // OptOut mitigation package it targeted was removed in Windows 8, so on the
-    // Windows 10+ baseline it only removes a security control.
-    expect(decode('cpu-1')).not.toContain('nx optout');
-  });
-
-  it('does not disable the TPM entropy source', () => {
-    // Disabling it degrades the OS RNG, which can affect BitLocker key material.
-    expect(decode('cpu-1')).not.toContain('tpmbootentropy');
-  });
-
-  it('keeps the description free of the removed TPM claim', () => {
-    expect(find('cpu-1').description).not.toMatch(/TPM/i);
-    expect(find('cpu-1').description).toContain('Hyper-V');
-  });
-
-  it('still applies the latency tweaks', () => {
-    const content = decode('cpu-1');
-    expect(content).toContain('bcdedit /deletevalue useplatformclock');
-    expect(content).toContain('bcdedit /set bootmenupolicy standard');
-    expect(content).toContain('bcdedit /set hypervisorlaunchtype off');
-  });
 });
 
 describe('GPU-specific tweaks are not gated on the CPU vendor', () => {
@@ -279,24 +274,15 @@ describe('GPU-specific tweaks are not gated on the CPU vendor', () => {
 });
 
 describe('catalog deny-list exposure', () => {
-  it('keeps the number of bcdedit scripts at 8', () => {
-    // Was 16 across the duplicated vendor sets; the merge collapses the 14 CPU
-    // ones to 7.
+  it('keeps the number of bcdedit scripts at 1', () => {
+    // Eram 16 nos duplicatas AMD/Intel; a fusão e as remoções posteriores
+    // deixaram só o tweak de inicialização.
     const withBcdedit = scripts.filter((s) => decode(s.id).includes('bcdedit'));
-    expect(withBcdedit.map((s) => s.id).sort()).toEqual([
-      'cpu-1',
-      'cpu-15',
-      'cpu-3',
-      'cpu-4',
-      'cpu-5',
-      'cpu-8',
-      'cpu-9',
-      'tweaks-4',
-    ]);
+    expect(withBcdedit.map((s) => s.id).sort()).toEqual(['tweaks-4']);
   });
 
   it('CHARACTERISATION: bcdedit is a violation, but blocking stays opt-in', () => {
-    // O catálogo é conteúdo interno e versionado: 8 scripts usam bcdedit de
+    // O catálogo é conteúdo interno e versionado: 1 script usa bcdedit de
     // propósito. A detecção agora reporta a violação de verdade, e o bloqueio
     // só entra quando `enableDenyListBlock` está ligado (default false).
     const { allowed, violations } = checkScriptContent('@echo off\r\nbcdedit /set testsigning yes');

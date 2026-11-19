@@ -105,7 +105,7 @@ describe('cada script mora em uma unica pagina', () => {
     );
   });
 
-  it('as secoes da pagina Desempenho cobrem CPU, GPU e Windows, sem sobra', () => {
+  it('as secoes da pagina Otimização do Sistema cobrem CPU, GPU e Windows, sem sobra', () => {
     const sections = PERFORMANCE_SECTIONS.map((section) => section.category).sort();
     expect(sections).toEqual(['CPU', 'GPU', 'Windows']);
 
@@ -119,9 +119,9 @@ describe('cada script mora em uma unica pagina', () => {
       .sort();
     expect(onPage).toEqual(routedToCpu);
 
-    expect(idsInCategory('CPU')).toHaveLength(34);
+    expect(idsInCategory('CPU')).toHaveLength(12);
     expect(idsInCategory('GPU')).toHaveLength(4);
-    expect(idsInCategory('Windows')).toHaveLength(4);
+    expect(idsInCategory('Windows')).toHaveLength(3);
   });
 
   it('a busca manda cada script para a pagina onde ele aparece', () => {
@@ -139,16 +139,15 @@ describe('destino dos scripts movidos pela refatoracao', () => {
   const DESTINATIONS: Array<[string, string]> = [
     // Rede
     ['builtin-18', 'Internet'],
-    // Desempenho: GPU AMD em categoria propria
+    // Otimização do Sistema: GPU AMD em categoria propria
     ['builtin-4', 'GPU'],
     ['builtin-5', 'GPU'],
     ['builtin-6', 'GPU'],
     ['builtin-7', 'GPU'],
-    // Desempenho: ajustes do Windows, nao do processador
+    // Otimização do Sistema: ajustes do Windows, nao do processador
     ['tweaks-3', 'Windows'],
     ['tweaks-4', 'Windows'],
     ['tweaks-5', 'Windows'],
-    ['tweaks-6', 'Windows'],
     // Personalizacao: aparencia e mods de apps
     ['tweaks-1', 'Personalização'],
     ['tweaks-2', 'Personalização'],
@@ -178,7 +177,42 @@ describe('destino dos scripts movidos pela refatoracao', () => {
   });
 
   it('mantem os scripts restantes no catalogo', () => {
-    expect(scripts).toHaveLength(96);
+    expect(scripts).toHaveLength(68);
+  });
+
+  it('nao mostra na pagina Otimização do Sistema os scripts aposentados', () => {
+    const retired = [
+      'cpu-1',
+      'cpu-2',
+      'cpu-3',
+      'cpu-4',
+      'cpu-5',
+      'cpu-6',
+      'cpu-7',
+      'cpu-8',
+      'cpu-9',
+      'cpu-10',
+      'cpu-11',
+      'cpu-13',
+      'cpu-14',
+      'cpu-15',
+      'cpu-17',
+      'cpu-19',
+      'cpu-22',
+      'cpu-23',
+      'cpu-25',
+      'cpu-26',
+      'cpu-27',
+      'cpu-28',
+      'tweaks-6',
+    ];
+    const known = new Set(scripts.map((script) => script.id));
+    const onPage = ['CPU', 'GPU', 'Windows'].flatMap((category) => idsInCategory(category));
+
+    for (const id of retired) {
+      expect(known.has(id), `catalogo: ${id}`).toBe(false);
+      expect(onPage.includes(id), `secoes de Otimização do Sistema: ${id}`).toBe(false);
+    }
   });
 
   it('aposenta o debloat por script e o Chris Titus', () => {

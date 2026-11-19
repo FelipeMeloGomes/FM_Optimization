@@ -9,7 +9,7 @@ import type {
 } from '../../electron/shared/ipc-types';
 
 /**
- * Regressão das regras de exibição da página Desempenho (`/cpu`).
+ * Regressão das regras de exibição da página Otimização do Sistema (`/cpu`).
  *
  * Só os hooks são mockados; o componente, o filtro da escada de RAM e a
  * montagem das seções são os reais. É o que liga o aviso de identificador
@@ -86,12 +86,12 @@ const MEMORY: MemoryInfo = {
   frequency: '3200 MHz',
 };
 
-function script(id: string, name: string, subcategory = ''): ScriptEntry {
+function script(id: string, name: string, subcategory = '', category = 'CPU'): ScriptEntry {
   return {
     id,
     name,
     description: `${name} — descrição`,
-    category: 'CPU',
+    category,
     subcategory,
     content: '',
     extension: 'ps1',
@@ -113,6 +113,39 @@ function text(html: string): string {
     .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/**
+ * Texto de uma seção, ancorado no título seguido da descrição (o título sozinho
+ * também aparece no nome de um script quando a página está com o bug de
+ * duplicação).
+ */
+const PROCESSADOR = 'Processador Ajustes de processador que valem';
+const GPU_AMD = 'GPU AMD Reduz o frame pre-renderizado';
+const WINDOWS = 'Windows e energia Energia, serviços, prioridade';
+
+function sectionText(html: string, anchor: string, nextAnchor?: string): string {
+  const all = text(html);
+  const from = all.indexOf(anchor);
+  if (from < 0) throw new Error(`seção "${anchor}" não encontrada`);
+  const to = nextAnchor ? all.indexOf(nextAnchor, from + anchor.length) : all.length;
+  return all.slice(from, to < 0 ? all.length : to);
+}
+
+/** Classes do contêiner do hero (primeiro elemento com o gradiente do banner). */
+function heroShell(html: string): string {
+  const match = html.match(/<div class="([^"]*bg-gradient-to-br[^"]*)"/);
+  if (!match) throw new Error('hero banner não encontrado');
+  return match[1];
+}
+
+/** Classes do SVG animado dentro do hero (o ícone que deve seguir o tema). */
+function heroIconClass(html: string): string {
+  const start = html.indexOf('data-hero-animation');
+  if (start < 0) throw new Error('ícone do hero não encontrado');
+  const svg = html.slice(start).match(/<svg[^>]*class="([^"]+)"/);
+  if (!svg) throw new Error('ícone do hero não encontrado');
+  return svg[1];
 }
 
 /** Valor da célula que segue o rótulo na faixa de informações da CPU. */
@@ -142,7 +175,7 @@ describe('CpuPage — estados', () => {
     const html = render();
 
     expect(html).toContain('animate-pulse');
-    expect(text(html)).not.toContain('Desempenho · AMD');
+    expect(text(html)).not.toContain('Otimização do Sistema');
   });
 
   it('mostra o erro quando o catálogo falha', () => {
@@ -198,10 +231,10 @@ describe('CpuPage — núcleos estimados', () => {
 });
 
 describe('CpuPage — fabricante', () => {
-  it('rotula a página com o fabricante detectado e não mostra o aviso', () => {
+  it('não mostra o aviso quando o fabricante foi detectado', () => {
     const html = text(render());
 
-    expect(html).toContain('Desempenho · AMD');
+    expect(html).toContain('Otimização do Sistema');
     expect(html).not.toContain('Processador não identificado');
   });
 
@@ -210,7 +243,6 @@ describe('CpuPage — fabricante', () => {
 
     const html = text(render());
 
-    expect(html).toContain('Desempenho · AMD / Intel');
     expect(html).toContain('Processador não identificado');
     expect(html).toContain('Nenhum fabricante Intel ou AMD reconhecido em "AMD Ryzen 5 5500".');
   });
@@ -232,7 +264,7 @@ describe('CpuPage — escada de RAM', () => {
   const ram4 = script('cpu-30', 'Limite do svchost (4 GB)', 'RAM');
   const ram16 = script('cpu-34', 'Limite do svchost (16 GB)', 'RAM');
   const ram32 = script('cpu-35', 'Limite do svchost (32 GB)', 'RAM');
-  const common = script('cpu-10', 'Ajuste comum de CPU');
+  const common = script('cpu-16', 'Ajuste comum de CPU');
 
   it('lista apenas o degrau que cobre a RAM instalada', () => {
     store.scripts = [ram4, ram16, ram32, common];
@@ -253,5 +285,97 @@ describe('CpuPage — escada de RAM', () => {
 
     expect(html).not.toContain('Limite do svchost');
     expect(html).toContain('Ajuste comum de CPU');
+  });
+});
+
+describe('CpuPage — hero banner', () => {
+  it('segue o padrão dos demais heroes: selo de categoria, título e descrição', () => {
+    const hero = text(render()).split('Processador')[0];
+
+    expect(hero).toContain('Desempenho');
+    expect(hero).toContain('Otimização do Sistema');
+    expect(hero).toContain(
+      'Ajustes de hardware e do Windows para extrair mais desempenho e estabilidade do seu PC.'
+    );
+  });
+
+  it.each(['amd', 'intel', 'unknown'] as const)(
+    'não exibe fabricante nem modelo no hero, com %s',
+    (vendor) => {
+      store.vendor = vendor;
+
+      const html = render();
+      const hero = text(html).split('Processador')[0];
+
+      expect(hero).toContain('Otimização do Sistema');
+      expect(hero).not.toMatch(/AMD|Intel/);
+      expect(hero).not.toContain('Ryzen');
+      expect(text(html)).toContain('AMD Ryzen 5 5500');
+    }
+  );
+
+  it.each(['amd', 'intel', 'unknown'] as const)(
+    'usa o mesmo gradiente padrão das demais páginas com o fabricante %s',
+    (vendor) => {
+      store.vendor = vendor;
+
+      const shell = heroShell(render());
+
+      expect(shell).toContain('border-primary/20');
+      expect(shell).toContain('from-primary/10');
+      expect(shell).toContain('via-primary/5');
+      expect(shell).not.toContain('from-destructive/10');
+      expect(shell).not.toContain('from-info/10');
+      expect(shell).not.toContain('from-warning/10');
+    }
+  );
+
+  it('não exibe a contagem total de tweaks no hero', () => {
+    store.scripts = [script('cpu-16', 'Ajuste comum de CPU')];
+
+    const hero = text(render()).split('Processador')[0];
+
+    expect(hero).not.toMatch(/\d+\s+tweaks/);
+  });
+
+  it.each(['amd', 'intel', 'unknown'] as const)(
+    'usa a cor do tema no ícone do hero com o fabricante %s',
+    (vendor) => {
+      store.vendor = vendor;
+
+      const iconClass = heroIconClass(render());
+
+      expect(iconClass).toContain('text-primary');
+      expect(iconClass).not.toContain('text-destructive');
+      expect(iconClass).not.toContain('text-info');
+      expect(iconClass).not.toContain('text-warning');
+    }
+  );
+});
+
+describe('CpuPage — seções por categoria', () => {
+  it('mostra em cada seção apenas os scripts da categoria correspondente', () => {
+    store.scripts = [
+      script('cpu-16', 'Ajuste de processador', '', 'CPU'),
+      script('builtin-4', 'Ajuste de GPU AMD', '', 'GPU'),
+      script('tweaks-3', 'Ajuste de Windows e energia', '', 'Windows'),
+    ];
+
+    const html = render();
+    const processador = sectionText(html, PROCESSADOR, GPU_AMD);
+    const gpu = sectionText(html, GPU_AMD, WINDOWS);
+    const windows = sectionText(html, WINDOWS);
+
+    expect(processador).toContain('Ajuste de processador');
+    expect(processador).not.toContain('Ajuste de GPU AMD');
+    expect(processador).not.toContain('Ajuste de Windows e energia');
+
+    expect(gpu).toContain('Ajuste de GPU AMD');
+    expect(gpu).not.toContain('Ajuste de processador');
+    expect(gpu).not.toContain('Ajuste de Windows e energia');
+
+    expect(windows).toContain('Ajuste de Windows e energia');
+    expect(windows).not.toContain('Ajuste de processador');
+    expect(windows).not.toContain('Ajuste de GPU AMD');
   });
 });

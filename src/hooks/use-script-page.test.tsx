@@ -65,7 +65,7 @@ function script(id: string, category: string, subcategory = ''): ScriptEntry {
   };
 }
 
-const SCRIPTS = [script('cpu-1', 'CPU'), script('gpu-1', 'GPU'), script('cpu-2', 'CPU')];
+const SCRIPTS = [script('cpu-18', 'CPU'), script('gpu-1', 'GPU'), script('cpu-16', 'CPU')];
 
 beforeEach(() => {
   store.scriptState = { status: 'success', data: SCRIPTS };
@@ -85,14 +85,14 @@ describe('useScriptPage — filtro de categoria', () => {
     expect(store.setCategoryFilter).toHaveBeenCalledTimes(1);
     expect(store.setCategoryFilter).toHaveBeenCalledWith('CPU');
     expect(store.setSubcategoryFilter).toHaveBeenCalledWith('');
-    expect(result.current.categoryScripts.map((s) => s.id)).toEqual(['cpu-1', 'cpu-2']);
+    expect(result.current.categoryScripts.map((s) => s.id)).toEqual(['cpu-18', 'cpu-16']);
   });
 
   it('limpa o filtro do contexto e recorta várias categorias na lista local', () => {
     const { result } = renderHook(() => useScriptPage(['CPU', 'GPU']));
 
     expect(store.setCategoryFilter).toHaveBeenCalledWith('');
-    expect(result.current.categoryScripts.map((s) => s.id)).toEqual(['cpu-1', 'gpu-1', 'cpu-2']);
+    expect(result.current.categoryScripts.map((s) => s.id)).toEqual(['cpu-18', 'gpu-1', 'cpu-16']);
   });
 
   it('sem categoria, não lista nada e mantém o contexto sem filtro', () => {
@@ -133,11 +133,11 @@ describe('useScriptPage — filtro de categoria', () => {
   });
 
   it('repassa a execução ativa', () => {
-    store.activeExecution = 'cpu-1';
+    store.activeExecution = 'cpu-18';
 
     const { result } = renderHook(() => useScriptPage('CPU'));
 
-    expect(result.current.activeExecution).toBe('cpu-1');
+    expect(result.current.activeExecution).toBe('cpu-18');
   });
 });
 
@@ -151,7 +151,7 @@ describe('useScriptPage — execução', () => {
     });
 
     expect(store.execute).toHaveBeenCalledTimes(1);
-    expect(store.execute).toHaveBeenCalledWith('cpu-1');
+    expect(store.execute).toHaveBeenCalledWith('cpu-18');
     expect(result.current.confirmScript).toBeNull();
   });
 
@@ -165,7 +165,7 @@ describe('useScriptPage — execução', () => {
     });
 
     expect(store.execute).not.toHaveBeenCalled();
-    expect(result.current.confirmScript?.id).toBe('cpu-1');
+    expect(result.current.confirmScript?.id).toBe('cpu-18');
   });
 
   it('executa o script pendente ao confirmar', () => {
@@ -210,13 +210,13 @@ describe('useScriptPage — execução', () => {
     const { result } = renderHook(() => useScriptPage('CPU'));
 
     act(() => {
-      void result.current.handleExecute('cpu-2');
+      void result.current.handleExecute('cpu-16');
     });
     act(() => {
-      void result.current.handleCancel('cpu-2');
+      void result.current.handleCancel('cpu-16');
     });
 
-    expect(store.execute).toHaveBeenCalledWith('cpu-2');
-    expect(store.cancel).toHaveBeenCalledWith('cpu-2');
+    expect(store.execute).toHaveBeenCalledWith('cpu-16');
+    expect(store.cancel).toHaveBeenCalledWith('cpu-16');
   });
 });

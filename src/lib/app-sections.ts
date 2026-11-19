@@ -25,5 +25,5 @@ export interface AppSection {
  * A pagina Debloat deixou de ser uma lista de cards: ela agora e o inventario
  * de apps Appx do Windows (ver `DebloatPage`). Este modulo guarda so os tipos
  * compartilhados pelos cards que restaram (Personalizacao, Privacidade,
- * Utilitarios e Desempenho).
+ * Utilitarios e Otimização do Sistema).
  */

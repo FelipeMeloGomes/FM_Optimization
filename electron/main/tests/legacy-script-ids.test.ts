@@ -26,17 +26,17 @@ const entry = (
 
 describe('resolveScriptId', () => {
   it('resolves every retired vendor id to its merged cpu script', () => {
-    expect(resolveScriptId('amd-1')).toBe('cpu-1');
-    expect(resolveScriptId('intel-1')).toBe('cpu-1');
-    expect(resolveScriptId('amd-15')).toBe('cpu-15');
-    expect(resolveScriptId('intel-8')).toBe('cpu-15');
+    expect(resolveScriptId('amd-16')).toBe('cpu-16');
+    expect(resolveScriptId('intel-24')).toBe('cpu-16');
+    expect(resolveScriptId('amd-18')).toBe('cpu-18');
+    expect(resolveScriptId('intel-22')).toBe('cpu-18');
     expect(resolveScriptId('amd-37')).toBe('cpu-37');
     expect(resolveScriptId('intel-37')).toBe('cpu-37');
   });
 
   it('resolves the retired cpu ids to their surviving twin', () => {
-    // aposentados na dedup da beta; a equivalência foi conferida no conteúdo
-    expect(resolveScriptId('cpu-12')).toBe('cpu-11');
+    // aposentados na dedup da beta; cpu-12 apontava para cpu-11, que também
+    // saiu do catálogo, então não tem mais para onde migrar.
     expect(resolveScriptId('cpu-24')).toBe('cpu-21');
     expect(resolveScriptId('cpu-29')).toBe('cpu-21');
   });
@@ -67,11 +67,41 @@ describe('LEGACY_SCRIPT_ID_ALIASES', () => {
   const keys = Object.keys(LEGACY_SCRIPT_ID_ALIASES);
   const vendorKeys = keys.filter((k) => k.startsWith('amd-') || k.startsWith('intel-'));
 
-  it('covers all 74 retired vendor ids exactly once', () => {
-    expect(vendorKeys).toHaveLength(74);
-    expect(vendorKeys.filter((k) => k.startsWith('amd-'))).toHaveLength(37);
-    expect(vendorKeys.filter((k) => k.startsWith('intel-'))).toHaveLength(37);
+  it('covers the 28 retired vendor ids whose target still ships', () => {
+    expect(vendorKeys).toHaveLength(28);
+    expect(vendorKeys.filter((k) => k.startsWith('amd-'))).toHaveLength(14);
+    expect(vendorKeys.filter((k) => k.startsWith('intel-'))).toHaveLength(14);
     expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('drops aliases for CPU scripts that were retired from the catalog', () => {
+    // These used to resolve to scripts that no longer exist. Passing them
+    // through keeps the history row readable without inventing a tweak the
+    // user never applied.
+    const retired = [
+      'amd-2',
+      'intel-15',
+      'amd-10',
+      'intel-8',
+      'amd-25',
+      'amd-1',
+      'intel-1',
+      'amd-11',
+      'intel-4',
+      'amd-12',
+      'intel-5',
+      'amd-17',
+      'intel-23',
+      'amd-19',
+      'intel-21',
+      'amd-28',
+      'intel-26',
+      'cpu-11',
+      'cpu-12',
+    ];
+    for (const legacy of retired) {
+      expect(resolveScriptId(legacy)).toBe(legacy);
+    }
   });
 
   it('points every alias at a surviving cpu script', () => {
@@ -87,9 +117,9 @@ describe('LEGACY_SCRIPT_ID_ALIASES', () => {
       byTarget.set(merged, [...(byTarget.get(merged) ?? []), key]);
     }
 
-    // 34 scripts de CPU sobreviveram; cpu-11 e cpu-21 absorveram os pares
-    // aposentados, então cada destino continua com amd e intel em igual número.
-    expect(byTarget.size).toBe(34);
+    // 12 scripts de CPU sobreviveram; cpu-21 absorveu os pares aposentados,
+    // então cada destino continua com amd e intel em igual número.
+    expect(byTarget.size).toBe(12);
     for (const [merged, sources] of byTarget) {
       const amd = sources.filter((s) => s.startsWith('amd-')).length;
       const intel = sources.filter((s) => s.startsWith('intel-')).length;
@@ -139,15 +169,15 @@ describe('alias table agrees with the shipped catalog', () => {
 
 describe('rewriteHistoryScriptIds', () => {
   it('rewrites legacy ids and reports the change', () => {
-    const entries = [entry('amd-1'), entry('intel-37'), entry('cpu-5')];
+    const entries = [entry('amd-18'), entry('intel-37'), entry('amd-16')];
     expect(rewriteHistoryScriptIds(entries)).toBe(true);
-    expect(entries.map((e) => e.scriptId)).toEqual(['cpu-1', 'cpu-37', 'cpu-5']);
+    expect(entries.map((e) => e.scriptId)).toEqual(['cpu-18', 'cpu-37', 'cpu-16']);
   });
 
   it('is a no-op when nothing is legacy', () => {
-    const entries = [entry('cpu-1'), entry('builtin-40')];
+    const entries = [entry('cpu-16'), entry('builtin-40')];
     expect(rewriteHistoryScriptIds(entries)).toBe(false);
-    expect(entries.map((e) => e.scriptId)).toEqual(['cpu-1', 'builtin-40']);
+    expect(entries.map((e) => e.scriptId)).toEqual(['cpu-16', 'builtin-40']);
   });
 
   it('tolerates an empty history', () => {
@@ -155,7 +185,7 @@ describe('rewriteHistoryScriptIds', () => {
   });
 
   it('preserves scriptName so old rows still render', () => {
-    const entries = [entry('amd-1', { scriptName: 'Otimizacao AMD (Geral)' })];
+    const entries = [entry('amd-16', { scriptName: 'Otimizacao AMD (Geral)' })];
     rewriteHistoryScriptIds(entries);
     expect(entries[0].scriptName).toBe('Otimizacao AMD (Geral)');
   });

@@ -5,6 +5,7 @@ import {
   Gamepad2,
   Gauge,
   Globe,
+  Hammer,
   HardDrive,
   Home,
   type LucideIcon,
@@ -88,7 +89,7 @@ export const ROUTES: AppRoute[] = [
     // pagina cobre processador, GPU AMD e ajustes do Windows: o rotulo segue o
     // conteudo real, nao a rota.
     path: '/cpu',
-    label: 'Desempenho',
+    label: 'Otimização do Sistema',
     icon: Gauge,
     category: 'desempenho',
     protected: true,
@@ -136,7 +137,7 @@ export const ROUTES: AppRoute[] = [
   },
   {
     path: '/rede',
-    label: 'Rede',
+    label: 'Internet',
     icon: Wifi,
     category: 'rede',
     protected: true,
@@ -177,7 +178,7 @@ export const ROUTES: AppRoute[] = [
   {
     path: '/reparo-do-sistema',
     label: 'Reparo do sistema',
-    icon: ShieldCheck,
+    icon: Hammer,
     category: 'ferramentas',
     protected: true,
     component: lazy(() => import('../pages/SystemRepairPage')),

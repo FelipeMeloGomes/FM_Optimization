@@ -7,7 +7,7 @@ import {
 } from './cpu-vendor';
 
 describe('getPerformanceCategories', () => {
-  it('lists the three buckets the Desempenho page renders', () => {
+  it('lists the three buckets the Otimização do Sistema page renders', () => {
     expect(getPerformanceCategories()).toEqual([CPU_CATEGORY, GPU_CATEGORY, WINDOWS_CATEGORY]);
   });
 

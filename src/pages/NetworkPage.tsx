@@ -58,7 +58,7 @@ export default function NetworkPage() {
               Rede
             </span>
           </div>
-          <h2 className="text-lg font-bold text-foreground">Otimização de Rede</h2>
+          <h2 className="text-lg font-bold text-foreground">Internet</h2>
           <p className="text-sm text-muted-foreground mt-1 max-w-lg">
             Scripts para otimizar sua conexão de internet e corrigir problemas de rede. Para
             escolher e aplicar um provedor DNS, use a página DNS.
