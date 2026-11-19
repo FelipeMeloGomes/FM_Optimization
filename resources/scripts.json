@@ -276,16 +276,16 @@
   {
     "id": "util-3",
     "tags": [],
-    "category": "Utilities",
-    "description": "Gera relatorios detalhados de hardware/software (TXT) e/ou bateria (HTML) diretamente na Area de Trabalho. Util para diagnostico antes de formatar ou vender o PC.",
+    "category": "Meu PC",
+    "description": "Gera os relatorios de hardware/software (TXT) e de bateria (HTML) na Area de Trabalho, sem menu: ambos sao gerados de uma vez. Util para diagnostico antes de formatar ou vender o PC.",
     "subcategory": "",
     "name": "Relatorios do Sistema",
     "extension": "bat",
     "requiresAdmin": false,
-    "interactive": true,
+    "interactive": false,
     "isBuiltIn": true,
-    "content": "QGVjaG8gb2ZmCnRpdGxlIEZNIE9wdGltaXplIC0gUmVsYXRvcmlvcyBkbyBTaXN0ZW1hCmNvbG9yIDBCCmNscwplY2hvID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQplY2hvICAgICAgICAgUkVMQVRPUklPUyBETyBTSVNURU1BCmVjaG8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmVjaG8uCmVjaG8gU2VsZWNpb25lIG8gdGlwbyBkZSByZWxhdG9yaW86CmVjaG8uCmVjaG8gWzFdIFJlbGF0b3JpbyBkZSBIYXJkd2FyZSBlIFNvZnR3YXJlCmVjaG8gWzJdIFJlbGF0b3JpbyBkZSBCYXRlcmlhCmVjaG8gWzNdIEFtYm9zCmVjaG8uCmNob2ljZSAvYyAxMjMgL24gL20gIkRpZ2l0ZSBvIG51bWVybyBkYSBvcGNhbzogIgoKaWYgZXJyb3JsZXZlbCAzIGdvdG8gYW1ib3MKaWYgZXJyb3JsZXZlbCAyIGdvdG8gYmF0ZXJpYQppZiBlcnJvcmxldmVsIDEgZ290byBoYXJkd2FyZQoKOmhhcmR3YXJlCmVjaG8uCmVjaG8gR2VyYW5kbyByZWxhdG9yaW8gZGUgaGFyZHdhcmUuLi4KbXNpbmZvMzIgL3JlcG9ydCAiJXVzZXJwcm9maWxlJVxEZXNrdG9wXFJlbGF0b3Jpb19IYXJkd2FyZS50eHQiID5udWwgMj4mMQplY2hvIFJlbGF0b3JpbyBzYWx2byBlbTogQXJlYSBkZSBUcmFiYWxob1xSZWxhdG9yaW9fSGFyZHdhcmUudHh0CmlmICIlMSI9PSIiIHBhdXNlCmV4aXQgL2IKCjpiYXRlcmlhCmVjaG8uCmVjaG8gR2VyYW5kbyByZWxhdG9yaW8gZGUgYmF0ZXJpYS4uLgpwb3dlcmNmZyAvYmF0dGVyeXJlcG9ydCAvb3V0cHV0ICIldXNlcnByb2ZpbGUlXERlc2t0b3BcUmVsYXRvcmlvX0JhdGVyaWEuaHRtbCIKZWNobyBSZWxhdG9yaW8gc2Fsdm8gZW06IEFyZWEgZGUgVHJhYmFsaG9cUmVsYXRvcmlvX0JhdGVyaWEuaHRtbAppZiAiJTEiPT0iIiBwYXVzZQpleGl0IC9iCgo6YW1ib3MKY2FsbCA6aGFyZHdhcmUgc2tpcApjYWxsIDpiYXRlcmlhIHNraXAKZWNoby4KZWNobyBBbWJvcyBvcyByZWxhdG9yaW9zIGZvcmFtIGdlcmFkb3MgbmEgQXJlYSBkZSBUcmFiYWxoby4KcGF1c2UKZXhpdCAvYgo=",
-    "guide": "Gera relatorios completos do seu hardware e bateria na Area de Trabalho. Util antes de formatar, vender o PC ou para diagnostico de problemas.",
+    "content": "QGVjaG8gb2ZmCnRpdGxlIEZNIE9wdGltaXplIC0gUmVsYXRvcmlvcyBkbyBTaXN0ZW1hCmNvbG9yIDBCCmNscwplY2hvID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQplY2hvICAgICAgICAgUkVMQVRPUklPUyBETyBTSVNURU1BCmVjaG8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CmVjaG8uCmVjaG8gR2VyYW5kbyByZWxhdG9yaW8gZGUgaGFyZHdhcmUuLi4KbXNpbmZvMzIgL3JlcG9ydCAiJXVzZXJwcm9maWxlJVxEZXNrdG9wXFJlbGF0b3Jpb19IYXJkd2FyZS50eHQiID5udWwgMj4mMQppZiBlcnJvcmxldmVsIDEgKAogIGVjaG8gRmFsaGEgYW8gZ2VyYXIgbyByZWxhdG9yaW8gZGUgaGFyZHdhcmUuCikgZWxzZSAoCiAgZWNobyBSZWxhdG9yaW8gc2Fsdm8gZW06IEFyZWEgZGUgVHJhYmFsaG9cUmVsYXRvcmlvX0hhcmR3YXJlLnR4dAopCmVjaG8uCmVjaG8gR2VyYW5kbyByZWxhdG9yaW8gZGUgYmF0ZXJpYS4uLgpwb3dlcmNmZyAvYmF0dGVyeXJlcG9ydCAvb3V0cHV0ICIldXNlcnByb2ZpbGUlXERlc2t0b3BcUmVsYXRvcmlvX0JhdGVyaWEuaHRtbCIgPm51bCAyPiYxCmlmIGVycm9ybGV2ZWwgMSAoCiAgZWNobyBSZWxhdG9yaW8gZGUgYmF0ZXJpYSBpbmRpc3Bvbml2ZWwgbmVzdGUgY29tcHV0YWRvci4KKSBlbHNlICgKICBlY2hvIFJlbGF0b3JpbyBzYWx2byBlbTogQXJlYSBkZSBUcmFiYWxob1xSZWxhdG9yaW9fQmF0ZXJpYS5odG1sCikKZWNoby4KZWNobyBSZWxhdG9yaW9zIGNvbmNsdWlkb3MgbmEgQXJlYSBkZSBUcmFiYWxoby4KZXhpdCAvYgo=",
+    "guide": "Gera relatorios completos de hardware e bateria na Area de Trabalho, sem perguntas. Util antes de formatar, vender o PC ou para diagnostico de problemas.",
     "riskLevel": "safe"
   },
   {

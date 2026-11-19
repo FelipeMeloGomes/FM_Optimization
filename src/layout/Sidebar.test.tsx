@@ -118,8 +118,12 @@ describe('Sidebar com seção Formatação', () => {
 describe('Sidebar com seção Ferramentas', () => {
   const html = renderSidebar(false);
 
-  it('mostra Privacidade dentro de Ferramentas e não mostra o grupo Segurança', () => {
+  it('mostra as ferramentas e mantém Privacidade dentro de Sistema', () => {
     expect(html).toContain('Ferramentas');
+    expect(html).toContain('href="/comparar-placa"');
+    expect(html).toContain('Comparar Placas');
+    expect(html).toContain('href="/overlay-jogo"');
+    expect(html).toContain('Overlay de jogo');
     expect(html).toContain('href="/privacidade-seguranca"');
     expect(html).not.toContain('Segurança');
   });
@@ -134,14 +138,34 @@ describe('Sidebar com seção Ferramentas', () => {
 describe('Sidebar com seção Sistema', () => {
   const html = renderSidebar(false);
 
-  it('mostra Mouse, Monitor e Teclado em Sistema e Configurações no rodapé', () => {
+  it('reúne os antigos itens de Ferramentas e os periféricos em ordem alfabética', () => {
     expect(html).toContain('Sistema');
-    for (const path of ['/mouse', '/monitor', '/teclado']) {
+    for (const path of [
+      '/armazenamento',
+      '/meu-pc',
+      '/monitor',
+      '/mouse',
+      '/privacidade-seguranca',
+      '/reparo-do-sistema',
+      '/teclado',
+      '/utilities',
+    ]) {
       expect(html, path).toContain(`href="${path}"`);
     }
-    for (const label of ['Mouse', 'Monitor', 'Teclado']) {
-      expect(html, label).toContain(label);
-    }
+
+    const labels = [
+      'Armazenamento',
+      'Meu PC',
+      'Monitor',
+      'Mouse',
+      'Privacidade',
+      'Reparo do sistema',
+      'Teclado',
+      'Utilitarios',
+    ];
+    const positions = labels.map((label) => html.indexOf(label));
+    expect(positions.every((position) => position >= 0)).toBe(true);
+    expect(positions).toEqual([...positions].sort((a, b) => a - b));
     expect(html).toContain('Configurações');
   });
 });

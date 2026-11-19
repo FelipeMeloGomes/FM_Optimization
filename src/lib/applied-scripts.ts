@@ -26,7 +26,7 @@ export const NON_COUNTABLE_SCRIPT_IDS: ReadonlySet<string> = new Set([
   'internet-5', // Desabilitar Auto-Tuning — conflita com internet-1 (normal)
   'apps-5', // Reverter Discord — desfaz o apps-4
   'apps-7', // Reverter Spotify — desfaz o apps-6
-  'util-3', // Relatorios do Sistema — utilitario, nao aplica ajuste
+  'util-3', // Relatorios do Sistema (Meu PC) — nao aplica ajuste
 ]);
 
 interface CountableScriptLike {

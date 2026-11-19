@@ -19,6 +19,7 @@ export const CATEGORY_ROUTES: Record<string, string> = {
   Monitor: '/monitor',
   Teclado: '/teclado',
   Utilities: '/utilities',
+  'Meu PC': '/meu-pc',
   Armazenamento: '/armazenamento',
   'Reparo do Sistema': '/reparo-do-sistema',
   Personalização: '/personalizacao',

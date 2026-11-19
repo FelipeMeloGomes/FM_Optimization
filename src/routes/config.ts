@@ -1,9 +1,12 @@
 import {
   Activity,
+  CircuitBoard,
   Clock,
+  Crosshair,
   Eraser,
   Gamepad2,
   Gauge,
+  GitCompareArrows,
   Globe,
   Hammer,
   HardDrive,
@@ -68,6 +71,70 @@ const DEVICE_COMPONENTS: Record<DeviceCategory, LazyExoticComponent<ComponentTyp
   Teclado: lazy(() => import('../pages/KeyboardPage')),
 };
 
+/**
+ * Os itens utilitários migraram para Sistema; Ferramentas volta a abrigar o
+ * comparador de placas. A ordem alfabética de Sistema é aplicada aqui para que
+ * sidebar, Ctrl+K e Page Lock vejam a mesma sequência.
+ */
+const SYSTEM_ROUTES: AppRoute[] = [
+  ...DEVICE_PAGES.map((device) => ({
+    path: device.path,
+    label: device.name,
+    icon: device.icon,
+    category: 'sistema' as const,
+    protected: true,
+    component: DEVICE_COMPONENTS[device.category],
+  })),
+  {
+    path: '/armazenamento',
+    label: 'Armazenamento',
+    icon: HardDrive,
+    category: 'sistema' as const,
+    protected: true,
+    component: lazy(() => import('../pages/StoragePage')),
+  },
+  {
+    path: '/emuladores',
+    label: 'Emuladores',
+    icon: Gamepad2,
+    category: 'sistema' as const,
+    protected: true,
+    component: lazy(() => import('../pages/EmuladoresPage')),
+  },
+  {
+    path: '/meu-pc',
+    label: 'Meu PC',
+    icon: CircuitBoard,
+    category: 'sistema' as const,
+    protected: true,
+    component: lazy(() => import('../pages/MeuPcPage')),
+  },
+  {
+    path: '/privacidade-seguranca',
+    label: 'Privacidade',
+    icon: ShieldCheck,
+    category: 'sistema' as const,
+    protected: true,
+    component: lazy(() => import('../pages/PrivacySecurityPage')),
+  },
+  {
+    path: '/reparo-do-sistema',
+    label: 'Reparo do sistema',
+    icon: Hammer,
+    category: 'sistema' as const,
+    protected: true,
+    component: lazy(() => import('../pages/SystemRepairPage')),
+  },
+  {
+    path: '/utilities',
+    label: 'Utilitarios',
+    icon: Wrench,
+    category: 'sistema' as const,
+    protected: true,
+    component: lazy(() => import('../pages/UtilitiesPage')),
+  },
+].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
+
 export const ROUTES: AppRoute[] = [
   {
     path: '/',
@@ -128,14 +195,6 @@ export const ROUTES: AppRoute[] = [
     component: lazy(() => import('../pages/EssentialsPage')),
   },
   {
-    path: '/emuladores',
-    label: 'Emuladores',
-    icon: Gamepad2,
-    category: 'ferramentas',
-    protected: true,
-    component: lazy(() => import('../pages/EmuladoresPage')),
-  },
-  {
     path: '/rede',
     label: 'Internet',
     icon: Wifi,
@@ -160,47 +219,20 @@ export const ROUTES: AppRoute[] = [
     component: lazy(() => import('../pages/SpeedTestPage')),
   },
   {
-    path: '/utilities',
-    label: 'Utilitarios',
-    icon: Wrench,
+    path: '/comparar-placa',
+    label: 'Comparar Placas',
+    icon: GitCompareArrows,
     category: 'ferramentas',
-    protected: true,
-    component: lazy(() => import('../pages/UtilitiesPage')),
+    component: lazy(() => import('../pages/CompararPlacaPage')),
   },
   {
-    path: '/armazenamento',
-    label: 'Armazenamento',
-    icon: HardDrive,
+    path: '/overlay-jogo',
+    label: 'Overlay de jogo',
+    icon: Crosshair,
     category: 'ferramentas',
-    protected: true,
-    component: lazy(() => import('../pages/StoragePage')),
+    component: lazy(() => import('../pages/OverlayJogoPage')),
   },
-  {
-    path: '/reparo-do-sistema',
-    label: 'Reparo do sistema',
-    icon: Hammer,
-    category: 'ferramentas',
-    protected: true,
-    component: lazy(() => import('../pages/SystemRepairPage')),
-  },
-  {
-    path: '/privacidade-seguranca',
-    label: 'Privacidade',
-    icon: ShieldCheck,
-    category: 'ferramentas',
-    protected: true,
-    component: lazy(() => import('../pages/PrivacySecurityPage')),
-  },
-  // Cada periférico tem sua própria página na seção Sistema; os ids dos scripts
-  // e o destino do Ctrl+K saem da mesma configuração usada pelas páginas.
-  ...DEVICE_PAGES.map((device) => ({
-    path: device.path,
-    label: device.name,
-    icon: device.icon,
-    category: 'sistema' as const,
-    protected: true,
-    component: DEVICE_COMPONENTS[device.category],
-  })),
+  ...SYSTEM_ROUTES,
   {
     // Restauracao e historico nao protegem nada: apenas registram/recuperam o
     // estado anterior. Ficam no rodape, em Configuracoes.

@@ -94,6 +94,13 @@ describe('cada script mora em uma unica pagina', () => {
     expect(idsOf(UTIL_SECTIONS)).toEqual(idsInCategory('Utilities'));
   });
 
+  it('o relatorio de sistema so aparece na pagina Meu PC', () => {
+    expect(find('util-3').category).toBe('Meu PC');
+    expect(CATEGORY_ROUTES['Meu PC']).toBe('/meu-pc');
+    expect(idsOf(UTIL_SECTIONS)).not.toContain('util-3');
+    expect(idsInCategory('Utilities')).not.toContain('util-3');
+  });
+
   it('os cards de Armazenamento e Reparo cobrem suas categorias sem sobra', () => {
     expect(idsOf(STORAGE_SECTIONS)).toEqual(idsInCategory('Armazenamento'));
     expect(idsOf(REPAIR_SECTIONS)).toEqual(idsInCategory('Reparo do Sistema'));
@@ -160,6 +167,8 @@ describe('destino dos scripts movidos pela refatoracao', () => {
     ['apps-7', 'Personalização'],
     // Utilitarios
     ['util-1', 'Utilities'],
+    // Relatorios do Sistema saiu de Utilitarios e agora so mora em Meu PC
+    ['util-3', 'Meu PC'],
     // Pagina nova de Privacidade
     ['apps-1', 'Segurança'],
     ['apps-2', 'Segurança'],
@@ -219,5 +228,24 @@ describe('destino dos scripts movidos pela refatoracao', () => {
     const ids = scripts.map((script) => script.id);
     expect(ids).not.toContain('apps-3');
     expect(ids).not.toContain('builtin-14');
+  });
+});
+
+describe('relatorio de sistema', () => {
+  const report = () => find('util-3');
+
+  it('gera os dois relatorios direto, sem menu nem pausa', () => {
+    const script = report();
+    expect(script.interactive).toBe(false);
+
+    const content = Buffer.from(script.content, 'base64').toString('utf8');
+    expect(content).toContain('msinfo32 /report');
+    expect(content).toContain('powercfg /batteryreport');
+    expect(content).not.toMatch(/choice|pause|goto|:ambos/i);
+  });
+
+  it('descreve a geracao simultanea, sem escolha de opcao', () => {
+    expect(report().description).toMatch(/sem menu|ambos/i);
+    expect(report().guide).not.toMatch(/escolha|opcao/i);
   });
 });

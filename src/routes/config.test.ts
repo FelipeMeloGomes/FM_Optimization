@@ -45,17 +45,23 @@ describe('rotas da aplicacao', () => {
     expect(routesByCategory('manutencao').map((route) => route.path)).toEqual(['/cleaner']);
   });
 
-  it('usa Sistema para as três páginas de periféricos e Configurações para o rodapé', () => {
+  it('usa Sistema para Meu PC, os periféricos e Configurações para o rodapé', () => {
     expect(CATEGORIES.find((category) => category.id === 'sistema')?.label).toBe('Sistema');
     expect(CATEGORIES.find((category) => category.id === 'configuracoes')?.label).toBe(
       'Configurações'
     );
 
-    expect(
-      routesByCategory('sistema')
-        .map((route) => route.path)
-        .sort()
-    ).toEqual(['/monitor', '/mouse', '/teclado']);
+    expect(routesByCategory('sistema').map((route) => route.path)).toEqual([
+      '/armazenamento',
+      '/emuladores',
+      '/meu-pc',
+      '/monitor',
+      '/mouse',
+      '/privacidade-seguranca',
+      '/reparo-do-sistema',
+      '/teclado',
+      '/utilities',
+    ]);
     expect(
       routesByCategory('configuracoes')
         .map((route) => route.path)
@@ -67,10 +73,17 @@ describe('rotas da aplicacao', () => {
       expect(route?.category, path).toBe('sistema');
       expect(route?.protected, path).toBe(true);
     }
-    expect(ROUTES.find((r) => r.category === 'sistema')?.label).toBe('Mouse');
+    expect(ROUTES.find((r) => r.path === '/mouse')?.label).toBe('Mouse');
     expect(CATEGORY_ROUTES.Mouse).toBe('/mouse');
     expect(CATEGORY_ROUTES.Monitor).toBe('/monitor');
     expect(CATEGORY_ROUTES.Teclado).toBe('/teclado');
+  });
+
+  it('registra Meu PC em Sistema como página protegida', () => {
+    const meuPc = ROUTES.find((r) => r.path === '/meu-pc');
+    expect(meuPc?.label).toBe('Meu PC');
+    expect(meuPc?.category).toBe('sistema');
+    expect(meuPc?.protected).toBe(true);
   });
 
   it('tem DNS como pagina propria na categoria Rede, sem tirar os scripts de /rede', () => {
@@ -85,15 +98,14 @@ describe('rotas da aplicacao', () => {
     expect(CATEGORIES.find((category) => category.id === 'rede')?.label).toBe('Rede');
   });
 
-  it('tem Armazenamento e Reparo do sistema como páginas próprias em Ferramentas', () => {
-    expect(routesByCategory('ferramentas').map((route) => route.path)).toContain('/armazenamento');
-    expect(routesByCategory('ferramentas').map((route) => route.path)).toContain(
-      '/reparo-do-sistema'
-    );
+  it('tem Armazenamento e Reparo do sistema como páginas próprias em Sistema', () => {
+    const sistema = routesByCategory('sistema').map((route) => route.path);
+    expect(sistema).toContain('/armazenamento');
+    expect(sistema).toContain('/reparo-do-sistema');
 
     for (const path of ['/armazenamento', '/reparo-do-sistema']) {
       const route = ROUTES.find((r) => r.path === path);
-      expect(route?.category, path).toBe('ferramentas');
+      expect(route?.category, path).toBe('sistema');
       expect(route?.protected, path).toBe(true);
     }
   });
@@ -128,22 +140,54 @@ describe('rotas da aplicacao', () => {
     expect(routesByCategory('configuracoes').map((r) => r.path)).toContain('/history');
   });
 
-  it('move Privacidade para Ferramentas e remove a categoria Segurança vazia', () => {
+  it('move Privacidade para Sistema e remove a categoria Segurança vazia', () => {
     const privacidade = ROUTES.find((r) => r.path === '/privacidade-seguranca');
     expect(privacidade?.label).toBe('Privacidade');
-    expect(privacidade?.category).toBe('ferramentas');
+    expect(privacidade?.category).toBe('sistema');
     expect(privacidade?.protected).toBe(true);
-    expect(routesByCategory('ferramentas').map((r) => r.path)).toContain('/privacidade-seguranca');
+    expect(routesByCategory('sistema').map((r) => r.path)).toContain('/privacidade-seguranca');
     expect(CATEGORIES.map((c) => c.id)).not.toContain('seguranca');
   });
 
-  it('move Emuladores para Ferramentas e remove a categoria Programas vazia', () => {
+  it('move Emuladores para Sistema e remove a categoria Programas vazia', () => {
     const emuladores = ROUTES.find((r) => r.path === '/emuladores');
     expect(emuladores?.label).toBe('Emuladores');
-    expect(emuladores?.category).toBe('ferramentas');
+    expect(emuladores?.category).toBe('sistema');
     expect(emuladores?.protected).toBe(true);
-    expect(routesByCategory('ferramentas').map((r) => r.path)).toContain('/emuladores');
+    expect(routesByCategory('sistema').map((r) => r.path)).toContain('/emuladores');
     expect(CATEGORIES.map((c) => c.id)).not.toContain('programas');
+  });
+
+  it('recria a categoria Ferramentas com o comparador e o overlay, e mantém Sistema em ordem alfabética', () => {
+    expect(CATEGORIES.find((category) => category.id === 'ferramentas')?.label).toBe('Ferramentas');
+    expect(routesByCategory('ferramentas').map((route) => route.path)).toEqual([
+      '/comparar-placa',
+      '/overlay-jogo',
+    ]);
+
+    const comparador = ROUTES.find((route) => route.path === '/comparar-placa');
+    expect(comparador?.label).toBe('Comparar Placas');
+    expect(comparador?.category).toBe('ferramentas');
+    expect(comparador?.protected).toBeFalsy();
+
+    const overlay = ROUTES.find((route) => route.path === '/overlay-jogo');
+    expect(overlay?.label).toBe('Overlay de jogo');
+    expect(overlay?.category).toBe('ferramentas');
+    expect(overlay?.protected).toBeFalsy();
+
+    const labels = routesByCategory('sistema').map((route) => route.label);
+    expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    expect(labels).toEqual([
+      'Armazenamento',
+      'Emuladores',
+      'Meu PC',
+      'Monitor',
+      'Mouse',
+      'Privacidade',
+      'Reparo do sistema',
+      'Teclado',
+      'Utilitarios',
+    ]);
   });
 
   it('todo destino de categoria do Ctrl+K existe no menu', () => {
@@ -221,5 +265,7 @@ describe('paginas oferecidas ao Page Lock', () => {
     const unprotected = ROUTES.filter((route) => !route.protected).map((route) => route.path);
     expect(unprotected).toContain('/restore-points');
     expect(unprotected).toContain('/history');
+    expect(unprotected).toContain('/comparar-placa');
+    expect(unprotected).toContain('/overlay-jogo');
   });
 });
