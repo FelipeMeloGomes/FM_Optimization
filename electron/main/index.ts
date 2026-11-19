@@ -11,6 +11,7 @@ import { resolveScriptId } from './legacy-script-ids';
 import { isAdmin, isAdminAsync } from './services/admin-check';
 import { getAutoCleanScheduler } from './services/auto-clean';
 import { loadSettings } from './services/data-service';
+import { hasEnabledOverlayGames, startOverlayMonitor } from './services/overlay-runtime';
 import { execPowerShellSafe } from './services/powershell';
 import { executeScript } from './services/script-executor';
 import { loadScripts } from './services/script-registry';
@@ -319,7 +320,11 @@ function createWindow(mode: WindowMode): void {
   window.on('close', (event) => {
     // Com a bandeja ativa, fechar destroi a janela (libera renderer e processo
     // GPU) e o app continua no icone. Sem bandeja, fecha de verdade.
-    if (resolveCloseAction(appState.isQuitting, isTrayActive()) !== 'destroy') return;
+    if (
+      resolveCloseAction(appState.isQuitting, isTrayActive()) !== 'destroy' &&
+      !hasEnabledOverlayGames()
+    )
+      return;
     event.preventDefault();
     showTrayHintOnce();
     window.destroy();
@@ -413,7 +418,7 @@ function setupAutoClean(isElevated: boolean): void {
   };
 
   const applyStatus = (status: AutoCleanStatus): void => {
-    if (status.settings.enabled) {
+    if (status.settings.enabled || hasEnabledOverlayGames()) {
       ensureTray(iconPath(), handlers);
       refreshTray(status.settings.pending.length);
       return;
@@ -500,6 +505,7 @@ async function bootstrap(): Promise<void> {
 
   registerIpcHandlers();
   setupAutoUpdater();
+  startOverlayMonitor();
 
   // Com --hidden (autostart) a janela nasce so quando o usuario pedir: sem
   // janela nao existe renderer nem processo GPU (~180 MB). Nao acesse a sessao
@@ -526,6 +532,6 @@ bootstrap().catch((error: unknown) => {
 });
 
 app.on('window-all-closed', () => {
-  if (isTrayActive()) return;
+  if (isTrayActive() || hasEnabledOverlayGames()) return;
   if (process.platform !== 'darwin') app.quit();
 });

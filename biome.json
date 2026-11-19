@@ -81,6 +81,10 @@
       "!**/*.lock",
       "!data/removed-apps.json",
       "!data/settings.json",
+      "!data/covers",
+      "!data/tools",
+      "!data/overlay-games.json",
+      "!data/overlay-settings.json",
       "!electron/data"
     ]
   },

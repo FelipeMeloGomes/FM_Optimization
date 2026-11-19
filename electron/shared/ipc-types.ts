@@ -4,6 +4,14 @@ import type { CleanerItemGroup, CleanerItemId } from './cleaner-items';
 import type { ApplyDisplaySettingsPayload, DisplaySettings } from './display-settings';
 import type { KeyboardSettings } from './keyboard-settings';
 import type { MouseSettings } from './mouse-settings';
+import type {
+  AddOverlayGameInput,
+  GameDisplayModeInfo,
+  OverlayGame,
+  OverlaySettings,
+  OverlayStatus,
+  SetOverlayGameEnabledInput,
+} from './overlay-types';
 
 export interface CpuInfo {
   /** Nome padronizado para exibição (ex.: "AMD Ryzen 7 5700X"). */
@@ -617,4 +625,20 @@ export interface ElectronAPI {
   applyDisplaySettings(payload: ApplyDisplaySettingsPayload): Promise<DisplaySettings>;
   getKeyboardSettings(): Promise<KeyboardSettings>;
   applyKeyboardSettings(settings: KeyboardSettings): Promise<KeyboardSettings>;
+  getOverlayGames(): Promise<OverlayGame[]>;
+  addOverlayGame(input: AddOverlayGameInput): Promise<OverlayGame>;
+  removeOverlayGame(id: string): Promise<void>;
+  setOverlayGameEnabled(input: SetOverlayGameEnabledInput): Promise<void>;
+  getOverlaySettings(): Promise<OverlaySettings>;
+  saveOverlaySettings(settings: OverlaySettings): Promise<void>;
+  getOverlayStatus(): Promise<OverlayStatus>;
+  startOverlayMonitor(): Promise<void>;
+  stopOverlayMonitor(): Promise<void>;
+  restartOverlayElevated(): Promise<void>;
+  chooseOverlayExe(): Promise<AddOverlayGameInput | null>;
+  launchOverlayGame(id: string): Promise<void>;
+  getOverlayCover(fileName: string): Promise<string | null>;
+  getGameDisplayMode(gameId: string): Promise<GameDisplayModeInfo>;
+  setGameBorderless(gameId: string): Promise<GameDisplayModeInfo>;
+  onOverlayStatus(cb: (status: OverlayStatus) => void): () => void;
 }

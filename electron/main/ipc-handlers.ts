@@ -14,6 +14,11 @@ import type {
 } from '../shared/ipc-types';
 import type { KeyboardSettings } from '../shared/keyboard-settings';
 import type { MouseSettings } from '../shared/mouse-settings';
+import type {
+  AddOverlayGameInput,
+  OverlaySettings,
+  SetOverlayGameEnabledInput,
+} from '../shared/overlay-types';
 import { appState } from './app-state';
 import { auditIpcValidation, auditLog } from './audit-logger';
 import { resolveScriptId } from './legacy-script-ids';
@@ -51,10 +56,28 @@ import {
   listEssentials,
   openEssentialPage,
 } from './services/essentials';
+import { getGameDisplayMode, setGameBorderless } from './services/game-display-mode';
 import { getGpuCatalog } from './services/gpu-catalog';
 import { searchGpu } from './services/gpu-search';
 import { applyKeyboardSettings, readKeyboardSettings } from './services/keyboard-settings';
+import { launchOverlayGameById } from './services/launch-game';
 import { applyMouseSettings, readMouseSettings } from './services/mouse-settings';
+import {
+  getOverlayStatus,
+  refreshOverlayConfig,
+  restartOverlayElevated,
+  startOverlayMonitor,
+  stopOverlayMonitor,
+} from './services/overlay-runtime';
+import {
+  addOverlayGame,
+  getOverlayGames,
+  getOverlaySettings,
+  removeOverlayGame,
+  saveOverlaySettings,
+  setOverlayGameEnabled,
+  updateOverlayGame,
+} from './services/overlay-storage';
 import { generateSalt, hashPassword, verifyPassword } from './services/page-lock';
 import { execPowerShell, execPowerShellSafe } from './services/powershell';
 import { checkRateLimit } from './services/rate-limit';
@@ -68,6 +91,7 @@ import { cancelExecution, executeScript } from './services/script-executor';
 import { loadScripts } from './services/script-registry';
 import { cancelSpeedTest, runSpeedTest } from './services/speed-test';
 import { createStartupManager } from './services/startup-manager';
+import { downloadSteamCover, readCoverDataUrl, resolveSteamAppId } from './services/steam-cover';
 import {
   getCpuInfo,
   getMemoryInfo,
@@ -740,5 +764,106 @@ export function registerIpcHandlers(): void {
     handleIpc('keyboard:apply-settings', payload, (validated) =>
       applyKeyboardSettings(validated as KeyboardSettings)
     )
+  );
+
+  // --- Overlay de jogo -----------------------------------------------------
+  ipcMain.handle('get-overlay-games', () =>
+    handleIpcNoInput('get-overlay-games', () => getOverlayGames())
+  );
+
+  ipcMain.handle('choose-overlay-exe', () =>
+    handleIpcNoInput('choose-overlay-exe', async () => {
+      const result = await dialog.showOpenDialog({
+        title: 'Escolher executável do jogo',
+        filters: [{ name: 'Executáveis', extensions: ['exe'] }],
+        properties: ['openFile'],
+      });
+      if (result.canceled || result.filePaths.length === 0) return null;
+      return { exePath: result.filePaths[0] };
+    })
+  );
+
+  ipcMain.handle('add-overlay-game', (_e, payload: unknown) =>
+    handleIpc('add-overlay-game', payload, async (validated: AddOverlayGameInput) => {
+      const game = addOverlayGame(validated);
+      if (!game.coverFile) {
+        const appId = await resolveSteamAppId(game.exePath);
+        if (appId !== null) {
+          const coverFile = await downloadSteamCover(appId);
+          if (coverFile) updateOverlayGame(game.id, { coverFile });
+        }
+      }
+      return getOverlayGames().find((item) => item.id === game.id) ?? game;
+    })
+  );
+
+  ipcMain.handle('remove-overlay-game', (_e, id: unknown) =>
+    handleIpc('remove-overlay-game', id, (validated) => {
+      removeOverlayGame(validated as string);
+    })
+  );
+
+  ipcMain.handle('set-overlay-game-enabled', (_e, payload: unknown) =>
+    handleIpc('set-overlay-game-enabled', payload, (validated: SetOverlayGameEnabledInput) => {
+      setOverlayGameEnabled(validated.id, validated.enabled);
+    })
+  );
+
+  ipcMain.handle('launch-overlay-game', (_e, id: unknown) =>
+    handleIpc('launch-overlay-game', id, async (validated: string) => {
+      await launchOverlayGameById(validated, getOverlayGames());
+    })
+  );
+
+  ipcMain.handle('get-overlay-settings', () =>
+    handleIpcNoInput('get-overlay-settings', () => getOverlaySettings())
+  );
+
+  ipcMain.handle('save-overlay-settings', (_e, payload: unknown) =>
+    handleIpc('save-overlay-settings', payload, (validated: OverlaySettings) => {
+      saveOverlaySettings(validated);
+      refreshOverlayConfig();
+    })
+  );
+
+  ipcMain.handle('get-overlay-status', () =>
+    handleIpcNoInput('get-overlay-status', () => getOverlayStatus())
+  );
+
+  ipcMain.handle('start-overlay-monitor', () =>
+    handleIpcNoInput('start-overlay-monitor', () => {
+      startOverlayMonitor();
+    })
+  );
+
+  ipcMain.handle('stop-overlay-monitor', () =>
+    handleIpcNoInput('stop-overlay-monitor', () => {
+      stopOverlayMonitor();
+    })
+  );
+
+  ipcMain.handle('restart-overlay-elevated', () =>
+    handleIpcNoInput('restart-overlay-elevated', () => restartOverlayElevated())
+  );
+
+  ipcMain.handle('get-overlay-cover', (_e, fileName: unknown) =>
+    handleIpc('get-overlay-cover', fileName, (validated) => readCoverDataUrl(validated as string))
+  );
+
+  const displayModeDeps = () => ({ documentsPath: app.getPath('documents') });
+  const findOverlayGame = (id: string) => getOverlayGames().find((item) => item.id === id);
+
+  ipcMain.handle('get-game-display-mode', (_e, gameId: unknown) =>
+    handleIpc('get-game-display-mode', gameId, (validated) => {
+      const game = findOverlayGame(validated as string);
+      return game ? getGameDisplayMode(game, displayModeDeps()) : { mode: 'unknown' };
+    })
+  );
+
+  ipcMain.handle('set-game-borderless', (_e, gameId: unknown) =>
+    handleIpc('set-game-borderless', gameId, (validated) => {
+      const game = findOverlayGame(validated as string);
+      return game ? setGameBorderless(game, displayModeDeps()) : { mode: 'unknown' };
+    })
   );
 }

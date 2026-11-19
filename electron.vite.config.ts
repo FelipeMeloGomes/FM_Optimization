@@ -18,7 +18,10 @@ export default defineConfig({
   preload: {
     build: {
       rolldownOptions: {
-        input: { index: resolve(__dirname, 'electron/preload/index.ts') }
+        input: {
+          index: resolve(__dirname, 'electron/preload/index.ts'),
+          overlay: resolve(__dirname, 'electron/preload/overlay.ts')
+        }
       }
     }
   },
@@ -51,7 +54,10 @@ export default defineConfig({
       // Fontes nunca como data: URI — o CSP (`font-src 'self'`) bloqueia.
       assetsInlineLimit: (filePath) => (filePath.endsWith('.woff2') ? false : undefined),
       rolldownOptions: {
-        input: { index: resolve(__dirname, 'index.html') },
+        input: {
+          index: resolve(__dirname, 'index.html'),
+          overlay: resolve(__dirname, 'overlay.html'),
+        },
         output: {
           // Oxc é o minificador padrão no Vite 8. Remove console.* do build de produção.
           minify: { compress: { dropConsole: true } },

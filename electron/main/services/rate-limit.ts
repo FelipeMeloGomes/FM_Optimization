@@ -40,6 +40,10 @@ const CHANNEL_CONFIG: Record<string, RateLimitConfig> = {
   'startup:set-enabled': { windowMs: 2000, maxRequests: 6 },
   'startup:open-location': { windowMs: 1000, maxRequests: 10 },
   'startup:stop-service': { windowMs: 3000, maxRequests: 3 },
+  'add-overlay-game': { windowMs: 5000, maxRequests: 4 },
+  'choose-overlay-exe': { windowMs: 2000, maxRequests: 4 },
+  'restart-overlay-elevated': { windowMs: 10_000, maxRequests: 2 },
+  'get-overlay-cover': { windowMs: 1000, maxRequests: 20 },
 };
 
 interface Bucket {

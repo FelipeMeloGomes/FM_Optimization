@@ -20,6 +20,7 @@ import {
   MOUSE_POINTER_SPEED_MAX,
   MOUSE_POINTER_SPEED_MIN,
 } from '../shared/mouse-settings';
+import { isValidOverlayHotkey } from '../shared/overlay-types';
 import {
   InterfaceIndexSchema,
   RestorePointNameSchema,
@@ -232,6 +233,36 @@ export const KeyboardSettingsSchema = z.object({
   caretBlinkRate: z.number().int().min(KEYBOARD_BLINK_MIN).max(KEYBOARD_BLINK_MAX),
 });
 
+// --- Overlay de jogo -------------------------------------------------------
+const overlayWindowsExePath = z
+  .string()
+  .regex(/^[A-Za-z]:[\\/].+\.exe$/i, 'Informe o caminho absoluto de um .exe');
+
+export const OverlayPositionSchema = z.enum([
+  'top-left',
+  'top-right',
+  'bottom-left',
+  'bottom-right',
+]);
+
+export const AddOverlayGameSchema = z.object({ exePath: overlayWindowsExePath });
+export const RemoveOverlayGameSchema = z.string().min(1);
+export const LaunchOverlayGameSchema = z.string().min(1);
+export const SetOverlayGameEnabledSchema = z.object({
+  id: z.string().min(1),
+  enabled: z.boolean(),
+});
+export const OverlaySettingsSchema = z.object({
+  hotkey: z.string().min(1).max(60).refine(isValidOverlayHotkey, 'Atalho de overlay inválido'),
+  position: OverlayPositionSchema,
+  opacity: z.number().min(0.2).max(1),
+  targetFps: z.number().int().min(30).max(360),
+  onlyWhenFocused: z.boolean(),
+});
+/** Somente nomes gerados por `downloadSteamCover` — bloqueia path traversal. */
+export const GetOverlayCoverSchema = z.string().regex(/^\d+\.jpg$/i, 'Nome de capa inválido');
+const OverlayGameIdSchema = z.string().min(1, 'Jogo inválido');
+
 export const IpcSchemas: Record<string, z.ZodSchema> = {
   'get-system-info': z.undefined(),
   'get-gpu-catalog': z.undefined(),
@@ -301,6 +332,21 @@ export const IpcSchemas: Record<string, z.ZodSchema> = {
   'display:apply-settings': ApplyDisplaySettingsSchema,
   'keyboard:get-settings': z.undefined(),
   'keyboard:apply-settings': KeyboardSettingsSchema,
+  'get-overlay-games': z.undefined(),
+  'add-overlay-game': AddOverlayGameSchema,
+  'remove-overlay-game': RemoveOverlayGameSchema,
+  'launch-overlay-game': LaunchOverlayGameSchema,
+  'set-overlay-game-enabled': SetOverlayGameEnabledSchema,
+  'get-overlay-settings': z.undefined(),
+  'save-overlay-settings': OverlaySettingsSchema,
+  'get-overlay-status': z.undefined(),
+  'start-overlay-monitor': z.undefined(),
+  'stop-overlay-monitor': z.undefined(),
+  'restart-overlay-elevated': z.undefined(),
+  'choose-overlay-exe': z.undefined(),
+  'get-overlay-cover': GetOverlayCoverSchema,
+  'get-game-display-mode': OverlayGameIdSchema,
+  'set-game-borderless': OverlayGameIdSchema,
 };
 
 export function validateIpcInput<T>(

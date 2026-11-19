@@ -41,6 +41,14 @@ import type {
 } from '../shared/ipc-types';
 import type { KeyboardSettings } from '../shared/keyboard-settings';
 import type { MouseSettings } from '../shared/mouse-settings';
+import type {
+  AddOverlayGameInput,
+  GameDisplayModeInfo,
+  OverlayGame,
+  OverlaySettings,
+  OverlayStatus,
+  SetOverlayGameEnabledInput,
+} from '../shared/overlay-types';
 
 function ipc<T>(channel: string, ...args: unknown[]): Promise<T> {
   return ipcRenderer.invoke(channel, ...args).then((r: unknown) => {
@@ -67,6 +75,7 @@ const speedProgressCallbacks = new Set<(data: SpeedProgress) => void>();
 const autoCleanStatusCallbacks = new Set<(status: AutoCleanStatus) => void>();
 const autoCleanFinishedCallbacks = new Set<(result: AutoCleanRunResult) => void>();
 const essentialInstallCallbacks = new Set<(data: EssentialInstallProgress) => void>();
+const overlayStatusCallbacks = new Set<(status: OverlayStatus) => void>();
 
 function setupListeners(): void {
   ipcRenderer.on('script-ended', (_e: IpcRendererEvent, raw: string) => {
@@ -139,6 +148,12 @@ function setupListeners(): void {
       });
     }
   );
+
+  ipcRenderer.on('overlay:status', (_e: IpcRendererEvent, data: OverlayStatus) => {
+    overlayStatusCallbacks.forEach((cb) => {
+      cb(data);
+    });
+  });
 }
 
 setupListeners();
@@ -285,6 +300,28 @@ const electronAPI: ElectronAPI = {
   applyDisplaySettings: (mode) => ipc<DisplaySettings>('display:apply-settings', mode),
   getKeyboardSettings: () => ipc<KeyboardSettings>('keyboard:get-settings'),
   applyKeyboardSettings: (settings) => ipc<KeyboardSettings>('keyboard:apply-settings', settings),
+  getOverlayGames: () => ipc<OverlayGame[]>('get-overlay-games'),
+  addOverlayGame: (input: AddOverlayGameInput) => ipc<OverlayGame>('add-overlay-game', input),
+  removeOverlayGame: (id: string) => ipcVoid('remove-overlay-game', id),
+  setOverlayGameEnabled: (input: SetOverlayGameEnabledInput) =>
+    ipcVoid('set-overlay-game-enabled', input),
+  getOverlaySettings: () => ipc<OverlaySettings>('get-overlay-settings'),
+  saveOverlaySettings: (settings: OverlaySettings) => ipcVoid('save-overlay-settings', settings),
+  getOverlayStatus: () => ipc<OverlayStatus>('get-overlay-status'),
+  startOverlayMonitor: () => ipcVoid('start-overlay-monitor'),
+  stopOverlayMonitor: () => ipcVoid('stop-overlay-monitor'),
+  restartOverlayElevated: () => ipcVoid('restart-overlay-elevated'),
+  chooseOverlayExe: () => ipc<AddOverlayGameInput | null>('choose-overlay-exe'),
+  launchOverlayGame: (id: string) => ipcVoid('launch-overlay-game', id),
+  getOverlayCover: (fileName: string) => ipc<string | null>('get-overlay-cover', fileName),
+  getGameDisplayMode: (gameId: string) => ipc<GameDisplayModeInfo>('get-game-display-mode', gameId),
+  setGameBorderless: (gameId: string) => ipc<GameDisplayModeInfo>('set-game-borderless', gameId),
+  onOverlayStatus: (cb: (status: OverlayStatus) => void) => {
+    overlayStatusCallbacks.add(cb);
+    return () => {
+      overlayStatusCallbacks.delete(cb);
+    };
+  },
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
