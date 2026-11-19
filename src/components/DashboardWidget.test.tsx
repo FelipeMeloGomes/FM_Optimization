@@ -52,6 +52,18 @@ describe('DashboardWidget — conteúdo', () => {
   it('omite o detalhe quando não é informado', () => {
     expect(text(render())).not.toContain('núcleos');
   });
+
+  it('mostra o badge de identidade do hardware junto do rótulo', () => {
+    const html = render({ label: 'Disco C:', badge: 'SSD NVMe' });
+
+    expect(text(html)).toContain('Disco C:');
+    expect(text(html)).toContain('SSD NVMe');
+    expect(html).toContain('bg-primary/10');
+  });
+
+  it('não reserva espaço para o badge quando não há identidade', () => {
+    expect(render()).not.toContain('bg-primary/10');
+  });
 });
 
 describe('DashboardWidget — barra de progresso', () => {

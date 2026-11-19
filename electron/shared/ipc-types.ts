@@ -37,13 +37,29 @@ export interface GpuInfo {
   usage: number;
 }
 
+
 export interface MemoryInfo {
   total: string;
   used: string;
   free: string;
   type: string;
+  /** Módulos fisicamente instalados (legado; preferir slotsUsed). */
   slots: number;
+  slotsUsed?: number;
+  slotsTotal?: number;
   frequency: string;
+}
+
+export interface MotherboardInfo {
+  manufacturer: string;
+  product: string;
+  version: string;
+}
+
+export interface CacheInfo {
+  l1?: string;
+  l2?: string;
+  l3?: string;
 }
 
 export interface OsInfo {
@@ -60,13 +76,17 @@ export interface StorageDrive {
   size: string;
   free: string;
   usedPercent: number;
+  /** Identidade da mídia (SSD NVMe, SSD, HD) ou o sistema de arquivos como fallback. */
   type: string;
+  fileSystem?: string;
 }
 
 export interface DashboardData {
   cpu: CpuInfo;
   gpu: GpuInfo;
   memory: MemoryInfo;
+  motherboard?: MotherboardInfo;
+  caches?: CacheInfo;
   os: OsInfo;
   drives: StorageDrive[];
   uptime: number;

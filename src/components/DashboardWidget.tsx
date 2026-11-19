@@ -6,6 +6,8 @@ import { Card, CardContent, Progress } from './ui';
 interface DashboardWidgetProps {
   icon: LucideIcon;
   label: string;
+  /** Identidade do hardware (ex.: SSD NVMe), exibida como selo no cabeçalho. */
+  badge?: string;
   value: string;
   detail?: string;
   progress?: number;
@@ -39,6 +41,7 @@ const STATUS_STYLES = {
 export const DashboardWidget = memo(function DashboardWidget({
   icon: Icon,
   label,
+  badge,
   value,
   detail,
   progress,
@@ -61,9 +64,16 @@ export const DashboardWidget = memo(function DashboardWidget({
           <div className={cn('flex size-9 items-center justify-center rounded-lg', styles.iconBg)}>
             <Icon className={cn('size-4', styles.iconColor)} aria-hidden="true" />
           </div>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </span>
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              {label}
+            </span>
+            {badge && (
+              <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                {badge}
+              </span>
+            )}
+          </div>
         </div>
         <div className="mt-3">
           <div className="text-base font-semibold text-foreground tabular-nums leading-tight">

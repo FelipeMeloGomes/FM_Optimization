@@ -1,9 +1,11 @@
 import { arch, cpus, freemem, release, totalmem, type, uptime, version } from 'node:os';
 import type {
+  CacheInfo,
   CpuInfo,
   DashboardData,
   GpuInfo,
   MemoryInfo,
+  MotherboardInfo,
   OsInfo,
   StorageDrive,
 } from '../../shared/ipc-types';
@@ -34,17 +36,28 @@ interface ConsolidatedWmiData {
     fileSystem: string;
   }[];
   physicalDisk?: { mediaType: string }[];
+  diskMap?: string;
+  motherboard?: { Manufacturer: string; Product: string; Version: string };
+  caches?: { Level: number; MaxCacheSize: number }[];
+  memorySlots?: string;
+  memoryUsed?: string;
 }
 
 const WMI_CONSOLIDATED_QUERY = `
 $ProgressPreference = 'SilentlyContinue'
 $cpu = Get-CimInstance Win32_Processor -Property Name,Manufacturer,Description,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed | Select-Object -First 1 | ConvertTo-Json
+$cache = Get-CimInstance Win32_CacheMemory -ErrorAction SilentlyContinue | Select-Object Level,MaxCacheSize | ConvertTo-Json -Depth 3
 $gpu = Get-CimInstance Win32_VideoController -Property Name,DriverVersion,PNPDeviceID | ConvertTo-Json -Depth 3
 $mem = Get-CimInstance Win32_PhysicalMemory -Property SMBIOSMemoryType,Speed | ConvertTo-Json -Depth 3
+$board = Get-CimInstance Win32_BaseBoard -ErrorAction SilentlyContinue | Select-Object -First 1 | Select-Object Manufacturer,Product,Version | ConvertTo-Json
+$slots = (Get-CimInstance Win32_PhysicalMemoryArray -ErrorAction SilentlyContinue | Measure-Object -Property MemoryDevices -Sum).Sum
+$memCount = (Get-CimInstance Win32_PhysicalMemory -ErrorAction SilentlyContinue | Measure-Object).Count
 $os = Get-CimInstance Win32_OperatingSystem -Property Caption,Version,BuildNumber,InstallDate | ConvertTo-Json
 $drives = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -Property DeviceID,VolumeName,Size,FreeSpace,FileSystem | Select-Object DeviceID,VolumeName,@{N="Size";E={$_.Size/1GB}},@{N="Free";E={$_.FreeSpace/1GB}},FileSystem | ConvertTo-Json -Depth 3
-$disk = Get-PhysicalDisk -Property MediaType | ConvertTo-Json -Depth 3
-@{ cpu=$cpu; gpu=$gpu; memory=$mem; os=$os; drives=$drives; physicalDisk=$disk } | ConvertTo-Json -Depth 5
+$physical = Get-PhysicalDisk | Select-Object DeviceId,MediaType,BusType
+$disk = $physical | Select-Object MediaType | ConvertTo-Json -Depth 3
+$diskMap = Get-Partition -ErrorAction SilentlyContinue | Where-Object DriveLetter | ForEach-Object { $p = $_; $pd = $physical | Where-Object { [int]$_.DeviceId -eq $p.DiskNumber } | Select-Object -First 1; [pscustomobject]@{ DriveLetter = $p.DriveLetter; MediaType = $pd.MediaType; BusType = $pd.BusType } } | ConvertTo-Json -Depth 3
+@{ cpu=$cpu; gpu=$gpu; memory=$mem; motherboard=$board; memorySlots=$slots; memoryUsed=$memCount; caches=$cache; os=$os; drives=$drives; physicalDisk=$disk; diskMap=$diskMap } | ConvertTo-Json -Depth 5
 `;
 
 const WMI_CPU_QUERY =
@@ -206,6 +219,46 @@ function parseConsolidatedPhysicalDisk(raw?: string): { mediaType: string }[] {
   } catch {
     return [];
   }
+}
+
+interface DriveMedia {
+  mediaType: string;
+  busType: string;
+}
+
+/** Identidade legível da unidade, usada como selo nos cartões do Dashboard. */
+export function formatDriveMediaType(mediaType?: string, busType?: string): string | undefined {
+  const media = mediaType?.toLowerCase();
+  const bus = busType?.toLowerCase();
+  if (media === 'ssd' || bus === 'nvme') return bus === 'nvme' ? 'SSD NVMe' : 'SSD';
+  if (media === 'hdd') return 'HD';
+  return undefined;
+}
+
+function parseDriveMediaMap(raw?: string): Map<string, DriveMedia> {
+  const map = new Map<string, DriveMedia>();
+  if (!raw) return map;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    for (const item of items) {
+      if (
+        typeof item !== 'object' ||
+        item === null ||
+        !('DriveLetter' in item) ||
+        typeof item.DriveLetter !== 'string'
+      ) {
+        continue;
+      }
+      map.set(item.DriveLetter.toUpperCase().replace(':', ''), {
+        mediaType: 'MediaType' in item && typeof item.MediaType === 'string' ? item.MediaType : '',
+        busType: 'BusType' in item && typeof item.BusType === 'string' ? item.BusType : '',
+      });
+    }
+  } catch {
+    // Sem o mapa, o Dashboard mostra apenas o sistema de arquivos.
+  }
+  return map;
 }
 
 export interface CpuInfoSources {
@@ -427,7 +480,16 @@ export async function getMemoryInfo(): Promise<MemoryInfo> {
     '34': 'DDR5',
   };
   const memType = typeMap[typeOutput.trim()] || 'Unknown';
-  const slots = slotsOutput ? parseInt(slotsOutput.trim(), 10) : 0;
+  const moduleCount =
+    wmiData.memoryUsed && Number.isFinite(Number(wmiData.memoryUsed))
+      ? Number(wmiData.memoryUsed)
+      : slotsOutput
+        ? parseInt(slotsOutput.trim(), 10)
+        : 0;
+  const totalSlots =
+    wmiData.memorySlots && Number.isFinite(Number(wmiData.memorySlots))
+      ? Number(wmiData.memorySlots)
+      : moduleCount;
   const freq = freqOutput.trim();
 
   return {
@@ -435,7 +497,9 @@ export async function getMemoryInfo(): Promise<MemoryInfo> {
     used: formatBytes(used),
     free: formatBytes(free),
     type: memType,
-    slots,
+    slots: moduleCount,
+    slotsUsed: moduleCount,
+    slotsTotal: totalSlots,
     frequency: freq ? `${freq} MHz` : '—',
   };
 }
@@ -494,17 +558,24 @@ export async function getStorageDrives(): Promise<StorageDrive[]> {
     drives = parseConsolidatedDrives(output);
   }
 
+  const mediaByLetter = parseDriveMediaMap(wmiData.diskMap);
+
   return drives.map((d) => {
     const size = d.size || 0;
     const free = d.free || 0;
     const usedPercent = size > 0 ? Math.round(((size - free) / size) * 100) : 0;
+    const fileSystem = d.fileSystem || '';
+    const media = mediaByLetter.get((d.deviceId || '').toUpperCase().replace(':', ''));
+    const identity = media && formatDriveMediaType(media.mediaType, media.busType);
+
     return {
       letter: d.deviceId || '',
       label: d.volumeName || '',
       size: d.size ? `${Math.round(d.size)} GB` : 'N/A',
       free: d.free ? `${Math.round(d.free)} GB` : 'N/A',
       usedPercent,
-      type: d.fileSystem || '',
+      type: identity || fileSystem,
+      fileSystem,
     };
   });
 }
@@ -526,19 +597,106 @@ export async function hasSolidStateDrive(): Promise<boolean> {
   return physicalDisks.some((d) => d.mediaType === 'SSD');
 }
 
+function parseJsonArray(raw?: string | unknown[]): unknown[] {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw !== 'string' || !raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    return [];
+  }
+}
+
+function formatCacheSize(kb?: number): string | undefined {
+  if (!kb || kb <= 0) return undefined;
+  return kb >= 1024 ? `${Math.round((kb / 1024) * 100) / 100} MB` : `${kb} KB`;
+}
+
+export async function getMotherboardInfo(): Promise<MotherboardInfo> {
+  const wmi = await fetchConsolidatedWmi();
+  const board = wmi.motherboard;
+  if (board && typeof board === 'object' && 'Manufacturer' in board) {
+    return {
+      manufacturer: board.Manufacturer || '—',
+      product: board.Product || '—',
+      version: (board.Version || '').trim() || '—',
+    };
+  }
+
+  const output = await execPowerShell(
+    'Get-CimInstance Win32_BaseBoard | Select-Object Manufacturer,Product,Version | ConvertTo-Json -Depth 2'
+  ).catch(() => '');
+  try {
+    const parsed = JSON.parse(output) as {
+      Manufacturer?: string;
+      Product?: string;
+      Version?: string;
+    };
+    return {
+      manufacturer: parsed.Manufacturer || '—',
+      product: parsed.Product || '—',
+      version: (parsed.Version || '').trim() || '—',
+    };
+  } catch {
+    return { manufacturer: '—', product: '—', version: '—' };
+  }
+}
+
+export async function getCacheInfo(): Promise<CacheInfo> {
+  const wmi = await fetchConsolidatedWmi();
+  const cached = parseJsonArray(wmi.caches);
+  if (cached.length > 0) {
+    return cachesFromLevels(cached);
+  }
+
+  const output = await execPowerShell(
+    'Get-CimInstance Win32_CacheMemory | Select-Object Level,MaxCacheSize | ConvertTo-Json -Depth 3'
+  ).catch(() => '');
+  try {
+    const parsed: unknown = JSON.parse(output);
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    return cachesFromLevels(items);
+  } catch {
+    return {};
+  }
+}
+
+function cachesFromLevels(items: unknown[]): CacheInfo {
+  const find = (level: number): string | undefined => {
+    for (const item of items) {
+      if (
+        typeof item === 'object' &&
+        item !== null &&
+        'Level' in item &&
+        Number(item.Level) === level &&
+        'MaxCacheSize' in item &&
+        typeof item.MaxCacheSize === 'number'
+      ) {
+        return formatCacheSize(item.MaxCacheSize);
+      }
+    }
+    return undefined;
+  };
+  // Win32_CacheMemory usa Level 3/4/5 para L1/L2/L3.
+  return { l1: find(3), l2: find(4), l3: find(5) };
+}
+
 export async function getSystemInfo(): Promise<DashboardData> {
   // Fetch consolidated WMI once for all sub-queries
   await fetchConsolidatedWmi();
 
-  const [cpu, gpu, memory, os, drives] = await Promise.all([
+  const [cpu, gpu, memory, os, drives, motherboard, caches] = await Promise.all([
     getCpuInfo(),
     getGpuInfo(),
     getMemoryInfo(),
     getOsInfo(),
     getStorageDrives(),
+    getMotherboardInfo(),
+    getCacheInfo(),
   ]);
 
-  return { cpu, gpu, memory, os, drives, uptime: Math.floor(uptime()) };
+  return { cpu, gpu, memory, os, drives, motherboard, caches, uptime: Math.floor(uptime()) };
 }
 
 function formatBytes(bytes: number): string {

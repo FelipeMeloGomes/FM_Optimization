@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { app } from 'electron';
 import type { DashboardData } from '../../shared/ipc-types';
 
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 3;
 const CACHE_FILE = 'system-cache.json';
 
 function getCachePath(): string {

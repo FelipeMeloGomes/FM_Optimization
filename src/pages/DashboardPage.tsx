@@ -23,6 +23,7 @@ import { summarizeAppliedScripts } from '../lib/applied-scripts';
 import { cn } from '../lib/utils';
 
 const OPTIMIZED_RATIO_THRESHOLD = 0.5;
+const DRIVE_MEDIA_TYPES = new Set(['SSD NVMe', 'SSD', 'HD']);
 
 function formatUptime(seconds: number): string {
   const d = Math.floor(seconds / 86400);
@@ -224,10 +225,10 @@ export default function DashboardPage() {
           <div className="size-1.5 rounded-full bg-primary" />
           <h3 className="text-sm font-semibold text-foreground">Componentes</h3>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <DashboardWidget
             icon={Cpu}
-            label="CPU"
+            label="Processador"
             value={data.cpu.model}
             detail={`${coresLabel} · ${data.cpu.logicalProcessors} threads · ${data.cpu.usage}% uso`}
             progress={data.cpu.usage}
@@ -235,7 +236,7 @@ export default function DashboardPage() {
           />
           <DashboardWidget
             icon={Monitor}
-            label="GPU"
+            label="Placa de vídeo"
             value={data.gpu.name}
             detail={`${data.gpu.vram} VRAM · ${data.gpu.usage}% uso`}
             progress={data.gpu.usage}
@@ -243,7 +244,7 @@ export default function DashboardPage() {
           />
           <DashboardWidget
             icon={MemoryStick}
-            label="RAM"
+            label="Memória RAM"
             value={formatMemoryTotal(data.memory.total)}
             detail={`${data.memory.type} · ${data.memory.frequency} · ${data.memory.slots} slots · ${data.memory.used} em uso`}
             progress={memPercent}
@@ -264,8 +265,9 @@ export default function DashboardPage() {
               key={drive.letter}
               icon={HardDrive}
               label={`Disco ${drive.letter}`}
+              badge={DRIVE_MEDIA_TYPES.has(drive.type) ? drive.type : undefined}
               value={drive.size}
-              detail={`${drive.free} livres · ${drive.type}`}
+              detail={`${drive.free} livres${drive.fileSystem ? ` · ${drive.fileSystem}` : ''}`}
               progress={drive.usedPercent}
               status={getDriveStatus(drive.usedPercent)}
             />

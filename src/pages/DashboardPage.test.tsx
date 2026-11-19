@@ -242,6 +242,93 @@ describe('DashboardPage — dados do sistema', () => {
   });
 });
 
+describe('DashboardPage — identidade do hardware', () => {
+  it('usa rótulos em português para os componentes', () => {
+    store.system = { status: 'success', data: dashboard() };
+
+    const html = render();
+
+    expect(html).toContain('Processador');
+    expect(html).toContain('Placa de vídeo');
+    expect(html).toContain('Memória RAM');
+    expect(html).not.toContain('>CPU<');
+    expect(html).not.toContain('>GPU<');
+    expect(html).not.toContain('>RAM<');
+  });
+
+  it('mostra SSD NVMe, SSD e HD como identidade de cada unidade', () => {
+    store.system = {
+      status: 'success',
+      data: dashboard({
+        drives: [
+          {
+            letter: 'C:',
+            label: 'Sistema',
+            size: '1 TB',
+            free: '400 GB',
+            usedPercent: 60,
+            type: 'SSD NVMe',
+            fileSystem: 'NTFS',
+          },
+          {
+            letter: 'D:',
+            label: 'Dados',
+            size: '512 GB',
+            free: '200 GB',
+            usedPercent: 40,
+            type: 'SSD',
+            fileSystem: 'NTFS',
+          },
+          {
+            letter: 'E:',
+            label: 'Backup',
+            size: '2 TB',
+            free: '500 GB',
+            usedPercent: 75,
+            type: 'HD',
+            fileSystem: 'NTFS',
+          },
+        ],
+      }),
+    };
+
+    const markup = renderToStaticMarkup(<DashboardPage />);
+    const html = text(markup);
+
+    expect(markup).toContain('>SSD NVMe<');
+    expect(markup).toContain('>SSD<');
+    expect(markup).toContain('>HD<');
+    expect(html).toContain('Disco C:');
+    expect(html).toContain('Disco D:');
+    expect(html).toContain('Disco E:');
+    expect(html).toContain('400 GB livres · NTFS');
+  });
+
+  it('não mostra badge quando o tipo da unidade é desconhecido', () => {
+    store.system = {
+      status: 'success',
+      data: dashboard({
+        drives: [
+          {
+            letter: 'C:',
+            label: 'Sistema',
+            size: '1 TB',
+            free: '400 GB',
+            usedPercent: 60,
+            type: 'NTFS',
+            fileSystem: 'NTFS',
+          },
+        ],
+      }),
+    };
+
+    const html = render();
+
+    expect(html).toContain('400 GB livres · NTFS');
+    expect(html).not.toContain('bg-primary/10');
+  });
+});
+
 describe('DashboardPage — rodapé de ajustes aplicados', () => {
   function withTweaks(scripts: ScriptEntry[], history: ExecutionHistoryEntry[]): void {
     store.system = { status: 'success', data: dashboard() };
