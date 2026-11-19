@@ -37,6 +37,37 @@ export interface GpuInfo {
   usage: number;
 }
 
+/** Uma placa do catálogo público usado pelo comparador de GPUs. */
+export interface GpuCatalogEntry {
+  id: string;
+  name: string;
+  manufacturer: string;
+  architecture?: string;
+  codename?: string;
+  vramGb?: number;
+  vramType?: string;
+  memoryBusBits?: number;
+  memoryBandwidthGbps?: number;
+  tdpWatts?: number;
+  boostClockMhz?: number;
+  shaderCount?: number;
+  processNm?: number;
+  releaseYear?: number;
+  /** Pontuação G3D do PassMark; base para a barra de desempenho relativo. */
+  performanceScore: number;
+}
+
+export interface GpuCatalog {
+  version: number;
+  source: string;
+  sourceUrl: string;
+  updatedAt: string;
+  gpus: GpuCatalogEntry[];
+}
+
+export interface GpuCatalogResult extends GpuCatalog {
+  isFromCache: boolean;
+}
 
 export interface MemoryInfo {
   total: string;
@@ -494,6 +525,8 @@ export type AsyncState<T> =
 export interface ElectronAPI {
   getSystemInfo(): Promise<DashboardData>;
   getSystemInfoCache(): Promise<{ version: number; timestamp: string; data: DashboardData } | null>;
+  getGpuCatalog(): Promise<GpuCatalogResult>;
+  searchGpu(name: string): Promise<GpuCatalogEntry | null>;
   getCpuInfo(): Promise<CpuInfo>;
   getMemoryInfo(): Promise<MemoryInfo>;
   hasSSD(): Promise<boolean>;

@@ -51,6 +51,8 @@ import {
   listEssentials,
   openEssentialPage,
 } from './services/essentials';
+import { getGpuCatalog } from './services/gpu-catalog';
+import { searchGpu } from './services/gpu-search';
 import { applyKeyboardSettings, readKeyboardSettings } from './services/keyboard-settings';
 import { applyMouseSettings, readMouseSettings } from './services/mouse-settings';
 import { generateSalt, hashPassword, verifyPassword } from './services/page-lock';
@@ -165,6 +167,11 @@ export function registerIpcHandlers(): void {
       return { success: false as const, error: e instanceof Error ? e.message : String(e) };
     }
   });
+
+  ipcMain.handle('get-gpu-catalog', () =>
+    handleIpcNoInput('get-gpu-catalog', () => getGpuCatalog())
+  );
+  ipcMain.handle('search-gpu', (_event, name: string) => handleIpc('search-gpu', name, searchGpu));
 
   // Sub-handlers modulares (carregamento sob demanda por página)
   ipcMain.handle('get-cpu-info', () => handleIpcNoInput('get-cpu-info', () => getCpuInfo()));

@@ -22,6 +22,8 @@ import type {
   EssentialListItem,
   ExecutionHistoryEntry,
   ExportData,
+  GpuCatalogEntry,
+  GpuCatalogResult,
   IpcResult,
   MemoryInfo,
   NetworkInfo,
@@ -147,6 +149,8 @@ const electronAPI: ElectronAPI = {
     ipc<{ version: number; timestamp: string; data: DashboardData } | null>(
       'get-system-info-cache'
     ),
+  getGpuCatalog: () => ipc<GpuCatalogResult>('get-gpu-catalog'),
+  searchGpu: (name) => ipc<GpuCatalogEntry | null>('search-gpu', name),
   getCpuInfo: () => ipc<CpuInfo>('get-cpu-info'),
   getMemoryInfo: () => ipc<MemoryInfo>('get-memory-info'),
   hasSSD: () => ipc<boolean>('has-ssd'),

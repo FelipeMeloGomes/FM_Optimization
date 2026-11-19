@@ -234,6 +234,8 @@ export const KeyboardSettingsSchema = z.object({
 
 export const IpcSchemas: Record<string, z.ZodSchema> = {
   'get-system-info': z.undefined(),
+  'get-gpu-catalog': z.undefined(),
+  'search-gpu': z.string().min(1).max(120),
   'get-cpu-info': z.undefined(),
   'get-memory-info': z.undefined(),
   'has-ssd': z.undefined(),
