@@ -163,6 +163,14 @@ O Biome cobre TypeScript, JSON, CSS e **Markdown**: os `.md` do repositório ent
 - [OPTIMIZATION.md](docs/OPTIMIZATION.md) — redução do instalador (255,8 → 102,3 MB) e contrato de empacotamento
 - [RUNTIME.md](docs/RUNTIME.md) — consumo medido com a janela aberta e na bandeja
 
+## Licença
+
+O FM Optimize é software **proprietário e fechado**. O código-fonte, a documentação e os recursos do projeto pertencem a Felipe Melo Gomes e não podem ser copiados, modificados ou redistribuídos sem autorização por escrito. Instalar o executável oficial concede apenas o direito de usá-lo — não concede acesso ao código-fonte. Os termos completos estão em [LICENSE](LICENSE).
+
+## Créditos
+
+Componentes de terceiros (Electron, React, Zod, Lucide, PresentMon, fontes Inter e JetBrains Mono) e as bases PassMark, Technical City e Steam são creditados na interface e listados com suas licenças em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 ## Estrutura do projeto
 
 ```

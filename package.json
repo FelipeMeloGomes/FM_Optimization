@@ -2,6 +2,8 @@
   "name": "fm-optimize",
   "version": "2.20.0",
   "description": "FM Optimize - Windows optimization toolkit",
+  "author": "Felipe Melo Gomes",
+  "license": "UNLICENSED",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev -- --js-flags=\"--max-old-space-size=192 --expose-gc\"",
