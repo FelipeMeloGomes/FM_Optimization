@@ -25,6 +25,29 @@ vi.mock('../hooks/use-is-script-applied', () => ({
   useIsScriptApplied: () => (script: { id: string }) => store.applied.has(script.id),
 }));
 
+const virtual = vi.hoisted(() => ({
+  calls: [] as { scrollRef: unknown; listRef: unknown }[],
+}));
+
+vi.mock('../hooks/use-virtual-rows', () => ({
+  useVirtualRows: <T,>(items: T[], scrollRef: unknown, _rowHeight?: unknown, listRef?: unknown) => {
+    virtual.calls.push({ scrollRef, listRef });
+    return {
+      virtualItems: items.map((_, index) => ({
+        index,
+        key: index,
+        start: index * 88,
+        end: (index + 1) * 88,
+        size: 88,
+        lane: 0,
+      })),
+      paddingTop: 0,
+      paddingBottom: 0,
+      measureElement: () => {},
+    };
+  },
+}));
+
 import { VirtualizedSectionCard } from './VirtualizedSectionCard';
 
 function script(id: string, name: string, overrides: Partial<ScriptEntry> = {}): ScriptEntry {
@@ -84,6 +107,7 @@ function renderCard({
 
 beforeEach(() => {
   store.applied = new Set<string>();
+  virtual.calls.length = 0;
 });
 
 describe('VirtualizedSectionCard — filtro por scriptIds', () => {
@@ -214,5 +238,20 @@ describe('VirtualizedSectionCard — ações', () => {
     const { container } = renderCard({ activeExecution: 'apps-4' });
 
     expect(container.firstElementChild?.className).not.toContain('ring-2 ring-primary/50');
+  });
+});
+
+describe('VirtualizedSectionCard — rolagem da página', () => {
+  it('usa a rolagem da página em vez de um container de scroll próprio', () => {
+    const { container } = renderCard();
+
+    expect(virtual.calls).toHaveLength(1);
+    expect(virtual.calls[0].scrollRef).toBeNull();
+    expect(virtual.calls[0].listRef).not.toBeNull();
+
+    const styled = Array.from(container.querySelectorAll<HTMLElement>('[style]'));
+    expect(styled.some((el) => el.style.maxHeight === 'none')).toBe(false);
+    expect(styled.some((el) => el.style.height === 'auto')).toBe(false);
+    expect(container.querySelector('.overflow-y-auto')).toBeNull();
   });
 });

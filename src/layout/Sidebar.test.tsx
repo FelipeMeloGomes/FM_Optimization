@@ -18,11 +18,11 @@ import { Sidebar, SidebarLink } from './Sidebar';
  * sem precisar de DOM ou navegador.
  */
 
-function renderLink(collapsed: boolean): string {
+function renderLink(collapsed: boolean, label = 'Inicio', to = '/'): string {
   return renderToStaticMarkup(
-    <MemoryRouter initialEntries={['/']}>
+    <MemoryRouter initialEntries={[to]}>
       <TooltipProvider>
-        <SidebarLink to="/" icon={Home} label="Inicio" collapsed={collapsed} />
+        <SidebarLink to={to} icon={Home} label={label} collapsed={collapsed} />
       </TooltipProvider>
     </MemoryRouter>
   );
@@ -71,12 +71,27 @@ describe('SidebarLink expandido', () => {
   });
 });
 
+describe('SidebarLink com rótulo longo', () => {
+  const html = renderLink(false, 'Otimização do Sistema', '/cpu');
+
+  it('quebra o nome em vez de cortar o final dele', () => {
+    expect(html).toContain('Otimização do Sistema');
+    expect(html).not.toContain('whitespace-nowrap');
+    expect(html).toContain('break-words');
+  });
+
+  it('alinha o ícone com a primeira linha do nome', () => {
+    expect(html).toContain('items-start');
+    expect(html).not.toContain('items-center');
+  });
+});
+
 describe('Sidebar recolhida', () => {
   const html = renderSidebar(true);
 
   it('usa a largura compacta e centraliza os itens', () => {
     expect(html).toContain('w-16');
-    expect(html).not.toContain('w-48');
+    expect(html).not.toContain('w-56');
     expect(html).toContain('pr-0');
     expect(html).not.toContain('pr-1');
   });
@@ -96,7 +111,7 @@ describe('Sidebar expandida', () => {
   const html = renderSidebar(false);
 
   it('volta para a largura e o espaçamento normais', () => {
-    expect(html).toContain('w-48');
+    expect(html).toContain('w-56');
     expect(html).not.toContain('w-16');
     expect(html).toContain('pr-1');
     expect(html).not.toContain('pr-0');

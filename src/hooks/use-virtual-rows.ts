@@ -52,7 +52,9 @@ export function useVirtualRows<T>(
   // Detect test environment or missing scroll context
   const isTestEnv = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
   const scrollElement = pageScroll
-    ? document.getElementById(MAIN_CONTENT_ID)
+    ? typeof document !== 'undefined'
+      ? document.getElementById(MAIN_CONTENT_ID)
+      : null
     : (scrollRef?.current ?? null);
   const hasRealScrollContext =
     scrollElement &&

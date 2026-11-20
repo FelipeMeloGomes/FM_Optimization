@@ -211,3 +211,18 @@ describe('RestorePointsPage — conteúdo', () => {
     await waitFor(() => expect(restoreFn).toHaveBeenCalledWith(1));
   });
 });
+
+describe('RestorePointsPage — rolagem da página', () => {
+  it('não cria um container de scroll próprio para a tabela', () => {
+    renderPage();
+
+    const table = document.querySelector('table') as HTMLTableElement;
+    expect(table).not.toBeNull();
+    const wrapper = table.parentElement as HTMLElement;
+    expect(wrapper.className).not.toContain('overflow-auto');
+    expect(wrapper.className).toContain('overflow-visible');
+
+    const card = wrapper.parentElement as HTMLElement;
+    expect(card.className).not.toContain('overflow-hidden');
+  });
+});

@@ -529,7 +529,7 @@ export default function CompararPlacaPage() {
               <CardTitle className="text-base">Especificações lado a lado</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
+              <Table containerClassName="overflow-visible">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Especificação</TableHead>

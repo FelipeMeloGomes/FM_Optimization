@@ -39,7 +39,6 @@ function formatDuration(ms: number): string {
 }
 
 const HISTORY_ROW_HEIGHT = 57;
-const LIST_MAX_HEIGHT = 'max-h-[calc(100vh-460px)] min-h-[320px]';
 
 function HistoryRow({
   entry,
@@ -124,11 +123,14 @@ export default function HistoryPage() {
 
   const history = state.status === 'success' ? state.data : [];
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  // null = usa a rolagem da própria página (#main-content). O ref do corpo da
+  // tabela é necessário para descontar a distância até o início da lista.
+  const listRef = useRef<HTMLTableSectionElement>(null);
   const { virtualItems, paddingTop, paddingBottom, measureElement } = useVirtualRows(
     history,
-    scrollRef,
-    HISTORY_ROW_HEIGHT
+    null,
+    HISTORY_ROW_HEIGHT,
+    listRef
   );
 
   const stats = useMemo(() => {
@@ -235,7 +237,7 @@ export default function HistoryPage() {
         </div>
       )}
 
-      {/* History Table - Native scrolling via Table component */}
+      {/* Histórico — rolagem da própria página */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <div className="size-1.5 rounded-full bg-primary" />
@@ -249,18 +251,18 @@ export default function HistoryPage() {
             description="Execute um script para vê-lo aqui"
           />
         ) : (
-          <div className="rounded-xl border border-border overflow-hidden">
-            <Table containerRef={scrollRef} containerClassName={LIST_MAX_HEIGHT}>
+          <div className="rounded-xl border border-border bg-card">
+            <Table containerClassName="overflow-visible">
               <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow className="bg-muted/30">
-                  <TableHead>Script</TableHead>
+                  <TableHead>Tweak</TableHead>
                   <TableHead>Origem</TableHead>
                   <TableHead>Data</TableHead>
                   <TableHead>Duração</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody ref={listRef}>
                 {paddingTop > 0 && (
                   <tr style={{ height: paddingTop }}>
                     <td colSpan={5} />

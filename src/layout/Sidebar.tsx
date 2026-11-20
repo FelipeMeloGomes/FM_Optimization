@@ -29,11 +29,11 @@ export function SidebarLink({ to, icon: Icon, label, collapsed }: SidebarLinkPro
       end={to === '/'}
       className={({ isActive }) =>
         cn(
-          'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-[color,background-color,border-color,box-shadow,opacity] duration-200',
+          'group relative flex gap-3 rounded-lg px-3 py-2.5 text-sm transition-[color,background-color,border-color,box-shadow,opacity] duration-200',
           isActive
             ? 'bg-primary/20 text-primary'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-          collapsed && 'size-9 justify-center px-0 gap-0'
+          collapsed ? 'size-9 items-center justify-center px-0 gap-0' : 'items-start'
         )
       }
     >
@@ -48,8 +48,10 @@ export function SidebarLink({ to, icon: Icon, label, collapsed }: SidebarLinkPro
           />
           <span
             className={cn(
-              'overflow-hidden whitespace-nowrap transition-[width,opacity] duration-300',
-              collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+              'min-w-0 overflow-hidden transition-[width,opacity] duration-300',
+              collapsed
+                ? 'w-0 whitespace-nowrap opacity-0'
+                : 'w-auto break-words leading-tight opacity-100'
             )}
           >
             {label}
@@ -103,7 +105,7 @@ export function Sidebar({ openCommandPalette, defaultCollapsed = false }: Sideba
       <aside
         className={cn(
           'flex min-h-0 flex-col gap-2 overflow-hidden border-r border-border bg-sidebar-background px-3 py-4 transition-[width] duration-300 ease-in-out',
-          collapsed ? 'w-16' : 'w-48'
+          collapsed ? 'w-16' : 'w-56'
         )}
       >
         <div

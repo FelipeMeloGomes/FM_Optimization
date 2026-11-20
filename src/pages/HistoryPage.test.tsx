@@ -13,6 +13,29 @@ vi.mock('../contexts/HistoryContext', () => ({
   useHistoryContext: () => ({ state: store.state }),
 }));
 
+const virtual = vi.hoisted(() => ({
+  calls: [] as { scrollRef: unknown; listRef: unknown }[],
+}));
+
+vi.mock('../hooks/use-virtual-rows', () => ({
+  useVirtualRows: <T,>(items: T[], scrollRef: unknown, _rowHeight?: unknown, listRef?: unknown) => {
+    virtual.calls.push({ scrollRef, listRef });
+    return {
+      virtualItems: items.map((_, index) => ({
+        index,
+        key: index,
+        start: index * 57,
+        end: (index + 1) * 57,
+        size: 57,
+        lane: 0,
+      })),
+      paddingTop: 0,
+      paddingBottom: 0,
+      measureElement: () => {},
+    };
+  },
+}));
+
 import HistoryPage from './HistoryPage';
 
 const store = vi.hoisted<{ state: AsyncState<ExecutionHistoryEntry[]> }>(() => ({
@@ -47,6 +70,7 @@ function render(): string {
 
 beforeEach(() => {
   store.state = { status: 'success', data: [] };
+  virtual.calls.length = 0;
 });
 
 describe('HistoryPage', () => {
@@ -109,6 +133,15 @@ describe('HistoryPage', () => {
     expect(html).toContain('Sucesso');
   });
 
+  it('rotula a coluna do nome como Tweak', () => {
+    store.state = { status: 'success', data: [entry()] };
+
+    const html = renderToStaticMarkup(<HistoryPage />);
+
+    expect(html).toContain('>Tweak<');
+    expect(html).not.toContain('>Script<');
+  });
+
   it('mostra duração "—" para cancelados e sem código', () => {
     store.state = {
       status: 'success',
@@ -168,5 +201,21 @@ describe('HistoryPage', () => {
     expect(html).toContain('Erro (1)');
     expect(html).toContain('Erro (spawn)');
     expect(html).toContain('Erros 2');
+  });
+
+  it('usa a rolagem da página em vez de um container de scroll próprio', () => {
+    store.state = { status: 'success', data: [entry()] };
+
+    const html = renderToStaticMarkup(<HistoryPage />);
+
+    expect(virtual.calls).toHaveLength(1);
+    expect(virtual.calls[0].scrollRef).toBeNull();
+    expect(virtual.calls[0].listRef).not.toBeNull();
+    expect(html).not.toContain('max-h-[');
+    expect(html).not.toContain('overflow-auto');
+    expect(html).toContain('overflow-visible');
+    // O card não pode criar scrollport, senão o cabeçalho sticky cola nele
+    // em vez de acompanhar a rolagem da página.
+    expect(html).not.toContain('border-border overflow-hidden');
   });
 });

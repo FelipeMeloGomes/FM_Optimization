@@ -264,4 +264,16 @@ describe('CompararPlacaPage', () => {
     fireEvent.keyDown(placaA, { key: 'Escape' });
     expect(placaA.hasAttribute('aria-activedescendant')).toBe(false);
   });
+
+  it('não cria um container de scroll próprio na tabela de especificações', async () => {
+    installApi();
+    render(<CompararPlacaPage />);
+
+    expect(await screen.findByText('Especificações lado a lado')).toBeTruthy();
+    const table = document.querySelector('table') as HTMLTableElement;
+    expect(table).not.toBeNull();
+    const wrapper = table.parentElement as HTMLElement;
+    expect(wrapper.className).not.toContain('overflow-auto');
+    expect(wrapper.className).toContain('overflow-visible');
+  });
 });

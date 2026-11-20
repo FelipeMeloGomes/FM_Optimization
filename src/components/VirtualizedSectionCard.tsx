@@ -119,11 +119,14 @@ export function VirtualizedSectionCard({
 
   const isAnyExecuting = section.scriptIds.some((id) => activeExecution === id);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  // null = usa a rolagem da própria página (#main-content). O ref da lista é
+  // necessário para descontar a distância até o início dela.
+  const listRef = useRef<HTMLDivElement>(null);
   const { virtualItems, paddingTop, paddingBottom, measureElement } = useVirtualRows(
     sectionScripts,
-    scrollRef,
-    SECTION_ROW_HEIGHT
+    null,
+    SECTION_ROW_HEIGHT,
+    listRef
   );
 
   return (
@@ -159,11 +162,7 @@ export function VirtualizedSectionCard({
           </div>
         )}
 
-        <div
-          ref={scrollRef}
-          className="mt-4 relative"
-          style={{ height: 'auto', maxHeight: 'none' }}
-        >
+        <div ref={listRef} className="mt-4 relative">
           {paddingTop > 0 && <div style={{ height: paddingTop }} aria-hidden="true" />}
           <div className="space-y-2" style={{ position: 'relative' }}>
             {virtualItems.map((virtualRow) => {

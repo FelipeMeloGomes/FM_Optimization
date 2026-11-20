@@ -13,6 +13,7 @@ renderer-stats.html
 .superpowers/
 
 # Runtime data (dev)
+data/scripts_data.json
 data/removed-apps.json
 data/backups/
 data/settings.json

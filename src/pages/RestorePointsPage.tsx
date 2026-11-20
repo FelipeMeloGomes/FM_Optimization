@@ -217,8 +217,8 @@ export default function RestorePointsPage() {
             }
           />
         ) : (
-          <div className="rounded-xl border border-border overflow-hidden">
-            <Table>
+          <div className="rounded-xl border border-border bg-card">
+            <Table containerClassName="overflow-visible">
               <TableHeader>
                 <TableRow className="bg-muted/30">
                   <TableHead>Descrição</TableHead>
