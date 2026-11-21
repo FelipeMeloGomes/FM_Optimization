@@ -89,7 +89,7 @@ describe('useStorageDrives', () => {
     await act(async () => {
       await pending;
     });
-    expect(api.runDiskCleanup).toHaveBeenCalledWith('C:');
+    expect(api.runDiskCleanup).toHaveBeenCalledWith('C');
     expect(result.current.applied['C:']).toBe(true);
     expect(result.current.busy.has('C:')).toBe(false);
     expect(store.refresh).toHaveBeenCalled();
@@ -117,7 +117,22 @@ describe('useStorageDrives', () => {
     await act(async () => {
       await result.current.cleanupSelected();
     });
-    expect(api.runDiskCleanup.mock.calls.map((c) => c[0])).toEqual(['C:', 'D:']);
-    expect(api.optimizeDrive.mock.calls.map((c) => c[0])).toEqual(['C:']);
+    expect(api.runDiskCleanup.mock.calls.map((c) => c[0])).toEqual(['C', 'D']);
+    expect(api.optimizeDrive.mock.calls.map((c) => c[0])).toEqual(['C']);
+  });
+
+  it('envia ao IPC só a letra da unidade, sem os dois pontos do texto exibido', async () => {
+    const { result } = renderHook(() => useStorageDrives());
+
+    await act(async () => {
+      await result.current.optimize('D:');
+      await result.current.cleanup('c:');
+    });
+
+    expect(api.optimizeDrive).toHaveBeenCalledWith('D');
+    expect(api.runDiskCleanup).toHaveBeenCalledWith('C');
+    // As chaves de estado continuam iguais a `drive.letter`, usadas pelo painel.
+    expect(result.current.applied['D:']).toBe(true);
+    expect(result.current.applied['C:']).toBe(true);
   });
 });

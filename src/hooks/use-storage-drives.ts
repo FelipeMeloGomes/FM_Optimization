@@ -26,6 +26,11 @@ function normalizeLetter(letter: string): string {
   return letter.toUpperCase();
 }
 
+/** `StorageDrive.letter` vem do WMI como `C:`; o IPC aceita só a letra (`^[A-Za-z]$`). */
+function toIpcLetter(letter: string): string {
+  return normalizeLetter(letter).replace(/:$/, '');
+}
+
 function toggleIn(setter: Dispatch<SetStateAction<Set<string>>>, letter: string): void {
   const key = normalizeLetter(letter);
   setter((prev) => {
@@ -73,9 +78,9 @@ export function useStorageDrives(): UseStorageDrivesResult {
       setBusy((prev) => new Set(prev).add(key));
       try {
         if (action === 'cleanup') {
-          await window.electronAPI.runDiskCleanup(key);
+          await window.electronAPI.runDiskCleanup(toIpcLetter(letter));
         } else {
-          await window.electronAPI.optimizeDrive(key);
+          await window.electronAPI.optimizeDrive(toIpcLetter(letter));
         }
         setApplied((prev) => ({ ...prev, [key]: true }));
         refresh();
