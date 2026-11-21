@@ -8,15 +8,15 @@ Trocar o botão **Executar** individual dos cards de tweak nas páginas de otimi
 
 Páginas incluídas (7):
 
-| Rótulo | Arquivo |
-| --- | --- |
-| Input Lag | `src/pages/InputLagPage.tsx` |
-| Otimização do sistema | `src/pages/CpuPage.tsx` |
-| Personalização | `src/pages/PersonalizationPage.tsx` |
-| Internet | `src/pages/NetworkPage.tsx` |
-| Armazenamento | `src/pages/StoragePage.tsx` |
-| Privacidade | `src/pages/PrivacySecurityPage.tsx` |
-| Reparo do Sistema | `src/pages/SystemRepairPage.tsx` |
+| Rótulo                | Arquivo                             |
+| --------------------- | ----------------------------------- |
+| Input Lag             | `src/pages/InputLagPage.tsx`        |
+| Otimização do sistema | `src/pages/CpuPage.tsx`             |
+| Personalização        | `src/pages/PersonalizationPage.tsx` |
+| Internet              | `src/pages/NetworkPage.tsx`         |
+| Armazenamento         | `src/pages/StoragePage.tsx`         |
+| Privacidade           | `src/pages/PrivacySecurityPage.tsx` |
+| Reparo do Sistema     | `src/pages/SystemRepairPage.tsx`    |
 
 **Não incluídas:** Limpeza e Debloat (já têm o padrão), DNS, Ferramentas/Utilitários, Dispositivo, Overlay, Histórico.
 
@@ -110,11 +110,11 @@ Decisão do usuário: nas páginas que têm um script que aplica todas as opçõ
 
 Candidatos identificados no catálogo (`resources/scripts.json`):
 
-| Página | Script | Nome no catálogo | Observação |
-| --- | --- | --- | --- |
-| Input Lag | `inputlag-4` | Usar TODAS OPÇÕES Input Lag | Caso explícito — o próprio nome pede a troca |
-| Otimização do sistema | `tweaks-3` | Otimizar Hardware | "Todas as otimizações de hardware em um único script" |
-| Otimização do sistema | `tweaks-4` | Modo Gamer | Aplica várias otimizações de uma vez ("todas as otimizações ligadas") |
+| Página                | Script       | Nome no catálogo            | Observação                                                            |
+| --------------------- | ------------ | --------------------------- | --------------------------------------------------------------------- |
+| Input Lag             | `inputlag-4` | Usar TODAS OPÇÕES Input Lag | Caso explícito — o próprio nome pede a troca                          |
+| Otimização do sistema | `tweaks-3`   | Otimizar Hardware           | "Todas as otimizações de hardware em um único script"                 |
+| Otimização do sistema | `tweaks-4`   | Modo Gamer                  | Aplica várias otimizações de uma vez ("todas as otimizações ligadas") |
 
 **Decisão do usuário:** saem da listagem apenas `inputlag-4`, `tweaks-3` e `tweaks-4`. `internet-11` ("Reverter Internet") e `apps-1` ("Privacidade Máxima") **continuam como cards normais** — o primeiro reverte, não aplica, e o segundo não se chama "todas as opções".
 

@@ -35,10 +35,12 @@
 ### Task 1: Hook de seleção por página
 
 **Files:**
+
 - Create: `src/hooks/use-script-selection.ts`
 - Test: `src/hooks/use-script-selection.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `ScriptEntry` de `../../electron/shared/ipc-types`.
 - Produces: `useScriptSelection(availableScripts: ScriptEntry[]): { selectedIds: Set<string>; selectedScripts: ScriptEntry[]; availableIds: string[]; allSelected: boolean; toggle(id: string): void; selectAll(): void; clear(): void; isSelected(id: string): boolean }`.
 
@@ -47,7 +49,8 @@
 `src/hooks/use-script-selection.test.tsx` (`// @vitest-environment jsdom`, `renderHook`/`act`):
 
 ```tsx
-const A = script('a'); const B = script('b');
+const A = script('a');
+const B = script('b');
 const { result, rerender } = renderHook(
   ({ scripts }: { scripts: ScriptEntry[] }) => useScriptSelection(scripts),
   { initialProps: { scripts: [A, B] } }
@@ -98,10 +101,12 @@ git commit -m "feat: adiciona selecao multipla de tweaks por pagina"
 ### Task 2: Executor sequencial no contexto de execução
 
 **Files:**
+
 - Modify: `src/contexts/ScriptExecutionContext.tsx`
 - Test: `src/contexts/ScriptExecutionContext.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `ScriptEntry`, `ScriptEnded` (`electron/shared/ipc-types`), `window.electronAPI.executeScript/cancelExecution/onScriptEnded`.
 - Produces: `ScriptExecutionContextValue` existente + `batch: { ids: string[]; index: number } | null` (índice 1-based) e `executeBatch(scripts: ScriptEntry[]): Promise<{ failedIds: string[] }>`. `execute(id): Promise<void>` mantém assinatura e callers atuais.
 
@@ -118,7 +123,10 @@ await act(async () => {
 expect(api.executeScript).toHaveBeenCalledTimes(1);
 expect(result.current.batch).toEqual({ ids: ['a', 'b'], index: 1 });
 
-await act(async () => { emit({ id: 'a', code: 0 }); await pending; });
+await act(async () => {
+  emit({ id: 'a', code: 0 });
+  await pending;
+});
 expect(api.executeScript).toHaveBeenNthCalledWith(2, 'b');
 expect(result.current.batch).toBeNull();
 expect((await pending).failedIds).toEqual([]);
@@ -152,10 +160,12 @@ git commit -m "feat: executa lote de tweaks em sequencia esperando script-ended"
 ### Task 3: API de lote no `useScriptPage`
 
 **Files:**
+
 - Modify: `src/hooks/use-script-page.ts`
 - Test: `src/hooks/use-script-page.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `executeBatch`, `batch` do `ScriptExecutionContext` (Task 2).
 - Produces: API individual existente **inalterada** + `batch`, `failedScripts: ScriptEntry[]`, `handleApply(scripts: ScriptEntry[]): void`, `confirmBulkScripts: ScriptEntry[]`, `setConfirmBulkScripts(scripts: ScriptEntry[]): void`, `handleConfirmBulk(): void`, `clearFailures(): void`.
 
@@ -205,10 +215,12 @@ git commit -m "feat: liga confirmacao e progresso do lote ao hook de pagina"
 ### Task 4: Barra de seleção
 
 **Files:**
+
 - Create: `src/components/ScriptSelectionToolbar.tsx`
 - Test: `src/components/ScriptSelectionToolbar.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `ScriptEntry` de `../../electron/shared/ipc-types`.
 - Produces: `ScriptSelectionToolbar({ availableIds, selectedIds, onSelectAll, onClear, onApply, applying, progress, failedScripts, onDismissFailures })` com props `string[]`, `Set<string>`, quatro callbacks, `boolean`, `{ index: number; total: number } | null`, `ScriptEntry[]` e callback.
 
@@ -230,7 +242,9 @@ const view = render(
 );
 expect(screen.getByText('0 de 3 selecionados')).not.toBeNull();
 expect(screen.getByRole('button', { name: 'Selecionar todos' })).not.toBeNull();
-expect((screen.getByRole('button', { name: 'Aplicar selecionados' }) as HTMLButtonElement).disabled).toBe(true);
+expect(
+  (screen.getByRole('button', { name: 'Aplicar selecionados' }) as HTMLButtonElement).disabled
+).toBe(true);
 fireEvent.click(screen.getByRole('button', { name: 'Selecionar todos' }));
 expect(onSelectAll).toHaveBeenCalledTimes(1);
 ```
@@ -261,10 +275,12 @@ git commit -m "feat: adiciona barra de selecionar todos e aplicar tweaks"
 ### Task 5: Confirmação do lote
 
 **Files:**
+
 - Create: `src/components/ConfirmBulkScriptDialog.tsx`
 - Test: `src/components/ConfirmBulkScriptDialog.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `Button`, `Dialog`, `DialogContent`, `DialogTitle` de `./ui`; `ScriptEntry`.
 - Produces: `ConfirmBulkScriptDialog({ open, onOpenChange, scripts, onConfirm })`.
 
@@ -313,10 +329,12 @@ git commit -m "feat: adiciona confirmacao da aplicacao em lote"
 ### Task 6: Checkbox nas linhas do card virtualizado
 
 **Files:**
+
 - Modify: `src/components/VirtualizedSectionCard.tsx`
 - Test: `src/components/VirtualizedSectionCard.test.tsx`
 
 **Interfaces:**
+
 - Consumes: props novas `selectedIds: Set<string>`, `onToggle(id: string): void`, `disabled: boolean`.
 - Produces: mesmo componente, sem `onConfirmExecute` e sem botão **Executar**; `onCancel` e `data-index` permanecem. Componente usado apenas pelas 6 páginas do escopo.
 
@@ -356,10 +374,12 @@ Expected: ambas passam. A suíte completa ainda vai falhar porque os testes das 
 ### Task 7: Página Input Lag
 
 **Files:**
+
 - Modify: `src/pages/InputLagPage.tsx`
 - Test: `src/pages/InputLagPage.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `useScriptSelection` (Task 1), `ScriptSelectionToolbar` (Task 4), `ConfirmBulkScriptDialog` (Task 5), `batch`/`handleApply`/`confirmBulkScripts`/`setConfirmBulkScripts`/`failedScripts`/`clearFailures` do `useScriptPage` (Task 3).
 
 - [ ] **Step 1: Write the failing test**
@@ -401,10 +421,12 @@ Expected: PASS. A suíte completa ainda depende das Tasks 8–9; o commit conjun
 ### Task 8: Otimização do sistema e Internet
 
 **Files:**
+
 - Modify: `src/pages/CpuPage.tsx`, `src/pages/NetworkPage.tsx`
 - Test: `src/pages/CpuPage.test.tsx`, `src/pages/NetworkPage.test.tsx`
 
 **Interfaces:**
+
 - Consumes: mesma API das Tasks 1, 3, 4, 5, 6.
 
 - [ ] **Step 1: Write the failing tests**
@@ -437,15 +459,18 @@ Expected: PASS. A suíte completa ainda depende da Task 9; o commit conjunto est
 ### Task 9: Personalização, Armazenamento, Privacidade e Reparo
 
 **Files:**
+
 - Modify: `src/pages/PersonalizationPage.tsx`, `src/pages/StoragePage.tsx`, `src/pages/PrivacySecurityPage.tsx`, `src/pages/SystemRepairPage.tsx`
 - Test: os quatro `*.test.tsx` correspondentes
 
 **Interfaces:**
+
 - Consumes: mesma API das Tasks 1, 3, 4, 5, 6.
 
 - [ ] **Step 1: Write the failing tests**
 
 Nos quatro testes, troque o mock de `use-script-page` pela API de lote. Para cada página: marque uma checkbox visível, clique em **Aplicar selecionados** e confira `handleApply` com o script correspondente. Casos específicos:
+
 - `PersonalizationPage`: `apps-4` (Equicord, interativo) continua visível e selecionável.
 - `StoragePage`: com `hasSSD() === false`, `util-4` e `builtin-88` não aparecem; marque um tweak, altere o catálogo para remover o id marcado via rerender do mock e confirme que o contador cai e que `handleApply` não recebe o id removido.
 - `PrivacySecurityPage`: `apps-1` e `apps-2` continuam visíveis.
@@ -477,9 +502,11 @@ git commit -m "refactor: selecao multipla de tweaks nas sete paginas"
 ### Task 10: Documentação e gate final
 
 **Files:**
+
 - Modify: `README.md`
 
 **Interfaces:**
+
 - Consumes: comportamento entregue nas Tasks 1–9.
 
 - [ ] **Step 1: Update README copy**
