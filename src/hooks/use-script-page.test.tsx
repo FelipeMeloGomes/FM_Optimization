@@ -17,6 +17,8 @@ const store = vi.hoisted(() => ({
   activeExecution: null as string | null,
   execute: vi.fn(async () => {}),
   cancel: vi.fn(async () => {}),
+  batch: null as { ids: string[]; index: number } | null,
+  executeBatch: vi.fn(async (): Promise<{ failedIds: string[] }> => ({ failedIds: [] })),
   confirmOnExecute: false,
 }));
 
@@ -37,6 +39,8 @@ vi.mock('../contexts/ScriptExecutionContext', () => ({
     activeExecution: store.activeExecution,
     execute: store.execute,
     cancel: store.cancel,
+    batch: store.batch,
+    executeBatch: store.executeBatch,
   }),
 }));
 
@@ -76,6 +80,8 @@ beforeEach(() => {
   store.setSubcategoryFilter.mockClear();
   store.execute.mockClear();
   store.cancel.mockClear();
+  store.batch = null;
+  store.executeBatch.mockClear();
 });
 
 describe('useScriptPage — filtro de categoria', () => {
@@ -218,5 +224,54 @@ describe('useScriptPage — execução', () => {
 
     expect(store.execute).toHaveBeenCalledWith('cpu-16');
     expect(store.cancel).toHaveBeenCalledWith('cpu-16');
+  });
+});
+
+describe('useScriptPage — lote', () => {
+  it('aplica o lote direto e guarda as falhas', async () => {
+    store.executeBatch.mockResolvedValue({ failedIds: ['cpu-16'] });
+    const { result } = renderHook(() => useScriptPage('CPU'));
+
+    await act(async () => {
+      result.current.handleApply([SCRIPTS[2]]);
+    });
+
+    expect(store.executeBatch).toHaveBeenCalledWith([SCRIPTS[2]]);
+    expect(result.current.confirmBulkScripts).toEqual([]);
+    expect(result.current.failedScripts.map((s) => s.id)).toEqual(['cpu-16']);
+
+    act(() => {
+      result.current.clearFailures();
+    });
+    expect(result.current.failedScripts).toEqual([]);
+  });
+
+  it('pede confirmação antes de aplicar o lote quando a opção está ligada', () => {
+    store.confirmOnExecute = true;
+    const { result } = renderHook(() => useScriptPage('CPU'));
+
+    act(() => {
+      result.current.handleApply([SCRIPTS[0]]);
+    });
+    expect(store.executeBatch).not.toHaveBeenCalled();
+    expect(result.current.confirmBulkScripts.map((s) => s.id)).toEqual(['cpu-18']);
+
+    act(() => {
+      result.current.handleConfirmBulk();
+    });
+    expect(store.executeBatch).toHaveBeenCalledWith([SCRIPTS[0]]);
+    expect(result.current.confirmBulkScripts).toEqual([]);
+  });
+
+  it('aplica o lote direto sem confirmar e guarda as falhas', async () => {
+    store.executeBatch.mockResolvedValue({ failedIds: [] });
+    const { result } = renderHook(() => useScriptPage('CPU'));
+
+    await act(async () => {
+      result.current.handleApply([SCRIPTS[0], SCRIPTS[1]]);
+    });
+
+    expect(store.executeBatch).toHaveBeenCalledWith([SCRIPTS[0], SCRIPTS[1]]);
+    expect(result.current.confirmBulkScripts).toEqual([]);
   });
 });

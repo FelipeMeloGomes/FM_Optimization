@@ -6,9 +6,11 @@ import { useSettingsContext } from '../contexts/SettingsContext';
 
 export function useScriptPage(categories: string | string[]) {
   const { state, filteredScripts, setCategoryFilter, setSubcategoryFilter } = useScriptContext();
-  const { activeExecution, execute, cancel } = useScriptExecutionContext();
+  const { activeExecution, execute, cancel, batch, executeBatch } = useScriptExecutionContext();
   const { settings } = useSettingsContext();
   const [confirmScript, setConfirmScript] = useState<ScriptEntry | null>(null);
+  const [confirmBulkScripts, setConfirmBulkScripts] = useState<ScriptEntry[]>([]);
+  const [failedScripts, setFailedScripts] = useState<ScriptEntry[]>([]);
 
   // Keyed on the joined names rather than the array identity: a caller building
   // the list inline would otherwise change the reference every render and re-run
@@ -48,15 +50,49 @@ export function useScriptPage(categories: string | string[]) {
     }
   }, [confirmScript, handleExecute]);
 
+  const handleApply = useCallback(
+    (scripts: ScriptEntry[]) => {
+      if (settings.confirmOnExecute) {
+        setConfirmBulkScripts(scripts);
+        return;
+      }
+      void executeBatch(scripts).then(({ failedIds }) => {
+        setFailedScripts(scripts.filter((s) => failedIds.includes(s.id)));
+      });
+    },
+    [settings.confirmOnExecute, executeBatch]
+  );
+
+  const handleConfirmBulk = useCallback(() => {
+    const scripts = confirmBulkScripts;
+    setConfirmBulkScripts([]);
+    if (scripts.length > 0) {
+      void executeBatch(scripts).then(({ failedIds }) => {
+        setFailedScripts(scripts.filter((s) => failedIds.includes(s.id)));
+      });
+    }
+  }, [confirmBulkScripts, executeBatch]);
+
+  const clearFailures = useCallback(() => {
+    setFailedScripts([]);
+  }, []);
+
   return {
     state,
     categoryScripts,
     activeExecution,
+    batch,
+    failedScripts,
     handleExecute,
     handleCancel,
     handleConfirmExecute,
     confirmScript,
     setConfirmScript,
     handleConfirm,
+    handleApply,
+    confirmBulkScripts,
+    setConfirmBulkScripts,
+    handleConfirmBulk,
+    clearFailures,
   };
 }
