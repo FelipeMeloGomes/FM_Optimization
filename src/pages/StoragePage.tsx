@@ -1,11 +1,13 @@
 import { HardDrive } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ConfirmBulkScriptDialog } from '../components/ConfirmBulkScriptDialog';
 import { AnimatedStorage } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
+import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
 import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useScriptPage } from '../hooks/use-script-page';
+import { useScriptSelection } from '../hooks/use-script-selection';
 import { STORAGE_SECTIONS } from '../lib/storage-sections';
 
 /** Tweaks que só fazem sentido em máquinas com SSD (herdados de Utilitários). */
@@ -17,10 +19,13 @@ export default function StoragePage() {
     categoryScripts,
     activeExecution,
     handleCancel,
-    handleConfirmExecute,
-    confirmScript,
-    setConfirmScript,
-    handleConfirm,
+    handleApply,
+    batch,
+    confirmBulkScripts,
+    setConfirmBulkScripts,
+    handleConfirmBulk,
+    failedScripts,
+    clearFailures,
   } = useScriptPage('Armazenamento');
   const [hasSSD, setHasSSD] = useState<boolean | null>(null);
 
@@ -31,6 +36,8 @@ export default function StoragePage() {
       .catch(() => setHasSSD(false));
   }, []);
 
+  // já vem filtrado por hasSSD(): ids que somem do catálogo saem da seleção
+  // e da contagem por meio do `useScriptSelection`.
   const visibleScripts = useMemo(
     () =>
       hasSSD === true
@@ -38,6 +45,11 @@ export default function StoragePage() {
         : categoryScripts.filter((script) => !SSD_ONLY_IDS.includes(script.id)),
     [categoryScripts, hasSSD]
   );
+
+  const { selectedIds, selectedScripts, toggle, selectAll, clear } =
+    useScriptSelection(visibleScripts);
+
+  const disabled = !!batch;
 
   if (state.status === 'loading') {
     return (
@@ -80,27 +92,47 @@ export default function StoragePage() {
         </div>
       </HeroBanner>
 
-      {/* Storage Sections */}
-      {STORAGE_SECTIONS.map((section) => (
-        <VirtualizedSectionCard
-          key={section.id}
-          section={section}
-          scripts={visibleScripts}
-          activeExecution={activeExecution}
-          onCancel={handleCancel}
-          onConfirmExecute={handleConfirmExecute}
-        />
-      ))}
+      {/* Seleção múltipla */}
+      <ScriptSelectionToolbar
+        availableIds={visibleScripts.map((s) => s.id)}
+        selectedIds={selectedIds}
+        selectedScripts={selectedScripts}
+        onSelectAll={selectAll}
+        onClear={clear}
+        onApply={handleApply}
+        applying={disabled}
+        progress={batch ? { index: batch.index, total: batch.ids.length } : null}
+        failedScripts={failedScripts}
+        onDismissFailures={clearFailures}
+      />
 
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        open={!!confirmScript}
+      {/* Storage Sections */}
+      <div className="space-y-4">
+        {STORAGE_SECTIONS.map((section) => {
+          const scripts = visibleScripts.filter((s) => section.scriptIds.includes(s.id));
+          return (
+            <VirtualizedSectionCard
+              key={section.id}
+              section={section}
+              scripts={scripts}
+              activeExecution={activeExecution}
+              onCancel={handleCancel}
+              selectedIds={selectedIds}
+              onToggle={toggle}
+              disabled={disabled}
+            />
+          );
+        })}
+      </div>
+
+      {/* Confirmação do lote */}
+      <ConfirmBulkScriptDialog
+        open={confirmBulkScripts.length > 0}
         onOpenChange={(open) => {
-          if (!open) setConfirmScript(null);
+          if (!open) setConfirmBulkScripts([]);
         }}
-        script={confirmScript}
-        onConfirm={handleConfirm}
-        isExecuting={!!confirmScript && activeExecution === confirmScript.id}
+        scripts={confirmBulkScripts}
+        onConfirm={handleConfirmBulk}
       />
     </div>
   );

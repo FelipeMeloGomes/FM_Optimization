@@ -1,13 +1,14 @@
-import { Play, Square, Terminal, Zap } from 'lucide-react';
+import { Square, Terminal, Zap } from 'lucide-react';
 import { useMemo } from 'react';
-import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ConfirmBulkScriptDialog } from '../components/ConfirmBulkScriptDialog';
 import { AnimatedInputLag } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
+import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
 import { Badge, Button } from '../components/ui';
-import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
+import { useScriptSelection } from '../hooks/use-script-selection';
 import { resolveCuratedItems } from '../lib/resolve-curated-scripts';
 import { cn } from '../lib/utils';
 
@@ -19,13 +20,6 @@ interface RegistryItem {
 }
 
 const REGISTRY_SCRIPTS: RegistryItem[] = [
-  {
-    id: 'r1',
-    name: 'Aplicar Todas Otimizações',
-    description:
-      'Aplica todas as otimizações de input lag de uma vez: LargeSystemCache, TCPNoDelay, prioridade e mais.',
-    scriptId: 'inputlag-4',
-  },
   {
     id: 'r2',
     name: 'Reduzir Input Lag USB',
@@ -66,12 +60,14 @@ export default function InputLagPage() {
     categoryScripts: inputLagScripts,
     activeExecution,
     handleCancel,
-    handleConfirmExecute,
-    confirmScript,
-    setConfirmScript,
-    handleConfirm,
+    handleApply,
+    batch,
+    confirmBulkScripts,
+    setConfirmBulkScripts,
+    handleConfirmBulk,
+    failedScripts,
+    clearFailures,
   } = useScriptPage('Input Lag');
-  const isScriptApplied = useIsScriptApplied();
 
   // O selo conta os itens curados que a página realmente renderiza, não o
   // balde de subcategoria do catálogo.
@@ -79,6 +75,16 @@ export default function InputLagPage() {
     () => resolveCuratedItems(inputLagScripts, REGISTRY_SCRIPTS),
     [inputLagScripts]
   );
+
+  const selectableScripts = useMemo(
+    () => registryItems.map(({ script }) => script),
+    [registryItems]
+  );
+
+  const { selectedIds, selectedScripts, toggle, isSelected, selectAll, clear } =
+    useScriptSelection(selectableScripts);
+
+  const disabled = !!batch;
 
   if (state.status === 'loading') {
     return (
@@ -134,9 +140,24 @@ export default function InputLagPage() {
           </Badge>
         </div>
 
+        {/* Seleção múltipla */}
+        <ScriptSelectionToolbar
+          availableIds={selectableScripts.map((s) => s.id)}
+          selectedIds={selectedIds}
+          selectedScripts={selectedScripts}
+          onSelectAll={selectAll}
+          onClear={clear}
+          onApply={handleApply}
+          applying={disabled}
+          progress={batch ? { index: batch.index, total: batch.ids.length } : null}
+          failedScripts={failedScripts}
+          onDismissFailures={clearFailures}
+        />
+
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {registryItems.map(({ item, script }) => {
             const isExecuting = activeExecution === script.id;
+            const isSel = isSelected(script.id);
 
             return (
               <div
@@ -144,7 +165,7 @@ export default function InputLagPage() {
                 className={cn(
                   'group relative rounded-xl border bg-card p-4 transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg',
                   script.requiresAdmin ? 'border-warning/20' : 'border-border',
-                  isExecuting && 'ring-2 ring-primary/50'
+                  (isSel || isExecuting) && 'ring-2 ring-primary/50'
                 )}
               >
                 <div className="flex items-start justify-between">
@@ -177,6 +198,14 @@ export default function InputLagPage() {
                 </div>
 
                 <div className="mt-3 flex gap-2">
+                  <input
+                    type="checkbox"
+                    aria-label={`Selecionar ${item.name}`}
+                    checked={isSel}
+                    disabled={disabled || isExecuting}
+                    onChange={() => toggle(script.id)}
+                    className="shrink-0 mt-0.5"
+                  />
                   {isExecuting ? (
                     <Button
                       variant="destructive"
@@ -187,17 +216,7 @@ export default function InputLagPage() {
                       <Square className="size-3.5" />
                       Cancelar
                     </Button>
-                  ) : (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleConfirmExecute(script)}
-                      className="flex-1 gap-2"
-                    >
-                      <Play className="size-3.5" />
-                      {isScriptApplied(script) ? 'Executar novamente' : 'Executar'}
-                    </Button>
-                  )}
+                  ) : null}
                 </div>
               </div>
             );
@@ -205,15 +224,14 @@ export default function InputLagPage() {
         </div>
       </div>
 
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        open={!!confirmScript}
+      {/* Confirmação do lote */}
+      <ConfirmBulkScriptDialog
+        open={confirmBulkScripts.length > 0}
         onOpenChange={(open) => {
-          if (!open) setConfirmScript(null);
+          if (!open) setConfirmBulkScripts([]);
         }}
-        script={confirmScript}
-        onConfirm={handleConfirm}
-        isExecuting={!!confirmScript && activeExecution === confirmScript.id}
+        scripts={confirmBulkScripts}
+        onConfirm={handleConfirmBulk}
       />
     </div>
   );

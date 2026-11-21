@@ -8,6 +8,11 @@ import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
  * e Teclado na seção Sistema, Input Lag mostra apenas os seis ajustes de registro.
  * Os testes travam que nenhum card de teclado/mouse/monitor volta a aparecer
  * aqui, mesmo se um script de dispositivo vazar no `categoryScripts`.
+ *
+ * A página agora usa seleção múltipla: checkbox por card, barra de seleção com
+ * contador e um único botão "Aplicar selecionados" que repassa a `selectedScripts`
+ * do `useScriptSelection` ao `handleApply` do `use-script-page`. O mock do hook
+ * de página expõe a API de lote; o hook de seleção é o real (não mockado).
  */
 
 const store = vi.hoisted(() => ({
@@ -16,7 +21,7 @@ const store = vi.hoisted(() => ({
   activeExecution: null as string | null,
   applied: new Set<string>(),
   handleCancel: vi.fn(),
-  handleConfirmExecute: vi.fn(),
+  handleApply: vi.fn(),
   page: vi.fn(),
 }));
 
@@ -27,12 +32,14 @@ vi.mock('../hooks/use-script-page', () => ({
       state: store.state,
       categoryScripts: store.scripts,
       activeExecution: store.activeExecution,
-      handleExecute: () => {},
       handleCancel: store.handleCancel,
-      handleConfirmExecute: store.handleConfirmExecute,
-      confirmScript: null,
-      setConfirmScript: () => {},
-      handleConfirm: () => {},
+      handleApply: store.handleApply,
+      batch: null,
+      confirmBulkScripts: [],
+      setConfirmBulkScripts: () => {},
+      handleConfirmBulk: () => {},
+      failedScripts: [],
+      clearFailures: () => {},
     };
   },
 }));
@@ -59,7 +66,6 @@ function script(id: string, name: string): ScriptEntry {
 }
 
 const NAMES: Record<string, string> = {
-  'inputlag-4': 'Aplicar Todas Otimizações',
   'inputlag-5': 'Reduzir Input Lag USB',
   'inputlag-6': 'TCPNoDelay',
   'inputlag-7': 'Prioridade de Foreground',
@@ -83,7 +89,7 @@ beforeEach(() => {
   store.activeExecution = null;
   store.applied = new Set();
   store.handleCancel.mockClear();
-  store.handleConfirmExecute.mockClear();
+  store.handleApply.mockClear();
   store.page.mockClear();
 });
 
@@ -122,7 +128,7 @@ describe('InputLagPage — hero e registros', () => {
 
     expect(text).toContain('Reduza o Input Lag do seu PC');
     expect(text).toContain('Otimizações do Registro');
-    expect(count(text, '6 tweaks')).toBe(1);
+    expect(count(text, '5 tweaks')).toBe(1);
     // Os cards de dispositivo agora vivem em /perifericos.
     expect(text).not.toContain('Dispositivos');
     expect(text).not.toContain('O que otimiza:');
@@ -141,7 +147,7 @@ describe('InputLagPage — hero e registros', () => {
 
     expect(text).not.toContain('Dispositivos');
     expect(text).not.toContain('Latência de digitação');
-    expect(count(text, '6 tweaks')).toBe(1);
+    expect(count(text, '5 tweaks')).toBe(1);
     expect(count(text, '1 tweaks')).toBe(0);
   });
 });
@@ -155,44 +161,60 @@ describe('InputLagPage — contagem dos selos', () => {
     await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
     const text = bodyText();
 
-    expect(count(text, '6 tweaks')).toBe(1);
-    expect(text).not.toContain('7 tweaks');
+    expect(count(text, '5 tweaks')).toBe(1);
+    expect(text).not.toContain('6 tweaks');
     expect(text).not.toContain('Sobrando do catálogo');
   });
 
   it('encolhe o selo quando o catálogo não traz todos os ids', async () => {
-    store.scripts = [script('inputlag-4', 'Aplicar Todas Otimizações')];
+    store.scripts = FULL_CATALOG.filter((s) => s.id !== 'inputlag-5');
 
     render(<InputLagPage />);
 
     await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
     const text = bodyText();
 
-    expect(count(text, '1 tweaks')).toBe(1);
-    expect(text).toContain('Aplicar Todas Otimizações');
+    expect(count(text, '4 tweaks')).toBe(1);
     expect(text).not.toContain('Reduzir Input Lag USB');
+    expect(text).toContain('TCPNoDelay');
   });
 });
 
 describe('InputLagPage — registros', () => {
-  it('troca "Executar" por "Executar novamente" no registro já aplicado', async () => {
-    store.applied = new Set(['inputlag-4']);
-
+  it('não mostra "Aplicar Todas Otimizações" nem o card do pacote amplo', async () => {
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Executar novamente'));
-    expect(count(bodyText(), 'Executar novamente')).toBe(1);
+    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
+    expect(bodyText()).not.toContain('Aplicar Todas Otimizações');
+    expect(bodyText()).toContain('5 tweaks');
+  });
+
+  it('seleciona um tweak e aplica só ele pelo botão de lote', async () => {
+    render(<InputLagPage />);
+
+    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
+
+    const check = screen.getByRole('checkbox', { name: 'Selecionar TCPNoDelay' });
+    expect((check as HTMLInputElement).checked).toBe(false);
+    fireEvent.click(check);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
+
+    expect(store.handleApply).toHaveBeenCalledTimes(1);
+    expect(store.handleApply.mock.calls[0][0].map((s: ScriptEntry) => s.id)).toEqual([
+      'inputlag-6',
+    ]);
   });
 
   it('cancela o registro em execução pelo id do script', async () => {
-    store.activeExecution = 'inputlag-4';
+    store.activeExecution = 'inputlag-6';
 
     render(<InputLagPage />);
 
     const cancel = await screen.findByRole('button', { name: /Cancelar/ });
     fireEvent.click(cancel);
 
-    expect(store.handleCancel).toHaveBeenCalledWith('inputlag-4');
+    expect(store.handleCancel).toHaveBeenCalledWith('inputlag-6');
   });
 
   it('não renderiza item de registro cujo script saiu do catálogo', async () => {
@@ -204,6 +226,6 @@ describe('InputLagPage — registros', () => {
     const text = bodyText();
 
     expect(text).not.toContain('Desativar LargeSystemCache');
-    expect(count(text, '5 tweaks')).toBe(1);
+    expect(count(text, '4 tweaks')).toBe(1);
   });
 });

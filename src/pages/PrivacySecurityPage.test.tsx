@@ -1,4 +1,6 @@
-// @vitest-environment node
+// @vitest-environment jsdom
+
+import { fireEvent, render, screen } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
@@ -6,6 +8,9 @@ import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
 /**
  * Regressão da página Privacidade: hero, seção Privacidade, esqueleto e erro.
  * `use-script-page` e `use-is-script-applied` são mockados na fronteira.
+ *
+ * A página agora usa seleção múltipla: `use-script-page` expõe a API de lote
+ * (`handleApply`, `batch`, …) e o hook de seleção é o real (não mockado).
  */
 
 vi.mock('../hooks/use-script-page', () => ({
@@ -15,7 +20,13 @@ vi.mock('../hooks/use-script-page', () => ({
     activeExecution: null,
     handleExecute: () => {},
     handleCancel: () => {},
-    handleConfirmExecute: () => {},
+    handleApply: store.handleApply,
+    batch: null,
+    confirmBulkScripts: [],
+    setConfirmBulkScripts: () => {},
+    handleConfirmBulk: () => {},
+    failedScripts: [],
+    clearFailures: () => {},
     confirmScript: null,
     setConfirmScript: () => {},
     handleConfirm: () => {},
@@ -31,9 +42,11 @@ import PrivacySecurityPage from './PrivacySecurityPage';
 const store = vi.hoisted<{
   page: AsyncState<ScriptEntry[]>;
   scripts: ScriptEntry[];
+  handleApply: ReturnType<typeof vi.fn>;
 }>(() => ({
   page: { status: 'success', data: [] },
   scripts: [],
+  handleApply: vi.fn(),
 }));
 
 function script(id: string, name: string): ScriptEntry {
@@ -59,13 +72,18 @@ function text(html: string): string {
     .trim();
 }
 
-function render(): string {
+function renderStatic(): string {
   return text(renderToStaticMarkup(<PrivacySecurityPage />));
+}
+
+function renderPage() {
+  return render(<PrivacySecurityPage />);
 }
 
 beforeEach(() => {
   store.page = { status: 'success', data: [] };
   store.scripts = [];
+  store.handleApply = vi.fn();
 });
 
 describe('PrivacySecurityPage', () => {
@@ -81,7 +99,7 @@ describe('PrivacySecurityPage', () => {
   it('mostra o erro quando o catálogo falha', () => {
     store.page = { status: 'error', error: 'catálogo indisponível' };
 
-    const html = text(render());
+    const html = text(renderStatic());
 
     expect(html).toContain('Erro ao carregar tweaks');
     expect(html).toContain('catálogo indisponível');
@@ -90,7 +108,7 @@ describe('PrivacySecurityPage', () => {
   it('renderiza o herói e a seção Privacidade', () => {
     store.scripts = [script('apps-1', 'Telemetria')];
 
-    const html = render();
+    const html = renderStatic();
 
     expect(html).toContain('Privacidade do Windows');
     expect(html).toContain('Privacidade');
@@ -101,9 +119,36 @@ describe('PrivacySecurityPage', () => {
   it('lista cada script com nome e descrição', () => {
     store.scripts = [script('apps-1', 'Telemetria')];
 
-    const html = render();
+    const html = renderStatic();
 
     expect(html).toContain('Telemetria');
     expect(html).toContain('Telemetria — desc');
+  });
+
+  it('mantém apps-1 e apps-2 visíveis e selecionáveis', () => {
+    store.scripts = [script('apps-1', 'Telemetria'), script('apps-2', 'Apps sugeridos')];
+
+    renderPage();
+
+    expect(screen.getByText('Telemetria')).toBeDefined();
+    expect(screen.getByText('Apps sugeridos')).toBeDefined();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar Telemetria' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
+
+    expect(store.handleApply).toHaveBeenCalledTimes(1);
+    expect(store.handleApply.mock.calls[0][0].map((s: ScriptEntry) => s.id)).toEqual(['apps-1']);
+  });
+
+  it('aplica apenas o tweak marcado ao clicar em Aplicar selecionados', () => {
+    store.scripts = [script('apps-2', 'Apps sugeridos')];
+
+    renderPage();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar Apps sugeridos' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
+
+    expect(store.handleApply).toHaveBeenCalledTimes(1);
+    expect(store.handleApply.mock.calls[0][0].map((s: ScriptEntry) => s.id)).toEqual(['apps-2']);
   });
 });

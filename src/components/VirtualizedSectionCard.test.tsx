@@ -11,10 +11,10 @@ import type { AppSection, SectionIconName } from '../lib/app-sections';
  * O componente é o substituto virtualizado do `ScriptSectionCard`, então ele
  * precisa manter o mesmo comportamento observável: filtrar o catálogo da
  * categoria por `section.scriptIds`, contar os tweaks pelo filtro, mostrar o
- * aviso da seção e alternar cada linha entre Executar e Cancelar. Se a
- * virtualização escondesse ou duplicasse linhas, o usuário veria scripts
- * errados no card sem nenhum erro de tipo — por isso o teste renderiza um
- * catálogo grande e confere que todas as linhas da seção aparecem.
+ * aviso da seção e manter `data-index` na linha medida. A linha trocou o botão
+ * **Executar** por um checkbox de seleção (`aria-label "Selecionar <nome>"`)
+ * que chama `onToggle(id)`; o botão **Cancelar** permanece só na linha em
+ * execução. Não há mais botão `/Executar/` em nenhum estado.
  */
 
 const store = vi.hoisted(() => ({
@@ -86,23 +86,30 @@ function renderCard({
   section = SECTION,
   scripts = [BLOAT, BUILTIN, OTHER],
   activeExecution = null,
+  selectedIds = new Set<string>(),
+  onToggle = vi.fn(),
+  disabled = false,
 }: {
   section?: AppSection;
   scripts?: ScriptEntry[];
   activeExecution?: string | null;
+  selectedIds?: Set<string>;
+  onToggle?: (id: string) => void;
+  disabled?: boolean;
 } = {}) {
   const onCancel = vi.fn();
-  const onConfirmExecute = vi.fn();
   const view = render(
     <VirtualizedSectionCard
       section={section}
       scripts={scripts}
       activeExecution={activeExecution}
       onCancel={onCancel}
-      onConfirmExecute={onConfirmExecute}
+      selectedIds={selectedIds}
+      onToggle={onToggle}
+      disabled={disabled}
     />
   );
-  return { ...view, onCancel, onConfirmExecute };
+  return { ...view, onCancel, onToggle };
 }
 
 beforeEach(() => {
@@ -148,7 +155,7 @@ describe('VirtualizedSectionCard — filtro por scriptIds', () => {
     renderCard({ section, scripts: many });
 
     expect(screen.getByText('40 tweaks').textContent).toBe('40 tweaks');
-    expect(screen.getAllByRole('button', { name: /Executar/ })).toHaveLength(40);
+    expect(screen.getAllByRole('checkbox', { name: /Selecionar Tweak/ })).toHaveLength(40);
     expect(screen.queryByText('Tweak 39')).not.toBeNull();
     expect(screen.queryByText('Tweak 0')).not.toBeNull();
   });
@@ -193,29 +200,60 @@ describe('VirtualizedSectionCard — aviso da seção', () => {
   });
 });
 
-describe('VirtualizedSectionCard — ações', () => {
-  it('usa "Executar novamente" no script já aplicado', () => {
-    store.applied.add('apps-3');
+describe('VirtualizedSectionCard — seleção por linha', () => {
+  it('começa com o checkbox desmarcado e chama onToggle com o id ao clicar', () => {
+    const { onToggle } = renderCard({ scripts: [BLOAT] });
 
-    renderCard();
+    const check = screen.getByRole('checkbox', {
+      name: 'Selecionar Remover Apps de Terceiros',
+    });
+    expect((check as HTMLInputElement).checked).toBe(false);
 
-    expect(screen.getByRole('button', { name: /Executar novamente/ }).textContent).toContain(
-      'Executar novamente'
-    );
-    expect(screen.getAllByRole('button', { name: /^Executar$/ })).toHaveLength(1);
+    fireEvent.click(check);
+
+    expect(onToggle).toHaveBeenCalledTimes(1);
+    expect(onToggle).toHaveBeenCalledWith('apps-3');
   });
 
-  it('chama onConfirmExecute com o script clicado', () => {
-    const { onConfirmExecute } = renderCard({ scripts: [BLOAT] });
+  it('marca o checkbox quando o id está em selectedIds', () => {
+    const { container } = renderCard({
+      scripts: [BLOAT],
+      selectedIds: new Set(['apps-3']),
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: /Executar/ }));
-
-    expect(onConfirmExecute).toHaveBeenCalledTimes(1);
-    expect(onConfirmExecute).toHaveBeenCalledWith(BLOAT);
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: 'Selecionar Remover Apps de Terceiros',
+        }) as HTMLInputElement
+      ).checked
+    ).toBe(true);
+    expect(container.querySelectorAll('input[type="checkbox"]')).toHaveLength(1);
   });
 
-  it('troca o botão por Cancelar no script em execução', () => {
-    const { onCancel, onConfirmExecute } = renderCard({
+  it('desabilita o checkbox com disabled: true', () => {
+    renderCard({
+      scripts: [BLOAT],
+      disabled: true,
+    });
+
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: 'Selecionar Remover Apps de Terceiros',
+        }) as HTMLInputElement
+      ).disabled
+    ).toBe(true);
+  });
+
+  it('não renderiza nenhum botão Executar', () => {
+    renderCard({ scripts: [BLOAT, BUILTIN] });
+
+    expect(screen.queryAllByRole('button', { name: /Executar/ })).toHaveLength(0);
+  });
+
+  it('mantém o Cancelar apenas na linha em execução e chama onCancel com o id', () => {
+    const { onCancel } = renderCard({
       scripts: [BLOAT, BUILTIN],
       activeExecution: 'apps-3',
     });
@@ -224,10 +262,17 @@ describe('VirtualizedSectionCard — ações', () => {
     fireEvent.click(cancelar);
 
     expect(onCancel).toHaveBeenCalledWith('apps-3');
-    expect(onConfirmExecute).not.toHaveBeenCalled();
-    expect(screen.getAllByRole('button', { name: /^Executar$/ })).toHaveLength(1);
+    expect(screen.queryAllByRole('button', { name: /^Executar$/ })).toHaveLength(0);
   });
 
+  it('não mostra Cancelar quando nenhum script da seção está executando', () => {
+    renderCard({ scripts: [BLOAT, BUILTIN] });
+
+    expect(screen.queryByRole('button', { name: /Cancelar/ })).toBeNull();
+  });
+});
+
+describe('VirtualizedSectionCard — destaque de execução', () => {
   it('destaca o card quando algum script da seção está executando', () => {
     const { container } = renderCard({ activeExecution: 'builtin-14' });
 

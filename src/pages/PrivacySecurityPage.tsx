@@ -1,10 +1,12 @@
 import { ShieldCheck } from 'lucide-react';
-import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ConfirmBulkScriptDialog } from '../components/ConfirmBulkScriptDialog';
 import { AnimatedPrivacySecurity } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
+import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
 import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useScriptPage } from '../hooks/use-script-page';
+import { useScriptSelection } from '../hooks/use-script-selection';
 import { PRIVACY_SECTIONS } from '../lib/privacy-sections';
 
 export default function PrivacySecurityPage() {
@@ -13,11 +15,21 @@ export default function PrivacySecurityPage() {
     categoryScripts: privacyScripts,
     activeExecution,
     handleCancel,
-    handleConfirmExecute,
-    confirmScript,
-    setConfirmScript,
-    handleConfirm,
+    handleApply,
+    batch,
+    confirmBulkScripts,
+    setConfirmBulkScripts,
+    handleConfirmBulk,
+    failedScripts,
+    clearFailures,
   } = useScriptPage('Segurança');
+
+  const visibleScripts = privacyScripts;
+
+  const { selectedIds, selectedScripts, toggle, selectAll, clear } =
+    useScriptSelection(visibleScripts);
+
+  const disabled = !!batch;
 
   if (state.status === 'loading') {
     return (
@@ -25,10 +37,8 @@ export default function PrivacySecurityPage() {
         <div className="h-24 rounded-xl bg-muted animate-pulse" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {Array.from({ length: PRIVACY_SECTIONS.length }).map((_, i) => (
-            <ScriptCardSkeleton
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
-              key={`skeleton-${i}`}
-            />
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
+            <ScriptCardSkeleton key={`skeleton-${i}`} />
           ))}
         </div>
       </div>
@@ -63,27 +73,47 @@ export default function PrivacySecurityPage() {
         </div>
       </HeroBanner>
 
-      {/* Privacy Sections */}
-      {PRIVACY_SECTIONS.map((section) => (
-        <VirtualizedSectionCard
-          key={section.id}
-          section={section}
-          scripts={privacyScripts}
-          activeExecution={activeExecution}
-          onCancel={handleCancel}
-          onConfirmExecute={handleConfirmExecute}
-        />
-      ))}
+      {/* Seleção múltipla */}
+      <ScriptSelectionToolbar
+        availableIds={visibleScripts.map((s) => s.id)}
+        selectedIds={selectedIds}
+        selectedScripts={selectedScripts}
+        onSelectAll={selectAll}
+        onClear={clear}
+        onApply={handleApply}
+        applying={disabled}
+        progress={batch ? { index: batch.index, total: batch.ids.length } : null}
+        failedScripts={failedScripts}
+        onDismissFailures={clearFailures}
+      />
 
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        open={!!confirmScript}
+      {/* Privacy Sections */}
+      <div className="space-y-4">
+        {PRIVACY_SECTIONS.map((section) => {
+          const scripts = visibleScripts.filter((s) => section.scriptIds.includes(s.id));
+          return (
+            <VirtualizedSectionCard
+              key={section.id}
+              section={section}
+              scripts={scripts}
+              activeExecution={activeExecution}
+              onCancel={handleCancel}
+              selectedIds={selectedIds}
+              onToggle={toggle}
+              disabled={disabled}
+            />
+          );
+        })}
+      </div>
+
+      {/* Confirmação do lote */}
+      <ConfirmBulkScriptDialog
+        open={confirmBulkScripts.length > 0}
         onOpenChange={(open) => {
-          if (!open) setConfirmScript(null);
+          if (!open) setConfirmBulkScripts([]);
         }}
-        script={confirmScript}
-        onConfirm={handleConfirm}
-        isExecuting={!!confirmScript && activeExecution === confirmScript.id}
+        scripts={confirmBulkScripts}
+        onConfirm={handleConfirmBulk}
       />
     </div>
   );

@@ -1,3 +1,6 @@
+// @vitest-environment jsdom
+
+import { fireEvent, render, screen } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
@@ -15,6 +18,9 @@ import type {
  * montagem das seções são os reais. É o que liga o aviso de identificador
  * genérico, o "—" dos núcleos estimados e a seleção de script de RAM ao que o
  * usuário vê.
+ *
+ * A página agora usa seleção múltipla: `use-script-page` expõe a API de lote
+ * (`handleApply`, `batch`, …) e o hook de seleção é o real (não mockado).
  */
 
 const store = vi.hoisted(() => ({
@@ -26,6 +32,7 @@ const store = vi.hoisted(() => ({
   isManual: false,
   setOverride: () => {},
   clearOverride: () => {},
+  handleApply: vi.fn(),
 }));
 
 vi.mock('../contexts/SystemContext', () => ({
@@ -51,7 +58,13 @@ vi.mock('../hooks/use-script-page', () => ({
     activeExecution: null,
     handleExecute: () => {},
     handleCancel: () => {},
-    handleConfirmExecute: () => {},
+    handleApply: store.handleApply,
+    batch: null,
+    confirmBulkScripts: [],
+    setConfirmBulkScripts: () => {},
+    handleConfirmBulk: () => {},
+    failedScripts: [],
+    clearFailures: () => {},
     confirmScript: null,
     setConfirmScript: () => {},
     handleConfirm: () => {},
@@ -155,8 +168,12 @@ function cell(html: string, label: string): string {
   return match[1];
 }
 
-function render(): string {
+function renderStatic(): string {
   return renderToStaticMarkup(<CpuPage />);
+}
+
+function renderPage() {
+  return render(<CpuPage />);
 }
 
 beforeEach(() => {
@@ -166,13 +183,14 @@ beforeEach(() => {
   store.scripts = [];
   store.vendor = 'amd';
   store.isManual = false;
+  store.handleApply.mockClear();
 });
 
 describe('CpuPage — estados', () => {
   it('mostra o esqueleto enquanto a CPU ou os scripts carregam', () => {
     store.cpu = { status: 'loading' };
 
-    const html = render();
+    const html = renderStatic();
 
     expect(html).toContain('animate-pulse');
     expect(text(html)).not.toContain('Otimização do Sistema');
@@ -181,7 +199,7 @@ describe('CpuPage — estados', () => {
   it('mostra o erro quando o catálogo falha', () => {
     store.page = { status: 'error', error: 'falha ao ler scripts.json' };
 
-    const html = text(render());
+    const html = text(renderStatic());
 
     expect(html).toContain('Erro ao carregar tweaks');
     expect(html).toContain('falha ao ler scripts.json');
@@ -195,32 +213,32 @@ describe('CpuPage — identificador genérico', () => {
       data: { ...CPU, model: 'AMD (Família 25 · Modelo 80)', nameIsGeneric: true },
     };
 
-    const html = text(render());
+    const html = text(renderStatic());
 
     expect(html).toContain('O BIOS informou apenas o identificador genérico.');
     expect(html).toContain('AMD (Família 25 · Modelo 80)');
   });
 
   it('não avisa quando o nome comercial foi resolvido', () => {
-    expect(text(render())).not.toContain('identificador genérico');
+    expect(text(renderStatic())).not.toContain('identificador genérico');
   });
 });
 
 describe('CpuPage — núcleos estimados', () => {
   it('mostra a contagem quando o WMI informou os núcleos físicos', () => {
-    expect(cell(render(), 'Núcleos')).toBe('6');
+    expect(cell(renderStatic(), 'Núcleos')).toBe('6');
   });
 
   it('mostra "—" em vez de um número inventado', () => {
     store.cpu = { status: 'success', data: { ...CPU, coresEstimated: true } };
 
-    expect(cell(render(), 'Núcleos')).toBe('—');
+    expect(cell(renderStatic(), 'Núcleos')).toBe('—');
   });
 
   it('mostra "—" para todos os campos quando a leitura da CPU falha', () => {
     store.cpu = { status: 'error', error: 'WMI indisponível' };
 
-    const html = render();
+    const html = renderStatic();
 
     expect(cell(html, 'Processador')).toBe('—');
     expect(cell(html, 'Núcleos')).toBe('—');
@@ -232,7 +250,7 @@ describe('CpuPage — núcleos estimados', () => {
 
 describe('CpuPage — fabricante', () => {
   it('não mostra o aviso quando o fabricante foi detectado', () => {
-    const html = text(render());
+    const html = text(renderStatic());
 
     expect(html).toContain('Otimização do Sistema');
     expect(html).not.toContain('Processador não identificado');
@@ -241,7 +259,7 @@ describe('CpuPage — fabricante', () => {
   it('oferece a seleção manual quando o fabricante é desconhecido', () => {
     store.vendor = 'unknown';
 
-    const html = text(render());
+    const html = text(renderStatic());
 
     expect(html).toContain('Processador não identificado');
     expect(html).toContain('Nenhum fabricante Intel ou AMD reconhecido em "AMD Ryzen 5 5500".');
@@ -251,7 +269,7 @@ describe('CpuPage — fabricante', () => {
     store.vendor = 'amd';
     store.isManual = true;
 
-    const html = text(render());
+    const html = text(renderStatic());
 
     expect(html).toContain(
       'Seleção manual (AMD) — a detecção automática não reconheceu este processador.'
@@ -269,7 +287,7 @@ describe('CpuPage — escada de RAM', () => {
   it('lista apenas o degrau que cobre a RAM instalada', () => {
     store.scripts = [ram4, ram16, ram32, common];
 
-    const html = text(render());
+    const html = text(renderStatic());
 
     expect(html).toContain('Limite do svchost (16 GB)');
     expect(html).toContain('Ajuste comum de CPU');
@@ -281,7 +299,7 @@ describe('CpuPage — escada de RAM', () => {
     store.memory = { status: 'loading' };
     store.scripts = [ram4, ram16, ram32, common];
 
-    const html = text(render());
+    const html = text(renderStatic());
 
     expect(html).not.toContain('Limite do svchost');
     expect(html).toContain('Ajuste comum de CPU');
@@ -290,7 +308,7 @@ describe('CpuPage — escada de RAM', () => {
 
 describe('CpuPage — hero banner', () => {
   it('segue o padrão dos demais heroes: selo de categoria, título e descrição', () => {
-    const hero = text(render()).split('Processador')[0];
+    const hero = text(renderStatic()).split('Processador')[0];
 
     expect(hero).toContain('Desempenho');
     expect(hero).toContain('Otimização do Sistema');
@@ -304,7 +322,7 @@ describe('CpuPage — hero banner', () => {
     (vendor) => {
       store.vendor = vendor;
 
-      const html = render();
+      const html = renderStatic();
       const hero = text(html).split('Processador')[0];
 
       expect(hero).toContain('Otimização do Sistema');
@@ -319,7 +337,7 @@ describe('CpuPage — hero banner', () => {
     (vendor) => {
       store.vendor = vendor;
 
-      const shell = heroShell(render());
+      const shell = heroShell(renderStatic());
 
       expect(shell).toContain('border-primary/20');
       expect(shell).toContain('from-primary/10');
@@ -333,7 +351,7 @@ describe('CpuPage — hero banner', () => {
   it('não exibe a contagem total de tweaks no hero', () => {
     store.scripts = [script('cpu-16', 'Ajuste comum de CPU')];
 
-    const hero = text(render()).split('Processador')[0];
+    const hero = text(renderStatic()).split('Processador')[0];
 
     expect(hero).not.toMatch(/\d+\s+tweaks/);
   });
@@ -343,7 +361,7 @@ describe('CpuPage — hero banner', () => {
     (vendor) => {
       store.vendor = vendor;
 
-      const iconClass = heroIconClass(render());
+      const iconClass = heroIconClass(renderStatic());
 
       expect(iconClass).toContain('text-primary');
       expect(iconClass).not.toContain('text-destructive');
@@ -358,10 +376,10 @@ describe('CpuPage — seções por categoria', () => {
     store.scripts = [
       script('cpu-16', 'Ajuste de processador', '', 'CPU'),
       script('builtin-4', 'Ajuste de GPU AMD', '', 'GPU'),
-      script('tweaks-3', 'Ajuste de Windows e energia', '', 'Windows'),
+      script('builtin-50', 'Ajuste de Windows e energia', '', 'Windows'),
     ];
 
-    const html = render();
+    const html = renderStatic();
     const processador = sectionText(html, PROCESSADOR, GPU_AMD);
     const gpu = sectionText(html, GPU_AMD, WINDOWS);
     const windows = sectionText(html, WINDOWS);
@@ -377,5 +395,34 @@ describe('CpuPage — seções por categoria', () => {
     expect(windows).toContain('Ajuste de Windows e energia');
     expect(windows).not.toContain('Ajuste de processador');
     expect(windows).not.toContain('Ajuste de GPU AMD');
+  });
+
+  it('não mostra os scripts de pacote amplo tweaks-3 e tweaks-4 como cards', () => {
+    store.scripts = [
+      script('tweaks-3', 'Otimizar Hardware', '', 'Windows'),
+      script('tweaks-4', 'Modo Gamer', '', 'Windows'),
+      script('cpu-16', 'Ajuste comum de CPU'),
+    ];
+
+    const html = text(renderStatic());
+
+    expect(html).not.toContain('Otimizar Hardware');
+    expect(html).not.toContain('Modo Gamer');
+    expect(html).toContain('Ajuste comum de CPU');
+  });
+});
+
+describe('CpuPage — seleção múltipla', () => {
+  it('aplica apenas o tweak marcado ao clicar em Aplicar selecionados', () => {
+    const visivel = script('cpu-16', 'Ajuste comum de CPU');
+    store.scripts = [visivel];
+
+    renderPage();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar Ajuste comum de CPU' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
+
+    expect(store.handleApply).toHaveBeenCalledTimes(1);
+    expect(store.handleApply.mock.calls[0][0].map((s: ScriptEntry) => s.id)).toEqual(['cpu-16']);
   });
 });

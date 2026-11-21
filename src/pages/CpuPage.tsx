@@ -1,14 +1,16 @@
 import { AlertTriangle, Cpu, Gauge } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
-import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ConfirmBulkScriptDialog } from '../components/ConfirmBulkScriptDialog';
 import { AnimatedCpu } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
+import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
 import { Button, Card, CardContent } from '../components/ui';
 import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useCpuContext, useMemoryContext } from '../contexts/SystemContext';
 import { useCpuVendor } from '../hooks/use-cpu-vendor';
 import { useScriptPage } from '../hooks/use-script-page';
+import { useScriptSelection } from '../hooks/use-script-selection';
 import { CPU_CATEGORY } from '../lib/cpu-vendor';
 import { PERFORMANCE_SECTIONS } from '../lib/performance-sections';
 import { getRamScriptId } from '../lib/ram-script';
@@ -27,6 +29,10 @@ const TONE_BORDER = {
   blue: 'border-info/20',
   amber: 'border-warning/20',
 } as const;
+
+// Scripts de pacote amplo: continuam no catálogo, mas não viram card nesta
+// página — o botão "Selecionar todos" da barra de seleção cumpre esse papel.
+const BULK_SCRIPT_IDS = ['tweaks-3', 'tweaks-4'];
 
 export default function CpuPage() {
   const { state: cpuState, refresh: refreshCpu, hasFetched: cpuFetched } = useCpuContext();
@@ -63,25 +69,35 @@ export default function CpuPage() {
     categoryScripts,
     activeExecution,
     handleCancel,
-    handleConfirmExecute,
-    confirmScript,
-    setConfirmScript,
-    handleConfirm,
+    handleApply,
+    batch,
+    confirmBulkScripts,
+    setConfirmBulkScripts,
+    handleConfirmBulk,
+    failedScripts,
+    clearFailures,
   } = useScriptPage(categories);
+
+  // Remove os pacotes amplos da lista selecionável: eles não aparecem como
+  // card, mas a barra "Selecionar todos" cobre os tweaks individuais.
+  const scriptsSemPacotes = useMemo(
+    () => categoryScripts.filter((s) => !BULK_SCRIPT_IDS.includes(s.id)),
+    [categoryScripts]
+  );
 
   // `categoryScripts` holds every category routed to this page (CPU, GPU and
   // Windows). The processor section must take only the CPU ones — otherwise
   // GPU/Windows scripts show up here as well as in their own cards. On top of
   // that, the RAM ladder lists only the tier matching the installed memory.
   const cpuScripts = useMemo(() => {
-    return categoryScripts.filter((s) => {
+    return scriptsSemPacotes.filter((s) => {
       if (s.category !== CPU_CATEGORY) return false;
       if (s.subcategory === 'RAM') {
         return s.id === recommendedRamScriptId;
       }
       return true;
     });
-  }, [categoryScripts, recommendedRamScriptId]);
+  }, [scriptsSemPacotes, recommendedRamScriptId]);
 
   // Each section is fed by a catalog category, so a script can never be filed
   // under a section about different hardware (an AMD GPU tweak can't show up as
@@ -92,14 +108,36 @@ export default function CpuPage() {
         const scripts =
           section.category === CPU_CATEGORY
             ? cpuScripts
-            : categoryScripts.filter((s) => s.category === section.category);
+            : scriptsSemPacotes.filter((s) => s.category === section.category);
         return {
           section: { ...section, scriptIds: scripts.map((s) => s.id) },
           scripts,
         };
       }),
-    [categoryScripts, cpuScripts]
+    [scriptsSemPacotes, cpuScripts]
   );
+
+  // União dos scripts efetivamente visíveis nas seções com conteúdo: a seleção
+  // abrange exatamente o que o usuário vê (respeitando a escada de RAM).
+  const visibleScripts = useMemo(() => {
+    const ids = new Set<string>();
+    const out: typeof cpuScripts = [];
+    for (const { scripts } of sections) {
+      if (scripts.length === 0) continue;
+      for (const s of scripts) {
+        if (!ids.has(s.id)) {
+          ids.add(s.id);
+          out.push(s);
+        }
+      }
+    }
+    return out;
+  }, [sections]);
+
+  const { selectedIds, selectedScripts, toggle, selectAll, clear } =
+    useScriptSelection(visibleScripts);
+
+  const disabled = !!batch;
 
   // Gate on both: until the CPU read settles the vendor is `unknown`, and
   // rendering then would flash the combined AMD+Intel list at the user.
@@ -265,32 +303,47 @@ export default function CpuPage() {
             <p className="text-xs text-muted-foreground">Tente ajustar sua busca ou filtro</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {sections
-              .filter(({ scripts }) => scripts.length > 0)
-              .map(({ section, scripts }) => (
-                <VirtualizedSectionCard
-                  key={section.id}
-                  section={section}
-                  scripts={scripts}
-                  activeExecution={activeExecution}
-                  onCancel={handleCancel}
-                  onConfirmExecute={handleConfirmExecute}
-                />
-              ))}
-          </div>
+          <>
+            <ScriptSelectionToolbar
+              availableIds={visibleScripts.map((s) => s.id)}
+              selectedIds={selectedIds}
+              selectedScripts={selectedScripts}
+              onSelectAll={selectAll}
+              onClear={clear}
+              onApply={handleApply}
+              applying={disabled}
+              progress={batch ? { index: batch.index, total: batch.ids.length } : null}
+              failedScripts={failedScripts}
+              onDismissFailures={clearFailures}
+            />
+            <div className="space-y-4">
+              {sections
+                .filter(({ scripts }) => scripts.length > 0)
+                .map(({ section, scripts }) => (
+                  <VirtualizedSectionCard
+                    key={section.id}
+                    section={section}
+                    scripts={scripts}
+                    activeExecution={activeExecution}
+                    onCancel={handleCancel}
+                    selectedIds={selectedIds}
+                    onToggle={toggle}
+                    disabled={disabled}
+                  />
+                ))}
+            </div>
+          </>
         )}
       </div>
 
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        open={!!confirmScript}
+      {/* Confirmação do lote */}
+      <ConfirmBulkScriptDialog
+        open={confirmBulkScripts.length > 0}
         onOpenChange={(open) => {
-          if (!open) setConfirmScript(null);
+          if (!open) setConfirmBulkScripts([]);
         }}
-        script={confirmScript}
-        onConfirm={handleConfirm}
-        isExecuting={!!confirmScript && activeExecution === confirmScript.id}
+        scripts={confirmBulkScripts}
+        onConfirm={handleConfirmBulk}
       />
     </div>
   );

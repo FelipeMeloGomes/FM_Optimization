@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
 
@@ -10,22 +10,23 @@ import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
  * conteúdo de configuração de DNS vive em `DnsPage`. `useScriptPage`,
  * `use-is-script-applied` e `useDnsContext` são mockados na fronteira para
  * provar que a página não consome mais o contexto de DNS.
+ *
+ * A página agora usa seleção múltipla: `use-script-page` expõe a API de lote
+ * (`handleApply`, `batch`, …) e o hook de seleção é o real (não mockado).
  */
 
 const store = vi.hoisted<{
   page: AsyncState<ScriptEntry[]>;
   scripts: ScriptEntry[];
   activeExecution: string | null;
-  execute: ReturnType<typeof vi.fn>;
   cancel: ReturnType<typeof vi.fn>;
-  confirmExecute: ReturnType<typeof vi.fn>;
+  handleApply: ReturnType<typeof vi.fn>;
 }>(() => ({
   page: { status: 'success', data: [] },
   scripts: [],
   activeExecution: null,
-  execute: vi.fn(async () => {}),
   cancel: vi.fn(async () => {}),
-  confirmExecute: vi.fn(),
+  handleApply: vi.fn(),
 }));
 
 vi.mock('../hooks/use-script-page', () => ({
@@ -33,9 +34,15 @@ vi.mock('../hooks/use-script-page', () => ({
     state: store.page,
     categoryScripts: store.scripts,
     activeExecution: store.activeExecution,
-    handleExecute: store.execute,
+    handleExecute: () => {},
     handleCancel: store.cancel,
-    handleConfirmExecute: store.confirmExecute,
+    handleApply: store.handleApply,
+    batch: null,
+    confirmBulkScripts: [],
+    setConfirmBulkScripts: () => {},
+    handleConfirmBulk: () => {},
+    failedScripts: [],
+    clearFailures: () => {},
     confirmScript: null,
     setConfirmScript: () => {},
     handleConfirm: () => {},
@@ -78,9 +85,8 @@ beforeEach(() => {
   store.page = { status: 'success', data: [] };
   store.scripts = [];
   store.activeExecution = null;
-  store.execute = vi.fn(async () => {});
   store.cancel = vi.fn(async () => {});
-  store.confirmExecute = vi.fn();
+  store.handleApply = vi.fn();
 });
 
 afterEach(() => vi.restoreAllMocks());
@@ -128,14 +134,30 @@ describe('NetworkPage', () => {
     expect(screen.queryByText('17 tweaks')).toBeNull();
   });
 
-  it('executa o script da seção chamando handleConfirmExecute com o script', () => {
+  it('seleciona um tweak e aplica só ele pelo botão de lote', () => {
     const internet = script('internet-1', 'Ajustar TCP/IP');
     store.scripts = [internet];
 
     renderPage();
-    act(() => fireEvent.click(screen.getByRole('button', { name: /Executar/ })));
 
-    expect(store.confirmExecute).toHaveBeenCalledWith(internet);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar Ajustar TCP/IP' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
+
+    expect(store.handleApply).toHaveBeenCalledTimes(1);
+    expect(store.handleApply.mock.calls[0][0].map((s: ScriptEntry) => s.id)).toEqual([
+      'internet-1',
+    ]);
+  });
+
+  it('mantém "Reverter Internet" (internet-11) visível e selecionável', () => {
+    const reverter = script('internet-11', 'Reverter Internet');
+    store.scripts = [reverter];
+
+    renderPage();
+
+    expect(screen.getByText('Reverter Internet')).toBeDefined();
+    expect(screen.getByText('Restauração')).toBeDefined();
+    expect(screen.getByRole('checkbox', { name: 'Selecionar Reverter Internet' })).toBeDefined();
   });
 
   it('mostra o esqueleto enquanto carrega', () => {

@@ -1,16 +1,20 @@
 import { Wifi } from 'lucide-react';
-import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useMemo } from 'react';
+import { ConfirmBulkScriptDialog } from '../components/ConfirmBulkScriptDialog';
 import { AnimatedNetwork } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
+import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
 import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
 import { useScriptPage } from '../hooks/use-script-page';
+import { useScriptSelection } from '../hooks/use-script-selection';
 import { NETWORK_SECTIONS } from '../lib/network-sections';
 
 /**
  * A configuração visual de DNS saiu daqui para `DnsPage` (/dns). Esta página
  * mantém só os scripts de rede, apresentados no mesmo padrão das demais:
- * seções em `VirtualizedSectionCard` + diálogo de confirmação do hook.
+ * seções em `VirtualizedSectionCard` + seleção múltipla com barra de seleção
+ * e confirmação de lote.
  */
 export default function NetworkPage() {
   const {
@@ -18,11 +22,37 @@ export default function NetworkPage() {
     categoryScripts,
     activeExecution,
     handleCancel,
-    handleConfirmExecute,
-    confirmScript,
-    setConfirmScript,
-    handleConfirm,
+    handleApply,
+    batch,
+    confirmBulkScripts,
+    setConfirmBulkScripts,
+    handleConfirmBulk,
+    failedScripts,
+    clearFailures,
   } = useScriptPage(['Internet', 'DNS Manager']);
+
+  // Ids que realmente têm card nesta página: a união dos `scriptIds` das
+  // seções. Scripts do catálogo que não caem em nenhuma seção não são
+  // selecionáveis aqui.
+  const networkScriptIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const section of NETWORK_SECTIONS) {
+      for (const id of section.scriptIds) {
+        ids.add(id);
+      }
+    }
+    return ids;
+  }, []);
+
+  const visibleScripts = useMemo(
+    () => categoryScripts.filter((s) => networkScriptIds.has(s.id)),
+    [categoryScripts, networkScriptIds]
+  );
+
+  const { selectedIds, selectedScripts, toggle, selectAll, clear } =
+    useScriptSelection(visibleScripts);
+
+  const disabled = !!batch;
 
   if (state.status === 'loading') {
     return (
@@ -66,27 +96,47 @@ export default function NetworkPage() {
         </div>
       </HeroBanner>
 
-      {/* Network Sections */}
-      {NETWORK_SECTIONS.map((section) => (
-        <VirtualizedSectionCard
-          key={section.id}
-          section={section}
-          scripts={categoryScripts}
-          activeExecution={activeExecution}
-          onCancel={handleCancel}
-          onConfirmExecute={handleConfirmExecute}
-        />
-      ))}
+      {/* Seleção múltipla */}
+      <ScriptSelectionToolbar
+        availableIds={visibleScripts.map((s) => s.id)}
+        selectedIds={selectedIds}
+        selectedScripts={selectedScripts}
+        onSelectAll={selectAll}
+        onClear={clear}
+        onApply={handleApply}
+        applying={disabled}
+        progress={batch ? { index: batch.index, total: batch.ids.length } : null}
+        failedScripts={failedScripts}
+        onDismissFailures={clearFailures}
+      />
 
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        open={!!confirmScript}
+      {/* Network Sections */}
+      <div className="space-y-4">
+        {NETWORK_SECTIONS.map((section) => {
+          const scripts = visibleScripts.filter((s) => section.scriptIds.includes(s.id));
+          return (
+            <VirtualizedSectionCard
+              key={section.id}
+              section={section}
+              scripts={scripts}
+              activeExecution={activeExecution}
+              onCancel={handleCancel}
+              selectedIds={selectedIds}
+              onToggle={toggle}
+              disabled={disabled}
+            />
+          );
+        })}
+      </div>
+
+      {/* Confirmação do lote */}
+      <ConfirmBulkScriptDialog
+        open={confirmBulkScripts.length > 0}
         onOpenChange={(open) => {
-          if (!open) setConfirmScript(null);
+          if (!open) setConfirmBulkScripts([]);
         }}
-        script={confirmScript}
-        onConfirm={handleConfirm}
-        isExecuting={!!confirmScript && activeExecution === confirmScript.id}
+        scripts={confirmBulkScripts}
+        onConfirm={handleConfirmBulk}
       />
     </div>
   );

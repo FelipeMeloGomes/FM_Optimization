@@ -6,7 +6,6 @@
   Music,
   PackageX,
   Palette,
-  Play,
   Shield,
   SlidersHorizontal,
   Square,
@@ -14,7 +13,6 @@
 } from 'lucide-react';
 import { type ElementType, useMemo, useRef } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useVirtualRows } from '../hooks/use-virtual-rows';
 import type { AppSection, SectionIconName } from '../lib/app-sections';
 import { cn } from '../lib/utils';
@@ -39,9 +37,10 @@ interface ScriptRowProps {
   script: ScriptEntry;
   index: number;
   isScriptExecuting: boolean;
-  isScriptApplied: boolean;
+  isSelected: boolean;
   onCancel: (id: string) => void;
-  onConfirmExecute: (script: ScriptEntry) => void;
+  onToggle: (id: string) => void;
+  disabled: boolean;
   rowRef?: React.Ref<HTMLDivElement>;
 }
 
@@ -49,9 +48,10 @@ function ScriptRow({
   script,
   index,
   isScriptExecuting,
-  isScriptApplied,
+  isSelected,
   onCancel,
-  onConfirmExecute,
+  onToggle,
+  disabled,
   rowRef,
 }: ScriptRowProps) {
   return (
@@ -64,6 +64,14 @@ function ScriptRow({
         isScriptExecuting && 'ring-2 ring-primary/50'
       )}
     >
+      <input
+        type="checkbox"
+        aria-label={`Selecionar ${script.name}`}
+        checked={isSelected}
+        disabled={disabled || isScriptExecuting}
+        onChange={() => onToggle(script.id)}
+        className="shrink-0"
+      />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p title={script.name} className="truncate text-sm font-medium">
@@ -75,24 +83,17 @@ function ScriptRow({
           {script.description}
         </p>
       </div>
-      <Button
-        variant={isScriptExecuting ? 'destructive' : 'secondary'}
-        size="sm"
-        onClick={() => (isScriptExecuting ? onCancel(script.id) : onConfirmExecute(script))}
-        className="gap-1.5 shrink-0"
-      >
-        {isScriptExecuting ? (
-          <>
-            <Square className="size-3" />
-            Cancelar
-          </>
-        ) : (
-          <>
-            <Play className="size-3" />
-            {isScriptApplied ? 'Executar novamente' : 'Executar'}
-          </>
-        )}
-      </Button>
+      {isScriptExecuting ? (
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => onCancel(script.id)}
+          className="gap-1.5 shrink-0"
+        >
+          <Square className="size-3" />
+          Cancelar
+        </Button>
+      ) : null}
     </div>
   );
 }
@@ -102,7 +103,9 @@ interface VirtualizedSectionCardProps {
   scripts: ScriptEntry[];
   activeExecution: string | null;
   onCancel: (id: string) => void;
-  onConfirmExecute: (script: ScriptEntry) => void;
+  selectedIds: Set<string>;
+  onToggle: (id: string) => void;
+  disabled: boolean;
 }
 
 export function VirtualizedSectionCard({
@@ -110,10 +113,11 @@ export function VirtualizedSectionCard({
   scripts,
   activeExecution,
   onCancel,
-  onConfirmExecute,
+  selectedIds,
+  onToggle,
+  disabled,
 }: VirtualizedSectionCardProps) {
   const Icon = SECTION_ICONS[section.icon];
-  const isScriptApplied = useIsScriptApplied();
 
   const sectionScripts = useMemo(
     () => scripts.filter((s) => section.scriptIds.includes(s.id)),
@@ -177,9 +181,10 @@ export function VirtualizedSectionCard({
                   script={script}
                   index={virtualRow.index}
                   isScriptExecuting={isScriptExecuting}
-                  isScriptApplied={isScriptApplied(script)}
+                  isSelected={selectedIds.has(script.id)}
                   onCancel={onCancel}
-                  onConfirmExecute={onConfirmExecute}
+                  onToggle={onToggle}
+                  disabled={disabled}
                   rowRef={measureElement}
                 />
               );

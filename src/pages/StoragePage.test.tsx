@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
 
@@ -8,15 +8,21 @@ import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
  * A página Armazenamento mostra só os scripts da categoria homônima e mantém
  * o filtro de SSD que existia no cartão de Utilitários: sem SSD, os tweaks
  * exclusivos de SSD não aparecem.
+ *
+ * A página agora usa seleção múltipla: `use-script-page` expõe a API de lote
+ * (`handleApply`, `batch`, …) e o hook de seleção é o real (não mockado). Os
+ * ids que somem do catálogo (filtro de `hasSSD`) saem da seleção e da contagem.
  */
 const store = vi.hoisted<{
   page: AsyncState<ScriptEntry[]>;
   scripts: ScriptEntry[];
-  confirmExecute: ReturnType<typeof vi.fn>;
+  handleApply: ReturnType<typeof vi.fn>;
+  handleCancel: ReturnType<typeof vi.fn>;
 }>(() => ({
   page: { status: 'success', data: [] },
   scripts: [],
-  confirmExecute: vi.fn(),
+  handleApply: vi.fn(),
+  handleCancel: vi.fn(),
 }));
 
 vi.mock('../hooks/use-script-page', () => ({
@@ -25,8 +31,14 @@ vi.mock('../hooks/use-script-page', () => ({
     categoryScripts: store.scripts,
     activeExecution: null,
     handleExecute: () => {},
-    handleCancel: () => {},
-    handleConfirmExecute: store.confirmExecute,
+    handleCancel: store.handleCancel,
+    handleApply: store.handleApply,
+    batch: null,
+    confirmBulkScripts: [],
+    setConfirmBulkScripts: () => {},
+    handleConfirmBulk: () => {},
+    failedScripts: [],
+    clearFailures: () => {},
     confirmScript: null,
     setConfirmScript: () => {},
     handleConfirm: () => {},
@@ -67,7 +79,8 @@ function renderPage() {
 beforeEach(() => {
   store.page = { status: 'success', data: [] };
   store.scripts = [];
-  store.confirmExecute = vi.fn();
+  store.handleApply = vi.fn();
+  store.handleCancel = vi.fn();
   setHasSSD(true);
 });
 
@@ -83,21 +96,6 @@ describe('StoragePage', () => {
     expect(container.querySelector('[data-hero-animation="storage"]')).not.toBeNull();
   });
 
-  it('mostra os scripts de armazenamento e executa o escolhido', async () => {
-    const limpeza = script('util-2', 'Limpeza WinSxS');
-    const trim = script('builtin-88', 'TRIM SSD');
-    store.scripts = [limpeza, trim];
-
-    renderPage();
-
-    expect(screen.getByText('Limpeza WinSxS')).toBeDefined();
-    await waitFor(() => expect(screen.getByText('TRIM SSD')).toBeDefined());
-    const buttons = screen.getAllByRole('button', { name: 'Executar' });
-    expect(buttons).toHaveLength(2);
-    buttons[0].click();
-    expect(store.confirmExecute).toHaveBeenCalledWith(limpeza);
-  });
-
   it('esconde os scripts exclusivos de SSD quando não há SSD', () => {
     setHasSSD(false);
     store.scripts = [
@@ -111,6 +109,42 @@ describe('StoragePage', () => {
     expect(screen.getByText('Limpeza WinSxS')).toBeDefined();
     expect(screen.queryByText('Otimizar SSD')).toBeNull();
     expect(screen.queryByText('TRIM SSD')).toBeNull();
+  });
+
+  it('seleciona um tweak e aplica só ele pelo botão de lote', async () => {
+    const limpeza = script('util-2', 'Limpeza WinSxS');
+    store.scripts = [limpeza];
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText('Limpeza WinSxS')).toBeDefined());
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar Limpeza WinSxS' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
+
+    expect(store.handleApply).toHaveBeenCalledTimes(1);
+    expect(store.handleApply.mock.calls[0][0].map((s: ScriptEntry) => s.id)).toEqual(['util-2']);
+  });
+
+  it('remove da seleção e do contador um tweak que sai do catálogo', async () => {
+    const limpeza = script('util-2', 'Limpeza WinSxS');
+    const outro = script('util-5', 'Outro tweak de armazenamento');
+    store.scripts = [limpeza, outro];
+
+    const { unmount } = renderPage();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar Limpeza WinSxS' }));
+    expect(screen.getByText('1 de 2 selecionados')).toBeDefined();
+
+    // Rerender com o id marcado removido do catálogo (filtro de SSD mudou).
+    unmount();
+    store.scripts = [outro];
+    renderPage();
+
+    expect(screen.getByText('0 de 1 selecionados')).toBeDefined();
+    expect(
+      (screen.getByRole('button', { name: 'Aplicar selecionados' }) as HTMLButtonElement).disabled
+    ).toBe(true);
+    expect(store.handleApply).not.toHaveBeenCalled();
   });
 
   it('mostra o esqueleto enquanto carrega', () => {

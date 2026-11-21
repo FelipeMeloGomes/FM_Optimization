@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
 
@@ -8,21 +8,31 @@ import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
 const store = vi.hoisted<{
   page: AsyncState<ScriptEntry[]>;
   scripts: ScriptEntry[];
-  confirmExecute: ReturnType<typeof vi.fn>;
+  activeExecution: string | null;
+  handleApply: ReturnType<typeof vi.fn>;
+  handleCancel: ReturnType<typeof vi.fn>;
 }>(() => ({
   page: { status: 'success', data: [] },
   scripts: [],
-  confirmExecute: vi.fn(),
+  activeExecution: null,
+  handleApply: vi.fn(),
+  handleCancel: vi.fn(),
 }));
 
 vi.mock('../hooks/use-script-page', () => ({
   useScriptPage: () => ({
     state: store.page,
     categoryScripts: store.scripts,
-    activeExecution: null,
+    activeExecution: store.activeExecution,
     handleExecute: () => {},
-    handleCancel: () => {},
-    handleConfirmExecute: store.confirmExecute,
+    handleCancel: store.handleCancel,
+    handleApply: store.handleApply,
+    batch: null,
+    confirmBulkScripts: [],
+    setConfirmBulkScripts: () => {},
+    handleConfirmBulk: () => {},
+    failedScripts: [],
+    clearFailures: () => {},
     confirmScript: null,
     setConfirmScript: () => {},
     handleConfirm: () => {},
@@ -57,7 +67,9 @@ function renderPage() {
 beforeEach(() => {
   store.page = { status: 'success', data: [] };
   store.scripts = [];
-  store.confirmExecute = vi.fn();
+  store.activeExecution = null;
+  store.handleApply = vi.fn();
+  store.handleCancel = vi.fn();
 });
 
 afterEach(() => vi.restoreAllMocks());
@@ -70,7 +82,7 @@ describe('SystemRepairPage', () => {
     expect(container.querySelector('[data-hero-animation="repair"]')).not.toBeNull();
   });
 
-  it('mostra os três scripts de reparo e executa o escolhido', () => {
+  it('marca um script de reparo e aplica só ele pelo botão de lote', () => {
     const sfc = script('builtin-87', 'SFC Scannow');
     store.scripts = [
       sfc,
@@ -83,10 +95,25 @@ describe('SystemRepairPage', () => {
     expect(screen.getByText('SFC Scannow')).toBeDefined();
     expect(screen.getByText('CHKDSK (Verificar Disco)')).toBeDefined();
     expect(screen.getByText('DISM RestoreHealth')).toBeDefined();
-    const buttons = screen.getAllByRole('button', { name: 'Executar' });
-    expect(buttons).toHaveLength(3);
-    buttons[0].click();
-    expect(store.confirmExecute).toHaveBeenCalledWith(sfc);
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar SFC Scannow' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
+
+    expect(store.handleApply).toHaveBeenCalledTimes(1);
+    expect(store.handleApply.mock.calls[0][0].map((s: ScriptEntry) => s.id)).toEqual([
+      'builtin-87',
+    ]);
+  });
+
+  it('clicar em Cancelar com execução ativa ainda chama handleCancel', () => {
+    store.activeExecution = 'builtin-87';
+    store.scripts = [script('builtin-87', 'SFC Scannow')];
+
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Cancelar/ }));
+
+    expect(store.handleCancel).toHaveBeenCalledWith('builtin-87');
   });
 
   it('mostra o esqueleto enquanto carrega', () => {

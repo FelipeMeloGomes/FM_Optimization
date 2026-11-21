@@ -1,4 +1,6 @@
-// @vitest-environment node
+// @vitest-environment jsdom
+
+import { fireEvent, render, screen } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
@@ -7,6 +9,9 @@ import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
  * Regressão da página Personalização: hero, seções barra de tarefas/menus e
  * efeitos visuais, esqueleto e erro. `use-script-page` e `use-is-script-applied`
  * são mockados na fronteira.
+ *
+ * A página agora usa seleção múltipla: `use-script-page` expõe a API de lote
+ * (`handleApply`, `batch`, …) e o hook de seleção é o real (não mockado).
  */
 
 vi.mock('../hooks/use-script-page', () => ({
@@ -16,7 +21,13 @@ vi.mock('../hooks/use-script-page', () => ({
     activeExecution: null,
     handleExecute: () => {},
     handleCancel: () => {},
-    handleConfirmExecute: () => {},
+    handleApply: store.handleApply,
+    batch: null,
+    confirmBulkScripts: [],
+    setConfirmBulkScripts: () => {},
+    handleConfirmBulk: () => {},
+    failedScripts: [],
+    clearFailures: () => {},
     confirmScript: null,
     setConfirmScript: () => {},
     handleConfirm: () => {},
@@ -32,9 +43,11 @@ import PersonalizationPage from './PersonalizationPage';
 const store = vi.hoisted<{
   page: AsyncState<ScriptEntry[]>;
   scripts: ScriptEntry[];
+  handleApply: ReturnType<typeof vi.fn>;
 }>(() => ({
   page: { status: 'success', data: [] },
   scripts: [],
+  handleApply: vi.fn(),
 }));
 
 function script(id: string, name: string): ScriptEntry {
@@ -60,13 +73,18 @@ function text(html: string): string {
     .trim();
 }
 
-function render(): string {
+function renderStatic(): string {
   return text(renderToStaticMarkup(<PersonalizationPage />));
+}
+
+function renderPage() {
+  return render(<PersonalizationPage />);
 }
 
 beforeEach(() => {
   store.page = { status: 'success', data: [] };
   store.scripts = [];
+  store.handleApply = vi.fn();
 });
 
 describe('PersonalizationPage', () => {
@@ -82,7 +100,7 @@ describe('PersonalizationPage', () => {
   it('mostra o erro quando o catálogo falha', () => {
     store.page = { status: 'error', error: 'falha ao ler catalogo' };
 
-    const html = text(render());
+    const html = text(renderStatic());
 
     expect(html).toContain('Erro ao carregar tweaks');
     expect(html).toContain('falha ao ler catalogo');
@@ -91,7 +109,7 @@ describe('PersonalizationPage', () => {
   it('renderiza o herói e as seções com seus nomes', () => {
     store.scripts = [script('tweaks-1', 'Tarefa 1'), script('tweaks-2', 'Efeito 1')];
 
-    const html = render();
+    const html = renderStatic();
 
     expect(html).toContain('Aparência e mods de apps');
     expect(html).toContain('Barra de tarefas e menus');
@@ -104,9 +122,45 @@ describe('PersonalizationPage', () => {
   it('lista cada script com nome e descrição', () => {
     store.scripts = [script('tweaks-1', 'Tarefa 1')];
 
-    const html = render();
+    const html = renderStatic();
 
     expect(html).toContain('Tarefa 1');
     expect(html).toContain('Tarefa 1 — desc');
+  });
+
+  it('mantém o script interativo apps-4 (Equicord) visível e selecionável', () => {
+    const equicord = script('apps-4', 'Equicord');
+    store.scripts = [equicord];
+
+    renderPage();
+
+    expect(screen.getByText('Equicord')).toBeDefined();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar Equicord' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
+
+    expect(store.handleApply).toHaveBeenCalledTimes(1);
+    expect(store.handleApply.mock.calls[0][0].map((s: ScriptEntry) => s.id)).toEqual(['apps-4']);
+  });
+
+  it('aplica apenas o tweak marcado ao clicar em Aplicar selecionados', () => {
+    const tarefa = script('tweaks-1', 'Tarefa 1');
+    store.scripts = [tarefa];
+
+    renderPage();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar Tarefa 1' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
+
+    expect(store.handleApply).toHaveBeenCalledTimes(1);
+    expect(store.handleApply.mock.calls[0][0].map((s: ScriptEntry) => s.id)).toEqual(['tweaks-1']);
+  });
+
+  it('o botão Aplicar selecionados começa desabilitado com nada marcado', () => {
+    store.scripts = [script('tweaks-1', 'Tarefa 1')];
+
+    renderPage();
+
+    const botao = screen.getByRole('button', { name: 'Aplicar selecionados' });
+    expect((botao as HTMLButtonElement).disabled).toBe(true);
   });
 });
