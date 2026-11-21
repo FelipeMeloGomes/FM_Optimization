@@ -1,7 +1,14 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { scriptsInSectionOrder } from './app-sections';
+import { NETWORK_SECTIONS } from './network-sections';
 import { PERSONALIZATION_SECTIONS } from './personalization-sections';
+import { STORAGE_SECTIONS } from './storage-sections';
+
+const catalog = JSON.parse(
+  readFileSync(new URL('../../resources/scripts.json', import.meta.url), 'utf-8')
+) as ScriptEntry[];
 
 function script(id: string): ScriptEntry {
   return {
@@ -24,10 +31,41 @@ describe('scriptsInSectionOrder', () => {
     { id: 'b', scriptIds: ['z', 'x'] },
   ];
 
-  it('devolve os scripts na ordem das seções, sem duplicar e sem ids fora delas', () => {
+  it('devolve os scripts na ordem das seções, mas na ordem do catálogo dentro de cada uma', () => {
     const scripts = [script('z'), script('y'), script('fora'), script('x')];
 
-    expect(scriptsInSectionOrder(sections, scripts).map((s) => s.id)).toEqual(['x', 'y', 'z']);
+    expect(scriptsInSectionOrder(sections, scripts).map((s) => s.id)).toEqual(['y', 'x', 'z']);
+  });
+
+  it('preserva a ordem do catálogo em Internet (o lote de "Selecionar todos" segue a tela)', () => {
+    const pageScripts = catalog.filter((s) => ['Internet', 'DNS Manager'].includes(s.category));
+
+    expect(scriptsInSectionOrder(NETWORK_SECTIONS, pageScripts).map((s) => s.id)).toEqual([
+      'builtin-18',
+      'internet-1',
+      'internet-2',
+      'internet-3',
+      'internet-4',
+      'internet-5',
+      'internet-7',
+      'internet-10',
+      'dns-2',
+      'dns-3',
+      'internet-9',
+      'internet-11',
+    ]);
+  });
+
+  it('preserva a ordem do catálogo em Armazenamento', () => {
+    const pageScripts = catalog.filter((s) => s.category === 'Armazenamento');
+
+    expect(scriptsInSectionOrder(STORAGE_SECTIONS, pageScripts).map((s) => s.id)).toEqual([
+      'util-2',
+      'util-4',
+      'util-5',
+      'util-6',
+      'builtin-88',
+    ]);
   });
 
   it('ignora ids de seção que não existem no catálogo', () => {

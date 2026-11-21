@@ -35,15 +35,15 @@ export function scriptsInSectionOrder(
   sections: ReadonlyArray<{ scriptIds: string[] }>,
   scripts: ScriptEntry[]
 ): ScriptEntry[] {
-  const byId = new Map(scripts.map((script) => [script.id, script]));
   const seen = new Set<string>();
   const out: ScriptEntry[] = [];
   for (const section of sections) {
-    for (const id of section.scriptIds) {
-      if (seen.has(id)) continue;
-      const script = byId.get(id);
-      if (!script) continue;
-      seen.add(id);
+    const inSection = new Set(section.scriptIds);
+    // Percorre o catálogo, não `scriptIds`: era assim que as seções filtravam
+    // antes da lista única, e a ordem da tela também é a ordem do lote.
+    for (const script of scripts) {
+      if (seen.has(script.id) || !inSection.has(script.id)) continue;
+      seen.add(script.id);
       out.push(script);
     }
   }
