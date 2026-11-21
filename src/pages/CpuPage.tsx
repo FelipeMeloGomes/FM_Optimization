@@ -1,4 +1,4 @@
-import { AlertTriangle, Cpu, Gauge } from 'lucide-react';
+import { AlertTriangle, Gauge } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { ConfirmBulkScriptDialog } from '../components/ConfirmBulkScriptDialog';
 import { AnimatedCpu } from '../components/hero/AnimatedHero';
@@ -15,20 +15,6 @@ import { CPU_CATEGORY } from '../lib/cpu-vendor';
 import { PERFORMANCE_SECTIONS } from '../lib/performance-sections';
 import { getRamScriptId } from '../lib/ram-script';
 import { cn } from '../lib/utils';
-
-// Neutral amber for the unidentified case: a blue "Intel" hero would mislabel a
-// page that is listing both sets.
-const TONE_TEXT = { red: 'text-destructive', blue: 'text-info', amber: 'text-warning' } as const;
-const TONE_BG = {
-  red: 'bg-destructive/10',
-  blue: 'bg-info/10',
-  amber: 'bg-warning/10',
-} as const;
-const TONE_BORDER = {
-  red: 'border-destructive/20',
-  blue: 'border-info/20',
-  amber: 'border-warning/20',
-} as const;
 
 // Scripts de pacote amplo: continuam no catálogo, mas não viram card nesta
 // página — o botão "Selecionar todos" da barra de seleção cumpre esse papel.
@@ -183,69 +169,6 @@ export default function CpuPage() {
           </p>
         </div>
       </HeroBanner>
-
-      {/* CPU Info Card */}
-      <Card className={cn('border', TONE_BORDER[tone])}>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            <div
-              className={cn('flex size-10 items-center justify-center rounded-lg', TONE_BG[tone])}
-            >
-              <Cpu className={cn('size-5', TONE_TEXT[tone])} />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Processador</p>
-              <p className="text-sm font-medium">{cpuModel ?? '—'}</p>
-              {cpuState.status === 'success' && cpuState.data.nameIsGeneric && (
-                <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  O BIOS informou apenas o identificador genérico.
-                </p>
-              )}
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Núcleos</p>
-              <p className="text-sm font-medium">
-                {cpuState.status === 'success' && !cpuState.data.coresEstimated
-                  ? cpuState.data.cores
-                  : '—'}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Threads</p>
-              <p className="text-sm font-medium">
-                {cpuState.status === 'success' ? cpuState.data.logicalProcessors : '—'}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">RAM</p>
-              <p className="text-sm font-medium">{ramAmount ? `${ramAmount} GB` : '—'}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Uso</p>
-              <p
-                className={cn(
-                  'text-sm font-medium',
-                  cpuState.status === 'success' && cpuState.data.usage > 80
-                    ? 'text-destructive'
-                    : cpuState.status === 'success' && cpuState.data.usage > 50
-                      ? 'text-warning'
-                      : 'text-success'
-                )}
-              >
-                {cpuState.status === 'success'
-                  ? `${cpuState.data.usage}% ${
-                      cpuState.data.usage > 80
-                        ? '(Alto)'
-                        : cpuState.data.usage > 50
-                          ? '(Médio)'
-                          : '(Normal)'
-                    }`
-                  : '—'}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Vendor notice: unidentified CPU, or a manual override in effect */}
       {isUnidentified && (

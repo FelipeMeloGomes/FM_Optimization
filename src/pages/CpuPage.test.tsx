@@ -14,10 +14,11 @@ import type {
 /**
  * Regressão das regras de exibição da página Otimização do Sistema (`/cpu`).
  *
- * Só os hooks são mockados; o componente, o filtro da escada de RAM e a
- * montagem das seções são os reais. É o que liga o aviso de identificador
- * genérico, o "—" dos núcleos estimados e a seleção de script de RAM ao que o
- * usuário vê.
+ * Só os hooks são mockados; o componente, a identificação do fabricante e o
+ * filtro da escada de RAM são os reais. É o que liga o aviso de fabricante e a
+ * seleção de script de RAM ao que o usuário vê. O cartão de detalhes da CPU
+ * (modelo, núcleos, threads e uso) foi removido; os testes travam que ele não
+ * volta.
  *
  * A página agora usa seleção múltipla: `use-script-page` expõe a API de lote
  * (`handleApply`, `batch`, …) e o hook de seleção é o real (não mockado).
@@ -144,11 +145,9 @@ function heroIconClass(html: string): string {
   return svg[1];
 }
 
-/** Valor da célula que segue o rótulo na faixa de informações da CPU. */
-function cell(html: string, label: string): string {
-  const match = text(html).match(new RegExp(`${label} (\\S+)`));
-  if (!match) throw new Error(`célula "${label}" não encontrada`);
-  return match[1];
+/** Texto do hero, isolado do aviso de fabricante e da lista que vêm depois. */
+function heroText(html: string): string {
+  return text(html).split(/Scripts Disponíveis|Processador não identificado/)[0];
 }
 
 function renderStatic(): string {
@@ -189,8 +188,8 @@ describe('CpuPage — estados', () => {
   });
 });
 
-describe('CpuPage — identificador genérico', () => {
-  it('avisa quando o BIOS só entregou o identificador genérico', () => {
+describe('CpuPage — cartão de hardware removido', () => {
+  it('não exibe modelo, núcleos, threads nem o aviso de identificador genérico', () => {
     store.cpu = {
       status: 'success',
       data: { ...CPU, model: 'AMD (Família 25 · Modelo 80)', nameIsGeneric: true },
@@ -198,36 +197,20 @@ describe('CpuPage — identificador genérico', () => {
 
     const html = text(renderStatic());
 
-    expect(html).toContain('O BIOS informou apenas o identificador genérico.');
-    expect(html).toContain('AMD (Família 25 · Modelo 80)');
+    expect(html).not.toContain('AMD (Família 25 · Modelo 80)');
+    expect(html).not.toContain('Núcleos');
+    expect(html).not.toContain('Threads');
+    expect(html).not.toContain('O BIOS informou apenas o identificador genérico.');
   });
 
-  it('não avisa quando o nome comercial foi resolvido', () => {
-    expect(text(renderStatic())).not.toContain('identificador genérico');
-  });
-});
+  it('mantém a identificação do fabricante no aviso e no filtro de scripts', () => {
+    store.vendor = 'unknown';
+    store.scripts = [script('cpu-16', 'Ajuste comum de CPU')];
 
-describe('CpuPage — núcleos estimados', () => {
-  it('mostra a contagem quando o WMI informou os núcleos físicos', () => {
-    expect(cell(renderStatic(), 'Núcleos')).toBe('6');
-  });
+    const html = text(renderStatic());
 
-  it('mostra "—" em vez de um número inventado', () => {
-    store.cpu = { status: 'success', data: { ...CPU, coresEstimated: true } };
-
-    expect(cell(renderStatic(), 'Núcleos')).toBe('—');
-  });
-
-  it('mostra "—" para todos os campos quando a leitura da CPU falha', () => {
-    store.cpu = { status: 'error', error: 'WMI indisponível' };
-
-    const html = renderStatic();
-
-    expect(cell(html, 'Processador')).toBe('—');
-    expect(cell(html, 'Núcleos')).toBe('—');
-    expect(cell(html, 'Threads')).toBe('—');
-    // A RAM não depende da CPU: continua sendo exibida.
-    expect(cell(html, 'RAM')).toBe('16');
+    expect(html).toContain('Processador não identificado');
+    expect(html).toContain('Ajuste comum de CPU');
   });
 });
 
@@ -291,7 +274,7 @@ describe('CpuPage — escada de RAM', () => {
 
 describe('CpuPage — hero banner', () => {
   it('segue o padrão dos demais heroes: selo de categoria, título e descrição', () => {
-    const hero = text(renderStatic()).split('Processador')[0];
+    const hero = heroText(renderStatic());
 
     expect(hero).toContain('Desempenho');
     expect(hero).toContain('Otimização do Sistema');
@@ -306,12 +289,14 @@ describe('CpuPage — hero banner', () => {
       store.vendor = vendor;
 
       const html = renderStatic();
-      const hero = text(html).split('Processador')[0];
+      const hero = heroText(html);
 
       expect(hero).toContain('Otimização do Sistema');
       expect(hero).not.toMatch(/AMD|Intel/);
       expect(hero).not.toContain('Ryzen');
-      expect(text(html)).toContain('AMD Ryzen 5 5500');
+      if (vendor === 'unknown') {
+        expect(text(html)).toContain('AMD Ryzen 5 5500');
+      }
     }
   );
 
@@ -334,7 +319,7 @@ describe('CpuPage — hero banner', () => {
   it('não exibe a contagem total de tweaks no hero', () => {
     store.scripts = [script('cpu-16', 'Ajuste comum de CPU')];
 
-    const hero = text(renderStatic()).split('Processador')[0];
+    const hero = heroText(renderStatic());
 
     expect(hero).not.toMatch(/\d+\s+tweaks/);
   });
