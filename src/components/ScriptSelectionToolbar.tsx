@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { Badge, Button } from './ui';
 
 export interface ScriptSelectionToolbarProps {
   availableIds: string[];
   selectedIds: Set<string>;
+  selectedScripts: ScriptEntry[];
   onSelectAll: () => void;
   onClear: () => void;
   onApply: (scripts: ScriptEntry[]) => void;
@@ -22,6 +22,7 @@ export interface ScriptSelectionToolbarProps {
 export function ScriptSelectionToolbar({
   availableIds,
   selectedIds,
+  selectedScripts,
   onSelectAll,
   onClear,
   onApply,
@@ -32,17 +33,6 @@ export function ScriptSelectionToolbar({
 }: ScriptSelectionToolbarProps) {
   const selectedCount = availableIds.filter((id) => selectedIds.has(id)).length;
   const allSelected = availableIds.length > 0 && availableIds.every((id) => selectedIds.has(id));
-
-  const selectedScripts = useMemo(() => {
-    const wanted = new Set(selectedIds);
-    const scripts: ScriptEntry[] = [];
-    for (const id of availableIds) {
-      if (!wanted.has(id)) continue;
-      const entry = failedScripts.find((s) => s.id === id);
-      if (entry) scripts.push(entry);
-    }
-    return scripts;
-  }, [availableIds, selectedIds, failedScripts]);
 
   const handleApplyClick = () => {
     onApply(selectedScripts);

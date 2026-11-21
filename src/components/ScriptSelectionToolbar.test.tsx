@@ -28,6 +28,7 @@ function script(id: string, name = `Script ${id}`): ScriptEntry {
 interface SetupProps {
   availableIds?: string[];
   selectedIds?: Set<string>;
+  selectedScripts?: ScriptEntry[];
   onSelectAll?: () => void;
   onClear?: () => void;
   onApply?: (scripts: ScriptEntry[]) => void;
@@ -41,6 +42,7 @@ function setup(overrides: SetupProps = {}) {
   const props: Required<SetupProps> = {
     availableIds: ['a', 'b', 'c'],
     selectedIds: new Set<string>(),
+    selectedScripts: [],
     onSelectAll: vi.fn(),
     onClear: vi.fn(),
     onApply: vi.fn(),
@@ -55,6 +57,7 @@ function setup(overrides: SetupProps = {}) {
     <ScriptSelectionToolbar
       availableIds={props.availableIds}
       selectedIds={props.selectedIds}
+      selectedScripts={props.selectedScripts}
       onSelectAll={props.onSelectAll}
       onClear={props.onClear}
       onApply={props.onApply}
@@ -126,5 +129,22 @@ describe('ScriptSelectionToolbar', () => {
     expect(screen.getByText('Tweak do B')).not.toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Fechar' }));
     expect(props.onDismissFailures).toHaveBeenCalledTimes(1);
+  });
+
+  it('envia os scripts selecionados ao aplicar, inclusive sem falhas', () => {
+    const a = script('a', 'Tweak A');
+    const b = script('b', 'Tweak B');
+    const props = setup({
+      selectedIds: new Set(['a', 'b']),
+      selectedScripts: [a, b],
+    });
+
+    expect(
+      (screen.getByRole('button', { name: 'Aplicar selecionados' }) as HTMLButtonElement).disabled
+    ).toBe(false);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
+    expect(props.onApply).toHaveBeenCalledTimes(1);
+    expect(props.onApply).toHaveBeenCalledWith([a, b]);
   });
 });

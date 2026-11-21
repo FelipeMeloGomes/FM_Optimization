@@ -22,6 +22,8 @@ const store = vi.hoisted(() => ({
   confirmOnExecute: false,
 }));
 
+const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
 vi.mock('../contexts/ScriptContext', () => ({
   useScriptContext: () => ({
     state: store.scriptState,
@@ -82,6 +84,7 @@ beforeEach(() => {
   store.cancel.mockClear();
   store.batch = null;
   store.executeBatch.mockClear();
+  consoleErrorSpy.mockClear();
 });
 
 describe('useScriptPage — filtro de categoria', () => {
@@ -273,5 +276,39 @@ describe('useScriptPage — lote', () => {
 
     expect(store.executeBatch).toHaveBeenCalledWith([SCRIPTS[0], SCRIPTS[1]]);
     expect(result.current.confirmBulkScripts).toEqual([]);
+  });
+
+  it('preenche failedScripts e registra o erro quando executeBatch recusa o lote', async () => {
+    const erro = new Error('serviço indisponível');
+    store.executeBatch.mockRejectedValue(erro);
+    const { result } = renderHook(() => useScriptPage('CPU'));
+
+    await act(async () => {
+      result.current.handleApply([SCRIPTS[0], SCRIPTS[1]]);
+    });
+
+    expect(store.executeBatch).toHaveBeenCalledWith([SCRIPTS[0], SCRIPTS[1]]);
+    expect(result.current.failedScripts.map((s) => s.id)).toEqual(['cpu-18', 'gpu-1']);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Falha ao aplicar o lote de scripts:', erro);
+  });
+
+  it('preenche failedScripts e registra o erro quando o lote confirmado é recusado', async () => {
+    store.confirmOnExecute = true;
+    const erro = new Error('serviço indisponível');
+    store.executeBatch.mockRejectedValue(erro);
+    const { result } = renderHook(() => useScriptPage('CPU'));
+
+    act(() => {
+      result.current.handleApply([SCRIPTS[0], SCRIPTS[1]]);
+    });
+    expect(result.current.confirmBulkScripts.map((s) => s.id)).toEqual(['cpu-18', 'gpu-1']);
+
+    await act(async () => {
+      result.current.handleConfirmBulk();
+    });
+
+    expect(result.current.failedScripts.map((s) => s.id)).toEqual(['cpu-18', 'gpu-1']);
+    expect(result.current.confirmBulkScripts).toEqual([]);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Falha ao aplicar o lote de scripts:', erro);
   });
 });

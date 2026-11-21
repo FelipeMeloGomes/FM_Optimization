@@ -56,9 +56,15 @@ export function useScriptPage(categories: string | string[]) {
         setConfirmBulkScripts(scripts);
         return;
       }
-      void executeBatch(scripts).then(({ failedIds }) => {
-        setFailedScripts(scripts.filter((s) => failedIds.includes(s.id)));
-      });
+      void executeBatch(scripts).then(
+        ({ failedIds }) => {
+          setFailedScripts(scripts.filter((s) => failedIds.includes(s.id)));
+        },
+        (error) => {
+          setFailedScripts([...scripts]);
+          console.error('Falha ao aplicar o lote de scripts:', error);
+        }
+      );
     },
     [settings.confirmOnExecute, executeBatch]
   );
@@ -67,9 +73,15 @@ export function useScriptPage(categories: string | string[]) {
     const scripts = confirmBulkScripts;
     setConfirmBulkScripts([]);
     if (scripts.length > 0) {
-      void executeBatch(scripts).then(({ failedIds }) => {
-        setFailedScripts(scripts.filter((s) => failedIds.includes(s.id)));
-      });
+      void executeBatch(scripts).then(
+        ({ failedIds }) => {
+          setFailedScripts(scripts.filter((s) => failedIds.includes(s.id)));
+        },
+        (error) => {
+          setFailedScripts([...scripts]);
+          console.error('Falha ao aplicar o lote de scripts:', error);
+        }
+      );
     }
   }, [confirmBulkScripts, executeBatch]);
 
