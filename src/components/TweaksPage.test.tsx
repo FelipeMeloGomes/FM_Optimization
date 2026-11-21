@@ -103,6 +103,14 @@ describe('TweaksPage — estados', () => {
     expect(screen.queryByText('Página de teste')).toBeNull();
   });
 
+  it('mantém a altura original do esqueleto do hero quando pedida', () => {
+    store.state = { status: 'loading' };
+
+    const { container } = render(<TweaksPage {...baseProps()} skeletonHeroHeight="h-32" />);
+
+    expect(container.querySelector('.animate-pulse')?.className).toContain('h-32');
+  });
+
   it('mostra o erro devolvido pelo catálogo', () => {
     store.state = { status: 'error', error: 'catálogo indisponível' };
 

@@ -136,6 +136,7 @@ export default function CpuPage() {
       category={categories}
       hero={HERO}
       skeletonCount={PERFORMANCE_SECTIONS.length}
+      skeletonHeroHeight="h-32"
       transform={transform}
       beforeList={beforeList}
       extraLoading={cpuState.status === 'loading'}

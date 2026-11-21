@@ -26,6 +26,8 @@ export interface TweaksPageProps {
   skeletonCount: number;
   /** Input Lag usava `gap-3` no grid de esqueletos; as demais, `gap-4`. */
   skeletonGap?: string;
+  /** A CPU usava `h-32` no esqueleto do hero; as demais, `h-24`. */
+  skeletonHeroHeight?: string;
   /** Filtra e/ou reordena os scripts da categoria antes da lista e da seleção. */
   transform?: (scripts: ScriptEntry[]) => ScriptEntry[];
   /** Nomes e descrições curados, quando o catálogo não serve para a lista. */
@@ -50,6 +52,7 @@ function TweaksPageImpl({
   hero,
   skeletonCount,
   skeletonGap = 'gap-4',
+  skeletonHeroHeight = 'h-24',
   transform,
   buildLabels,
   beforeList,
@@ -86,7 +89,7 @@ function TweaksPageImpl({
   if (extraLoading || state.status === 'loading') {
     return (
       <div className="space-y-4">
-        <div className="h-24 rounded-xl bg-muted animate-pulse" />
+        <div className={`${skeletonHeroHeight} rounded-xl bg-muted animate-pulse`} />
         <div className={`grid grid-cols-1 ${skeletonGap} sm:grid-cols-2`}>
           {Array.from({ length: skeletonCount }).map((_, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
