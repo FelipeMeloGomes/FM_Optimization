@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
 import { render, screen } from '@testing-library/react';
-import { HardDrive } from 'lucide-react';
 import { describe, expect, it } from 'vitest';
 import { DeviceHero } from './DeviceHero';
 
@@ -10,7 +9,7 @@ describe('DeviceHero', () => {
     render(
       <DeviceHero
         badge="Ferramentas"
-        icon={HardDrive}
+        path="/armazenamento"
         title="Armazenamento"
         description="Libere espaço em disco e otimize o SSD."
         image="/storage.jpg"
@@ -19,6 +18,7 @@ describe('DeviceHero', () => {
     );
 
     expect(screen.getByRole('img', { name: 'Unidades HD e SSD' })).toBeDefined();
+    expect(document.querySelector('svg')?.className.baseVal).toContain('lucide-hard-drive');
     expect(screen.getByText('Ferramentas')).toBeDefined();
     expect(screen.getByText('Armazenamento')).toBeDefined();
     expect((document.body.textContent ?? '').replace(/\s+/g, ' ')).toContain(

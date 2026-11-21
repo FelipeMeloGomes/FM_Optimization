@@ -1,4 +1,4 @@
-import { ChevronDown, Play, Square, Zap } from 'lucide-react';
+import { ChevronDown, Play, Square } from 'lucide-react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DeviceHero } from '../components/hero/DeviceHero';
@@ -68,7 +68,7 @@ export default function DevicePage({ config, beforeContent }: DevicePageProps) {
       {/* Hero Banner: foto real do periférico com brilho e texto animados */}
       <DeviceHero
         badge="Sistema"
-        icon={Zap}
+        path={config.path}
         title={config.name}
         description={config.heroDescription}
         image={config.heroImage}

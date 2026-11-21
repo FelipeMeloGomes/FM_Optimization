@@ -1,4 +1,3 @@
-import { HardDrive } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import storageImage from '../assets/storage-drives.jpg';
@@ -12,7 +11,7 @@ import { STORAGE_SECTIONS } from '../lib/storage-sections';
 const SSD_ONLY_IDS = ['util-4', 'builtin-88'];
 
 const HERO = {
-  icon: HardDrive,
+  path: '/armazenamento',
   badge: 'Ferramentas',
   title: 'Armazenamento',
   description: 'Libere espaço em disco, otimize o SSD e compacte os arquivos do sistema.',
@@ -47,7 +46,7 @@ export default function StoragePage() {
       heroContent={
         <DeviceHero
           badge={HERO.badge}
-          icon={HERO.icon}
+          path={HERO.path}
           title={HERO.title}
           description={HERO.description}
           image={storageImage}

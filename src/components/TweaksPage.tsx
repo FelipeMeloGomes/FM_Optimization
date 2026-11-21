@@ -1,16 +1,17 @@
-import type { LucideIcon } from 'lucide-react';
 import { memo, type ReactNode, useMemo } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { useScriptPage } from '../hooks/use-script-page';
 import { useScriptSelection } from '../hooks/use-script-selection';
 import { ConfirmBulkScriptDialog } from './ConfirmBulkScriptDialog';
 import { HeroBanner } from './hero/HeroBanner';
+import { RouteIcon } from './hero/RouteIcon';
 import { ScriptCardSkeleton } from './ScriptCardSkeleton';
 import { ScriptSelectionToolbar } from './ScriptSelectionToolbar';
 import { VirtualizedScriptList } from './VirtualizedScriptList';
 
 export interface TweaksPageHero {
-  icon: LucideIcon;
+  /** Path da rota: o ícone do badge vem da sidebar, sem escolha na página. */
+  path: string;
   badge: string;
   title: string;
   description: string;
@@ -121,14 +122,13 @@ function TweaksPageImpl({
     );
   }
 
-  const Icon = hero.icon;
   // O banner vem antes do painel de ajustes; o painel continua visível em
   // loading/erro através de `withBeforeContent`, onde não há banner.
   const banner = heroContent ?? (
     <HeroBanner visual={hero.visual}>
       <div className="relative p-6">
         <div className="flex items-center gap-2 mb-2">
-          <Icon className="size-4 text-primary" aria-hidden="true" />
+          <RouteIcon path={hero.path} />
           <span className="text-xs font-semibold text-primary uppercase tracking-wider">
             {hero.badge}
           </span>

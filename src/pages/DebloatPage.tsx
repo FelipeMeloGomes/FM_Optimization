@@ -5,6 +5,7 @@ import { ConfirmRemoveAppsDialog } from '../components/ConfirmRemoveAppsDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedDebloat } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Button, Input, Tabs } from '../components/ui';
 import { useSettingsContext } from '../contexts/SettingsContext';
@@ -250,7 +251,7 @@ export default function DebloatPage() {
         <div className="relative p-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <PackageX className="size-4 text-primary" aria-hidden="true" />
+              <RouteIcon path="/debloat" />
               <span className="text-xs font-semibold text-primary uppercase tracking-wider">
                 Debloat
               </span>

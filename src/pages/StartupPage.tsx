@@ -21,6 +21,7 @@ import type {
 } from '../../electron/shared/ipc-types';
 import { AnimatedStartup } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageRefreshBar } from '../components/RefreshButton';
 import {
   Badge,
@@ -260,7 +261,7 @@ export default function StartupPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Rocket className="size-4 text-primary" />
+                <RouteIcon path="/inicializacao" />
                 <span className="text-xs font-semibold text-primary uppercase tracking-wider">
                   Inicialização
                 </span>

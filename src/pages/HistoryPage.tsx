@@ -3,7 +3,6 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  History,
   MousePointerClick,
   PauseCircle,
   XCircle,
@@ -13,6 +12,7 @@ import { useMemo, useRef } from 'react';
 import { EXIT_INTERRUPTED_SENTINEL } from '../../electron/shared/exit-codes';
 import { AnimatedHistory } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import {
   Badge,
   EmptyState,
@@ -174,7 +174,7 @@ export default function HistoryPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <History className="size-4 text-primary" />
+                <RouteIcon path="/history" />
                 <span className="text-xs font-semibold text-primary uppercase tracking-wider">
                   Histórico
                 </span>

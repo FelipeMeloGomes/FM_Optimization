@@ -1,18 +1,10 @@
-import {
-  Clock,
-  Cpu,
-  HardDrive,
-  MemoryStick,
-  Monitor,
-  Shield,
-  ShieldAlert,
-  Zap,
-} from 'lucide-react';
+import { Clock, Cpu, HardDrive, MemoryStick, Monitor, Shield, ShieldAlert } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { formatMemoryTotal } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
 import { AnimatedDashboard } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Badge, Button, Skeleton } from '../components/ui';
 import { useHistoryContext } from '../contexts/HistoryContext';
@@ -158,7 +150,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Zap className="size-4 text-primary" />
+                <RouteIcon path="/" />
                 <span className="text-xs font-semibold text-primary uppercase tracking-wider">
                   Painel do Sistema
                 </span>

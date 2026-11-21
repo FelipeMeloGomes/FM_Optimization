@@ -2,6 +2,7 @@ import { AlertCircle, ArrowDown, Check, Loader2, Settings, Trophy, Wifi, Zap } f
 import { useCallback, useMemo } from 'react';
 import { AnimatedDns } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Badge, Button, Card, CardContent } from '../components/ui';
 import { DnsProvider, useDnsContext } from '../contexts/DnsContext';
@@ -158,7 +159,7 @@ function DnsPageContent() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <Wifi className="size-4 text-primary" aria-hidden="true" />
+                <RouteIcon path="/dns" />
                 <span className="text-xs font-semibold uppercase tracking-wider text-primary">
                   Rede
                 </span>

@@ -1,4 +1,3 @@
-import { ShieldCheck } from 'lucide-react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedRepair } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
@@ -6,7 +5,7 @@ import { scriptsInSectionOrder } from '../lib/app-sections';
 import { REPAIR_SECTIONS } from '../lib/repair-sections';
 
 const HERO = {
-  icon: ShieldCheck,
+  path: '/reparo-do-sistema',
   badge: 'Ferramentas',
   title: 'Reparo do Sistema',
   description: 'Verifique e repare arquivos corrompidos do Windows e erros no disco.',

@@ -3,7 +3,6 @@ import {
   Check,
   ChevronDown,
   ExternalLink,
-  GitCompareArrows,
   Loader2,
   Search,
   Sparkles,
@@ -17,6 +16,7 @@ import type {
 } from '../../electron/shared/ipc-types';
 import { AnimatedHero } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageRefreshBar } from '../components/RefreshButton';
 import {
   Badge,
@@ -389,12 +389,12 @@ export default function CompararPlacaPage() {
 
   return (
     <div className="space-y-6">
-      <HeroBanner visual={<AnimatedHero icon={GitCompareArrows} animation="scan" />}>
+      <HeroBanner visual={<AnimatedHero path="/comparar-placa" animation="scan" />}>
         <PageContent>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <GitCompareArrows className="size-4 text-primary" />
+                <RouteIcon path="/comparar-placa" />
                 <span className="text-xs font-semibold tracking-wider text-primary uppercase">
                   Ferramentas
                 </span>

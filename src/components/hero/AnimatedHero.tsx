@@ -1,25 +1,6 @@
-import {
-  Activity,
-  Cpu,
-  Eraser,
-  Gamepad2,
-  Gauge,
-  HardDrive,
-  History,
-  type LucideIcon,
-  MonitorDown,
-  MousePointerClick,
-  PackageX,
-  Palette,
-  Rocket,
-  Settings,
-  Shield,
-  ShieldCheck,
-  Wifi,
-  Wrench,
-} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '../../lib/utils';
+import { getRouteIcon } from '../../routes/route-icons';
 
 export type HeroAnimation =
   | 'float'
@@ -82,7 +63,8 @@ function accentFor(animation: HeroAnimation): ReactNode {
 }
 
 export interface AnimatedHeroProps {
-  icon: LucideIcon;
+  /** Path da rota: o ícone vem de `ROUTE_ICONS`, igual ao da sidebar. */
+  path: string;
   animation: HeroAnimation;
   /** Cor do ícone (ex.: o tom dinâmico da página CPU). */
   iconClassName?: string;
@@ -93,12 +75,9 @@ export interface AnimatedHeroProps {
  * Visual decorativo do banner. Animação CSS pura: não afeta nenhum serviço,
  * configuração ou dado do sistema — é o mesmo padrão do cursor/teclado/monitor.
  */
-export function AnimatedHero({
-  icon: Icon,
-  animation,
-  iconClassName,
-  className,
-}: AnimatedHeroProps) {
+export function AnimatedHero({ path, animation, iconClassName, className }: AnimatedHeroProps) {
+  const Icon = getRouteIcon(path);
+
   return (
     <div className={cn('pointer-events-none absolute right-8 top-1/2 -translate-y-1/2', className)}>
       <div
@@ -119,79 +98,83 @@ export function AnimatedHero({
   );
 }
 
-/* Cada página ganha um visual próprio, no mesmo estilo de Mouse/Monitor/Teclado. */
-export function AnimatedDashboard(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Gauge} animation="scan" {...props} />;
+/* Cada página escolhe só a animação; o ícone é sempre o da sua rota. */
+export function AnimatedDashboard(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/" animation="scan" {...props} />;
 }
 
-export function AnimatedCpu(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Cpu} animation="pulse" {...props} />;
+export function AnimatedCpu(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/cpu" animation="pulse" {...props} />;
 }
 
-export function AnimatedCleaner(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Eraser} animation="scan" {...props} />;
+export function AnimatedCleaner(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/cleaner" animation="scan" {...props} />;
 }
 
-export function AnimatedDebloat(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={PackageX} animation="drop" {...props} />;
+export function AnimatedDebloat(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/debloat" animation="drop" {...props} />;
 }
 
-export function AnimatedDns(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Wifi} animation="drift" {...props} />;
+export function AnimatedDns(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/dns" animation="drift" {...props} />;
 }
 
-export function AnimatedNetwork(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Wifi} animation="pulse" {...props} />;
+export function AnimatedNetwork(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/rede" animation="pulse" {...props} />;
 }
 
-export function AnimatedSpeedTest(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Activity} animation="scan" {...props} />;
+export function AnimatedSpeedTest(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/velocidade" animation="scan" {...props} />;
 }
 
-export function AnimatedEmuladores(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Gamepad2} animation="float" {...props} />;
+export function AnimatedEmuladores(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/emuladores" animation="float" {...props} />;
 }
 
-export function AnimatedEssentials(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={MonitorDown} animation="drop" {...props} />;
+export function AnimatedEssentials(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/essenciais" animation="drop" {...props} />;
 }
 
-export function AnimatedHistory(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={History} animation="spin" {...props} />;
+export function AnimatedHistory(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/history" animation="spin" {...props} />;
 }
 
-export function AnimatedInputLag(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={MousePointerClick} animation="drift" {...props} />;
+export function AnimatedInputLag(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/input-lag" animation="drift" {...props} />;
 }
 
-export function AnimatedPersonalization(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Palette} animation="float" {...props} />;
+export function AnimatedPersonalization(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/personalizacao" animation="float" {...props} />;
 }
 
-export function AnimatedPrivacySecurity(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={ShieldCheck} animation="pulse" {...props} />;
+export function AnimatedPrivacySecurity(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/privacidade-seguranca" animation="pulse" {...props} />;
 }
 
-export function AnimatedStorage(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={HardDrive} animation="storage" {...props} />;
+export function AnimatedStorage(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/armazenamento" animation="storage" {...props} />;
 }
 
-export function AnimatedRepair(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={ShieldCheck} animation="repair" {...props} />;
+export function AnimatedRepair(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/reparo-do-sistema" animation="repair" {...props} />;
 }
 
-export function AnimatedRestorePoints(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Shield} animation="tilt" {...props} />;
+export function AnimatedRestorePoints(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/restore-points" animation="tilt" {...props} />;
 }
 
-export function AnimatedSettings(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Settings} animation="spin" {...props} />;
+export function AnimatedSettings(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/settings" animation="spin" {...props} />;
 }
 
-export function AnimatedStartup(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Rocket} animation="float" {...props} />;
+export function AnimatedStartup(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/inicializacao" animation="float" {...props} />;
 }
 
-export function AnimatedUtilities(props: Omit<AnimatedHeroProps, 'icon' | 'animation'>) {
-  return <AnimatedHero icon={Wrench} animation="tilt" {...props} />;
+export function AnimatedUtilities(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/utilities" animation="tilt" {...props} />;
+}
+
+export function AnimatedMeuPc(props: Omit<AnimatedHeroProps, 'path' | 'animation'>) {
+  return <AnimatedHero path="/meu-pc" animation="scan" {...props} />;
 }

@@ -1,9 +1,10 @@
-import { AlertCircle, FolderCog, Gamepad2, Loader2, MonitorSmartphone } from 'lucide-react';
+import { AlertCircle, FolderCog, Loader2, MonitorSmartphone } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import bluestacksLogo from '../assets/bluestacks-logo.png';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedEmuladores } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { Badge, Button, Card, CardContent, Switch } from '../components/ui';
 import { EmulatorProvider, useEmulatorContext } from '../contexts/EmulatorContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
@@ -247,7 +248,7 @@ function EmuladoresPageContent() {
       <HeroBanner visual={<AnimatedEmuladores />}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
-            <Gamepad2 className="size-4 text-primary" />
+            <RouteIcon path="/emuladores" />
             <span className="text-xs font-semibold text-primary uppercase tracking-wider">
               Emuladores
             </span>

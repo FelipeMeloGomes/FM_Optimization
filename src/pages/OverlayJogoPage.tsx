@@ -22,6 +22,7 @@ import {
 } from '../../electron/shared/overlay-types';
 import { AnimatedHero } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import {
   Badge,
   Button,
@@ -575,12 +576,12 @@ export default function OverlayJogoPage() {
 
   return (
     <div className="space-y-6">
-      <HeroBanner visual={<AnimatedHero icon={Gamepad2} animation="pulse" />}>
+      <HeroBanner visual={<AnimatedHero path="/overlay-jogo" animation="pulse" />}>
         <PageContent>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <Gamepad2 className="size-4 text-primary" />
+                <RouteIcon path="/overlay-jogo" />
                 <span className="text-xs font-semibold tracking-wider text-primary uppercase">
                   Ferramentas
                 </span>

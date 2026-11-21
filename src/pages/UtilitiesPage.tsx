@@ -1,4 +1,3 @@
-import { Wrench } from 'lucide-react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedUtilities } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
@@ -6,7 +5,7 @@ import { scriptsInSectionOrder } from '../lib/app-sections';
 import { UTIL_SECTIONS } from '../lib/util-sections';
 
 const HERO = {
-  icon: Wrench,
+  path: '/utilities',
   badge: 'Utilitários',
   title: 'Ferramentas de manutenção e reparo',
   description:

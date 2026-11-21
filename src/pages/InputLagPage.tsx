@@ -1,4 +1,3 @@
-import { Zap } from 'lucide-react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedInputLag } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
@@ -47,7 +46,7 @@ const REGISTRY_SCRIPTS: RegistryItem[] = [
 ];
 
 const HERO = {
-  icon: Zap,
+  path: '/input-lag',
   badge: 'Otimização de Input',
   title: 'Reduza o Input Lag do seu PC',
   description:

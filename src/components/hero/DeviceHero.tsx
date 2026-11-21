@@ -1,10 +1,11 @@
-import type { LucideIcon } from 'lucide-react';
 import BlurText from '../react-bits/BlurText';
 import GlareHover from '../react-bits/GlareHover';
+import { RouteIcon } from './RouteIcon';
 
 export interface DeviceHeroProps {
   badge: string;
-  icon: LucideIcon;
+  /** Path da rota: o ícone é o mesmo da sidebar. */
+  path: string;
   title: string;
   description: string;
   image: string;
@@ -12,14 +13,7 @@ export interface DeviceHeroProps {
 }
 
 /** Hero com foto real e brilho, compartilhado por Mouse, Monitor, Teclado e Armazenamento. */
-export function DeviceHero({
-  badge,
-  icon: Icon,
-  title,
-  description,
-  image,
-  imageAlt,
-}: DeviceHeroProps) {
+export function DeviceHero({ badge, path, title, description, image, imageAlt }: DeviceHeroProps) {
   return (
     <GlareHover
       width="100%"
@@ -38,7 +32,7 @@ export function DeviceHero({
       <div className="absolute inset-0 bg-gradient-to-r from-card/95 via-card/60 to-transparent" />
       <div className="relative flex w-full flex-col justify-center self-stretch p-6">
         <div className="flex items-center gap-2 mb-2">
-          <Icon className="size-4 text-primary" aria-hidden="true" />
+          <RouteIcon path={path} />
           <span className="text-xs font-semibold text-primary uppercase tracking-wider">
             {badge}
           </span>

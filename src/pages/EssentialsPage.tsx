@@ -22,6 +22,7 @@ import type {
 } from '../../electron/shared/ipc-types';
 import { AnimatedEssentials } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Badge, Button, Progress } from '../components/ui';
 import { useEssentials } from '../hooks/use-essentials';
@@ -267,7 +268,7 @@ export default function EssentialsPage() {
       <HeroBanner visual={<AnimatedEssentials />}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
-            <MonitorDown className="size-4 text-primary" />
+            <RouteIcon path="/essenciais" />
             <span className="text-xs font-semibold text-primary uppercase tracking-wider">
               Essenciais PC
             </span>

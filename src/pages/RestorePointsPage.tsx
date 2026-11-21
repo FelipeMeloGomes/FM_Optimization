@@ -5,13 +5,13 @@ import {
   RefreshCw,
   RotateCcw,
   Search,
-  Shield,
   ShieldAlert,
   Trash2,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatedRestorePoints } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { RefreshButton } from '../components/RefreshButton';
 import {
   Badge,
@@ -123,7 +123,7 @@ export default function RestorePointsPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Shield className="size-4 text-primary" />
+                <RouteIcon path="/restore-points" />
                 <span className="text-xs font-semibold text-primary uppercase tracking-wider">
                   Restauração
                 </span>

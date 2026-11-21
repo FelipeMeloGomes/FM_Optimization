@@ -1,4 +1,3 @@
-import { Wifi } from 'lucide-react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedNetwork } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
@@ -11,7 +10,7 @@ import { NETWORK_SECTIONS } from '../lib/network-sections';
  * da Limpeza, com barra de seleção e confirmação de lote.
  */
 const HERO = {
-  icon: Wifi,
+  path: '/rede',
   badge: 'Rede',
   title: 'Internet',
   description:

@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { Zap } from 'lucide-react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
 
@@ -56,7 +55,7 @@ function script(id: string, name: string): ScriptEntry {
 }
 
 const HERO: TweaksPageHero = {
-  icon: Zap,
+  path: '/cpu',
   badge: ' Desempenho '.trim(),
   title: 'Página de teste',
   description: 'Descrição da página de teste',
@@ -94,6 +93,12 @@ describe('TweaksPage — estados', () => {
     expect(container.querySelector('.grid')?.className).toContain('gap-3');
     expect(container.querySelector('.grid')?.children.length).toBe(2);
     expect(container.querySelectorAll('[data-testid="tweaks-list"]').length).toBe(0);
+  });
+
+  it('usa no selo o ícone da rota do hero', () => {
+    const { container } = render(<TweaksPage {...baseProps()} />);
+
+    expect(container.querySelector('svg')?.className.baseVal).toContain('lucide-gauge');
   });
 
   it('respeita extraLoading mesmo com o catálogo pronto', () => {

@@ -1,7 +1,7 @@
-import { Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AnimatedSettings } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { DataSection } from '../components/settings/DataSection';
 import { NotificationsSection } from '../components/settings/NotificationsSection';
 import { PageLockSection } from '../components/settings/PageLockSection';
@@ -27,7 +27,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <Settings className="size-4 text-primary" />
+                <RouteIcon path="/settings" />
                 <span className="text-xs font-semibold uppercase tracking-wider text-primary">
                   Configuracoes
                 </span>

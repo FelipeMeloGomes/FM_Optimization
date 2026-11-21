@@ -1,32 +1,16 @@
 import {
-  Activity,
-  CircuitBoard,
-  Clock,
-  Crosshair,
   Eraser,
-  Gamepad2,
-  Gauge,
-  GitCompareArrows,
-  Globe,
-  Hammer,
-  HardDrive,
   Home,
   type LucideIcon,
-  MonitorDown,
   Mouse,
-  MousePointerClick,
-  PackageX,
-  Palette,
-  Rocket,
   Settings,
-  Shield,
-  ShieldCheck,
   Sparkles,
   Wifi,
   Wrench,
 } from 'lucide-react';
 import { type ComponentType, type LazyExoticComponent, lazy } from 'react';
 import { DEVICE_PAGES, type DeviceCategory } from '../lib/device-pages';
+import { getRouteIcon } from './route-icons';
 
 export type CategoryId =
   | 'inicio'
@@ -54,9 +38,19 @@ export interface AppRoute {
   protected?: boolean;
 }
 
+type RouteInput = Omit<AppRoute, 'icon'>;
+
+/**
+ * Toda rota recebe o ícone da sidebar automaticamente. Nenhuma página ou
+ * configuração escolhe o ícone na mão: basta o path, e `getRouteIcon` resolve.
+ */
+function route({ path, ...rest }: RouteInput): AppRoute {
+  return { path, icon: getRouteIcon(path), ...rest };
+}
+
 export const CATEGORIES: Category[] = [
   { id: 'inicio', label: 'Inicio', hideLabel: true, icon: Home },
-  { id: 'desempenho', label: 'Desempenho', icon: Gauge },
+  { id: 'desempenho', label: 'Desempenho', icon: getRouteIcon('/cpu') },
   { id: 'manutencao', label: 'Manutencao', icon: Eraser },
   { id: 'formatacao', label: 'Formatação', icon: Sparkles },
   { id: 'rede', label: 'Rede', icon: Wifi },
@@ -85,193 +79,172 @@ function sistemaOrder(route: AppRoute): number {
 }
 
 const SYSTEM_ROUTES: AppRoute[] = [
-  ...DEVICE_PAGES.map((device) => ({
-    path: device.path,
-    label: device.name,
-    icon: device.icon,
-    category: 'sistema' as const,
-    protected: true,
-    component: DEVICE_COMPONENTS[device.category],
-  })),
-  {
+  ...DEVICE_PAGES.map((device) =>
+    route({
+      path: device.path,
+      label: device.name,
+      category: 'sistema',
+      protected: true,
+      component: DEVICE_COMPONENTS[device.category],
+    })
+  ),
+  route({
     path: '/armazenamento',
     label: 'Armazenamento',
-    icon: HardDrive,
-    category: 'sistema' as const,
+    category: 'sistema',
     protected: true,
     component: lazy(() => import('../pages/StoragePage')),
-  },
-  {
+  }),
+  route({
     path: '/emuladores',
     label: 'Emuladores',
-    icon: Gamepad2,
-    category: 'sistema' as const,
+    category: 'sistema',
     protected: true,
     component: lazy(() => import('../pages/EmuladoresPage')),
-  },
-  {
+  }),
+  route({
     path: '/meu-pc',
     label: 'Meu PC',
-    icon: CircuitBoard,
-    category: 'sistema' as const,
+    category: 'sistema',
     protected: true,
     component: lazy(() => import('../pages/MeuPcPage')),
-  },
-  {
+  }),
+  route({
     path: '/privacidade-seguranca',
     label: 'Privacidade',
-    icon: ShieldCheck,
-    category: 'sistema' as const,
+    category: 'sistema',
     protected: true,
     component: lazy(() => import('../pages/PrivacySecurityPage')),
-  },
-  {
+  }),
+  route({
     path: '/reparo-do-sistema',
     label: 'Reparo do sistema',
-    icon: Hammer,
-    category: 'sistema' as const,
+    category: 'sistema',
     protected: true,
     component: lazy(() => import('../pages/SystemRepairPage')),
-  },
-  {
+  }),
+  route({
     path: '/utilities',
     label: 'Utilitarios',
-    icon: Wrench,
-    category: 'sistema' as const,
+    category: 'sistema',
     protected: true,
     component: lazy(() => import('../pages/UtilitiesPage')),
-  },
+  }),
 ].sort((a, b) => sistemaOrder(a) - sistemaOrder(b) || a.label.localeCompare(b.label, 'pt-BR'));
 
 export const ROUTES: AppRoute[] = [
-  {
+  route({
     path: '/',
     label: 'Inicio',
-    icon: Home,
     category: 'inicio',
     component: lazy(() => import('../pages/DashboardPage')),
-  },
-  {
+  }),
+  route({
     path: '/input-lag',
     label: 'Input Lag',
-    icon: MousePointerClick,
     category: 'desempenho',
     protected: true,
     component: lazy(() => import('../pages/InputLagPage')),
-  },
-  {
-    // A rota continua /cpu para nao quebrar Page Lock nem links antigos, mas a
-    // pagina cobre processador, GPU AMD e ajustes do Windows: o rotulo segue o
-    // conteudo real, nao a rota.
+  }),
+  // A rota continua /cpu para nao quebrar Page Lock nem links antigos, mas a
+  // pagina cobre processador, GPU AMD e ajustes do Windows: o rotulo segue o
+  // conteudo real, nao a rota.
+  route({
     path: '/cpu',
     label: 'Otimização do Sistema',
-    icon: Gauge,
     category: 'desempenho',
     protected: true,
     component: lazy(() => import('../pages/CpuPage')),
-  },
-  {
+  }),
+  route({
     path: '/inicializacao',
     label: 'Inicializacao',
-    icon: Rocket,
     category: 'desempenho',
     protected: true,
     component: lazy(() => import('../pages/StartupPage')),
-  },
-  {
+  }),
+  route({
     path: '/cleaner',
     label: 'Limpeza',
-    icon: Eraser,
     category: 'manutencao',
     protected: true,
     component: lazy(() => import('../pages/CleanerPage')),
-  },
-  {
+  }),
+  route({
     path: '/debloat',
     label: 'Debloat',
-    icon: PackageX,
     category: 'formatacao',
     protected: true,
     component: lazy(() => import('../pages/DebloatPage')),
-  },
-  {
+  }),
+  route({
     path: '/essenciais',
     label: 'Essenciais PC',
-    icon: MonitorDown,
     category: 'formatacao',
     protected: true,
     component: lazy(() => import('../pages/EssentialsPage')),
-  },
-  {
+  }),
+  route({
     path: '/rede',
     label: 'Internet',
-    icon: Wifi,
     category: 'rede',
     protected: true,
     component: lazy(() => import('../pages/NetworkPage')),
-  },
-  {
+  }),
+  route({
     path: '/dns',
     label: 'DNS',
-    icon: Globe,
     category: 'rede',
     protected: true,
     component: lazy(() => import('../pages/DnsPage')),
-  },
-  {
+  }),
+  route({
     path: '/velocidade',
     label: 'Velocidade',
-    icon: Activity,
     category: 'rede',
     protected: true,
     component: lazy(() => import('../pages/SpeedTestPage')),
-  },
-  {
+  }),
+  route({
     path: '/comparar-placa',
     label: 'Comparar Placas',
-    icon: GitCompareArrows,
     category: 'ferramentas',
     component: lazy(() => import('../pages/CompararPlacaPage')),
-  },
-  {
+  }),
+  route({
     path: '/overlay-jogo',
     label: 'Overlay de jogo',
-    icon: Crosshair,
     category: 'ferramentas',
     component: lazy(() => import('../pages/OverlayJogoPage')),
-  },
+  }),
   ...SYSTEM_ROUTES,
-  {
-    // Restauracao e historico nao protegem nada: apenas registram/recuperam o
-    // estado anterior. Ficam no rodape, em Configuracoes.
+  // Restauracao e historico nao protegem nada: apenas registram/recuperam o
+  // estado anterior. Ficam no rodape, em Configuracoes.
+  route({
     path: '/restore-points',
     label: 'Restauracao',
-    icon: Shield,
     category: 'configuracoes',
     component: lazy(() => import('../pages/RestorePointsPage')),
-  },
-  {
+  }),
+  route({
     path: '/history',
     label: 'Historico',
-    icon: Clock,
     category: 'configuracoes',
     component: lazy(() => import('../pages/HistoryPage')),
-  },
-  {
+  }),
+  route({
     path: '/personalizacao',
     label: 'Personalização',
-    icon: Palette,
     category: 'formatacao',
     protected: true,
     component: lazy(() => import('../pages/PersonalizationPage')),
-  },
-  {
+  }),
+  route({
     path: '/settings',
     label: 'Configuracoes',
-    icon: Settings,
     category: 'configuracoes',
     component: lazy(() => import('../pages/SettingsPage')),
-  },
+  }),
 ];
 
 export function routesByCategory(id: CategoryId): AppRoute[] {

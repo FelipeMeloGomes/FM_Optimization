@@ -1,4 +1,3 @@
-import { Palette } from 'lucide-react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedPersonalization } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
@@ -7,7 +6,7 @@ import { PERSONALIZATION_SECTIONS } from '../lib/personalization-sections';
 
 /** Config do hero fora do componente: mantém a prop estável e o memo eficaz. */
 const HERO = {
-  icon: Palette,
+  path: '/personalizacao',
   badge: 'Personalização',
   title: 'Aparência e mods de apps',
   description:

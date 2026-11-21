@@ -12,8 +12,9 @@ import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { formatMemoryTotal } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
-import { AnimatedDashboard } from '../components/hero/AnimatedHero';
+import { AnimatedMeuPc } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Badge, Button, Skeleton } from '../components/ui';
 import { useScriptExecutionContext } from '../contexts/ScriptExecutionContext';
@@ -93,12 +94,12 @@ export default function MeuPcPage() {
 
   return (
     <div className="space-y-6">
-      <HeroBanner visual={<AnimatedDashboard />}>
+      <HeroBanner visual={<AnimatedMeuPc />}>
         <div className="relative p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <Cpu className="size-4 text-primary" />
+                <RouteIcon path="/meu-pc" />
                 <span className="text-xs font-semibold uppercase tracking-wider text-primary">
                   Sistema
                 </span>

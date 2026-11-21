@@ -1,4 +1,4 @@
-import { AlertTriangle, Gauge } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { useCallback, useEffect, useMemo } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedCpu } from '../components/hero/AnimatedHero';
@@ -15,7 +15,7 @@ import { getRamScriptId } from '../lib/ram-script';
 const BULK_SCRIPT_IDS = ['tweaks-3', 'tweaks-4'];
 
 const HERO = {
-  icon: Gauge,
+  path: '/cpu',
   badge: 'Desempenho',
   title: 'Otimização do Sistema',
   description:

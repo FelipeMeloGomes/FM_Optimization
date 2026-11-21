@@ -1,7 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   Boxes,
-  Eraser,
   FolderOpen,
   Globe,
   Loader2,
@@ -21,6 +20,7 @@ import { ConfirmCleanDialog } from '../components/ConfirmCleanDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedCleaner } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Button } from '../components/ui';
 import { useAutoCleanContext } from '../contexts/AutoCleanContext';
@@ -389,7 +389,7 @@ export default function CleanerPage() {
         <div className="relative p-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Eraser className="size-4 text-primary" aria-hidden="true" />
+              <RouteIcon path="/cleaner" />
               <span className="text-xs font-semibold text-primary uppercase tracking-wider">
                 Limpeza
               </span>

@@ -1,4 +1,3 @@
-import { ShieldCheck } from 'lucide-react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedPrivacySecurity } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
@@ -6,7 +5,7 @@ import { scriptsInSectionOrder } from '../lib/app-sections';
 import { PRIVACY_SECTIONS } from '../lib/privacy-sections';
 
 const HERO = {
-  icon: ShieldCheck,
+  path: '/privacidade-seguranca',
   badge: 'Privacidade',
   title: 'Privacidade do Windows',
   description:

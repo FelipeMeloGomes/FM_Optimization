@@ -1,7 +1,8 @@
-import { Activity, AlertCircle, Play, RotateCcw, Square, Wifi } from 'lucide-react';
+import { AlertCircle, Play, RotateCcw, Square, Wifi } from 'lucide-react';
 import type { SpeedTestPhase } from '../../electron/shared/ipc-types';
 import { AnimatedSpeedTest } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RouteIcon } from '../components/hero/RouteIcon';
 import { SpeedGauge } from '../components/SpeedGauge';
 import { Button, Card, CardContent, Progress } from '../components/ui';
 import { SpeedProvider, useSpeedContext } from '../contexts/SpeedContext';
@@ -53,7 +54,7 @@ function SpeedTestPageContent() {
       <HeroBanner visual={<AnimatedSpeedTest />}>
         <div className="relative p-6">
           <div className="mb-2 flex items-center gap-2">
-            <Activity className="size-4 text-primary" aria-hidden="true" />
+            <RouteIcon path="/velocidade" />
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">
               Rede
             </span>
