@@ -131,6 +131,17 @@ Regra de implementação: remover o id do pacote da lista de ids selecionáveis 
 7. Atualizar `README.md` com o novo comportamento.
 8. Gate: lint, typecheck, teste.
 
+## Adendo: layout idêntico ao da Limpeza (decisão do usuário, 21/11)
+
+Revisão do app em dev: o usuário rejeitou o visual entregue por não seguir o layout das páginas de referência. A referência é `src/pages/CleanerPage.tsx`. Escopo escolhido: **visual completo da Limpeza**.
+
+- As 7 páginas passam a renderizar os tweaks em **uma única lista virtualizada**, com `divide-y`, sem cards com borda e sem agrupamento por seção.
+- A barra usa o padrão da Limpeza: `<label>` com checkbox `size-4 accent-primary` e o contador dentro dele. Mantém **Limpar seleção** como ação secundária ao lado do checkbox (substitui a vaga de "Selecionar recomendados" da Limpeza), preservando o requisito original de texto.
+- Linhas seguem o padrão da Limpeza: `px-4 py-3`, checkbox com `id`/`<label htmlFor>`, `size-4 shrink-0 accent-primary`.
+- Botão de aplicar ganha ícone e estado "Aplicando…" durante o lote, espelhando "Limpando…".
+- Input Lag, que tinha grade própria, também passa à lista única, preservando os nomes/descrições curados do registry.
+- A ordem de exibição permanece a mesma: para as 6 páginas com seções, a lista é achatada na ordem das seções; em Input Lag, na ordem do registry.
+
 ## Fora do desenho
 
 - Push, release, build de instalador.
