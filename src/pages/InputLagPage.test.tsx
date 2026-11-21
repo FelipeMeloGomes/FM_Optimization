@@ -79,10 +79,6 @@ function bodyText(): string {
   return (document.body.textContent ?? '').replace(/\s+/g, ' ').trim();
 }
 
-function count(haystack: string, needle: string): number {
-  return haystack.split(needle).length - 1;
-}
-
 beforeEach(() => {
   store.state = { status: 'success', data: [] };
   store.scripts = FULL_CATALOG;
@@ -120,15 +116,15 @@ describe('InputLagPage — hero e registros', () => {
     await waitFor(() => expect(store.page).toHaveBeenCalledWith('Input Lag'));
   });
 
-  it('mostra o hero e apenas a seção de registros', async () => {
+  it('mostra o hero sem o título e o contador de registros', async () => {
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
+    await waitFor(() => expect(screen.getByTestId('tweaks-list')).toBeDefined());
     const text = bodyText();
 
     expect(text).toContain('Reduza o Input Lag do seu PC');
-    expect(text).toContain('Otimizações do Registro');
-    expect(count(text, '5 tweaks')).toBe(1);
+    expect(text).not.toContain('Otimizações do Registro');
+    expect(text).not.toMatch(/\d+\s+tweaks/);
     // Os cards de dispositivo agora vivem em /perifericos.
     expect(text).not.toContain('Dispositivos');
     expect(text).not.toContain('O que otimiza:');
@@ -142,41 +138,40 @@ describe('InputLagPage — hero e registros', () => {
 
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
+    await waitFor(() => expect(screen.getByTestId('tweaks-list')).toBeDefined());
     const text = bodyText();
 
     expect(text).not.toContain('Dispositivos');
     expect(text).not.toContain('Latência de digitação');
-    expect(count(text, '5 tweaks')).toBe(1);
-    expect(count(text, '1 tweaks')).toBe(0);
+    expect(text).not.toContain('Otimizações do Registro');
+    expect(text).not.toMatch(/\d+\s+tweaks/);
   });
 });
 
-describe('InputLagPage — contagem dos selos', () => {
-  it('conta só os scripts curados que a seção renderiza', async () => {
+describe('InputLagPage — sem cabeçalho de registros', () => {
+  it('não mostra o título nem o contador mesmo com scripts extras no catálogo', async () => {
     store.scripts = [...FULL_CATALOG, script('inputlag-99', 'Sobrando do catálogo')];
 
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
+    await waitFor(() => expect(screen.getByTestId('tweaks-list')).toBeDefined());
     const text = bodyText();
 
-    expect(count(text, '5 tweaks')).toBe(1);
-    expect(text).not.toContain('6 tweaks');
+    expect(text).not.toContain('Otimizações do Registro');
+    expect(text).not.toMatch(/\d+\s+tweaks/);
     expect(text).not.toContain('Sobrando do catálogo');
   });
 
-  it('encolhe o selo quando o catálogo não traz todos os ids', async () => {
+  it('mantém a lista curada quando falta um script do registry', async () => {
     store.scripts = FULL_CATALOG.filter((s) => s.id !== 'inputlag-5');
 
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
-    const text = bodyText();
-
-    expect(count(text, '4 tweaks')).toBe(1);
-    expect(text).not.toContain('Reduzir Input Lag USB');
-    expect(text).toContain('TCPNoDelay');
+    await waitFor(() => expect(screen.getByTestId('tweaks-list')).toBeDefined());
+    expect(screen.getByTestId('tweaks-list').querySelectorAll('li[data-index]')).toHaveLength(4);
+    expect(screen.queryByText('Reduzir Input Lag USB')).toBeNull();
+    expect(screen.getByText('TCPNoDelay')).toBeDefined();
+    expect(bodyText()).not.toMatch(/\d+\s+tweaks/);
   });
 });
 
@@ -216,18 +211,18 @@ describe('InputLagPage — lista única no padrão da Limpeza', () => {
 });
 
 describe('InputLagPage — registros', () => {
-  it('não mostra "Aplicar Todas Otimizações" nem o card do pacote amplo', async () => {
+  it('não mostra "Aplicar Todas Otimizações", o card do pacote amplo nem o contador', async () => {
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
+    await waitFor(() => expect(screen.getByTestId('tweaks-list')).toBeDefined());
     expect(bodyText()).not.toContain('Aplicar Todas Otimizações');
-    expect(bodyText()).toContain('5 tweaks');
+    expect(bodyText()).not.toMatch(/\d+\s+tweaks/);
   });
 
   it('seleciona um tweak e aplica só ele pelo botão de lote', async () => {
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
+    await waitFor(() => expect(screen.getByTestId('tweaks-list')).toBeDefined());
 
     const check = screen.getByRole('checkbox', { name: 'Selecionar TCPNoDelay' });
     expect((check as HTMLInputElement).checked).toBe(false);
@@ -257,10 +252,9 @@ describe('InputLagPage — registros', () => {
 
     render(<InputLagPage />);
 
-    await waitFor(() => expect(bodyText()).toContain('Otimizações do Registro'));
-    const text = bodyText();
-
-    expect(text).not.toContain('Desativar LargeSystemCache');
-    expect(count(text, '4 tweaks')).toBe(1);
+    await waitFor(() => expect(screen.getByTestId('tweaks-list')).toBeDefined());
+    expect(screen.queryByText('Desativar LargeSystemCache')).toBeNull();
+    expect(screen.getByTestId('tweaks-list').querySelectorAll('li[data-index]')).toHaveLength(4);
+    expect(bodyText()).not.toMatch(/\d+\s+tweaks/);
   });
 });

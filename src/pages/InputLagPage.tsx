@@ -2,7 +2,6 @@ import { Zap } from 'lucide-react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedInputLag } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
-import { Badge } from '../components/ui';
 import { resolveCuratedItems } from '../lib/resolve-curated-scripts';
 
 interface RegistryItem {
@@ -69,20 +68,6 @@ const buildLabels = (scripts: ScriptEntry[]) =>
     ])
   );
 
-const beforeList = (visibleScripts: ScriptEntry[]) => (
-  <div>
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-2">
-        <div className="size-1.5 rounded-full bg-warning" />
-        <h3 className="text-sm font-semibold text-foreground">Otimizações do Registro</h3>
-      </div>
-      <Badge variant="secondary" className="text-[10px]">
-        {visibleScripts.length} tweaks
-      </Badge>
-    </div>
-  </div>
-);
-
 export default function InputLagPage() {
   return (
     <TweaksPage
@@ -92,7 +77,6 @@ export default function InputLagPage() {
       skeletonGap="gap-3"
       transform={transform}
       buildLabels={buildLabels}
-      beforeList={beforeList}
       compactToolbarGap
     />
   );
