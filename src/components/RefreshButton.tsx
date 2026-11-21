@@ -43,11 +43,6 @@ export interface PageRefreshBarProps extends RefreshButtonProps {
   status?: ReactNode;
   /** Outras ações da página (ex.: exportar relatório) alinhadas junto do botão. */
   children?: ReactNode;
-  /**
-   * Avisos de admin também alinham a ação à direita. Sem espaço extra, o botão
-   * de atualizar parece colado no aviso logo abaixo.
-   */
-  followedByNotice?: boolean;
 }
 
 /**
@@ -55,19 +50,13 @@ export interface PageRefreshBarProps extends RefreshButtonProps {
  * animado é absoluto no canto direito e um botão dentro dele acaba tapando a
  * animação.
  */
-export function PageRefreshBar({
-  status,
-  children,
-  followedByNotice = false,
-  ...refresh
-}: PageRefreshBarProps) {
+export function PageRefreshBar({ status, children, ...refresh }: PageRefreshBarProps) {
   return (
     <fieldset
       aria-label="Atualizar dados"
-      className={cn(
-        'm-0 flex flex-wrap items-center justify-end gap-x-3 gap-y-2 border-0 p-0',
-        followedByNotice && 'pb-6'
-      )}
+      // `mx-0` zera apenas as margens laterais padrão do fieldset: `m-0` também
+      // anularia o margin-block-end do `space-y-6` e colaria o botão no card abaixo.
+      className="mx-0 flex flex-wrap items-center justify-end gap-x-3 gap-y-2 border-0 p-0"
     >
       {status && <p className="mr-auto text-[10px] text-muted-foreground">{status}</p>}
       {children}

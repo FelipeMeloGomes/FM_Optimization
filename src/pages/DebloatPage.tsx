@@ -268,7 +268,6 @@ export default function DebloatPage() {
         onRefresh={() => void refresh()}
         refreshing={isRefreshing}
         ariaLabel="Atualizar inventário"
-        followedByNotice={!isAdmin}
         status={lastRefreshed > 0 ? 'A varredura usa PowerShell e pode levar até 1 minuto.' : null}
       />
 

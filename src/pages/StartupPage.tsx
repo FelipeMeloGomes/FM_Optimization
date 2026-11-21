@@ -283,7 +283,7 @@ export default function StartupPage() {
         </div>
       </HeroBanner>
 
-      <PageRefreshBar onRefresh={reload} followedByNotice={!data.isAdmin} />
+      <PageRefreshBar onRefresh={reload} />
 
       {/* Admin notice */}
       {!data.isAdmin && (

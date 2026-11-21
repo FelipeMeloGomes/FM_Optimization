@@ -76,15 +76,15 @@ describe('PageRefreshBar', () => {
     expect(screen.getByRole('button', { name: 'Atualizar' })).toBeDefined();
   });
 
-  it('abre espaço extra quando um aviso vem logo abaixo da faixa', () => {
-    render(<PageRefreshBar onRefresh={() => {}} followedByNotice />);
-
-    expect(screen.getByRole('group', { name: 'Atualizar dados' }).className).toContain('pb-6');
-  });
-
-  it('não abre espaço extra quando não há aviso abaixo', () => {
+  it('não anula o espaçamento vertical aplicado pelo contêiner da página', () => {
     render(<PageRefreshBar onRefresh={() => {}} />);
 
-    expect(screen.getByRole('group', { name: 'Atualizar dados' }).className).not.toContain('pb-6');
+    const bar = screen.getByRole('group', { name: 'Atualizar dados' });
+
+    // `m-0` zera o margin-block-end do `space-y-6` e deixa o botão encostado
+    // no card seguinte. `mx-0` zera só as margens laterais padrão do fieldset.
+    expect(bar.className).toContain('mx-0');
+    expect(bar.className).not.toContain('m-0');
+    expect(bar.className).not.toContain('pb-6');
   });
 });

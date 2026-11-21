@@ -408,7 +408,6 @@ export default function CleanerPage() {
         onRefresh={() => void refresh()}
         refreshing={isRefreshing}
         ariaLabel="Atualizar estatísticas"
-        followedByNotice={!isAdmin && items.some((item) => item.requiresAdmin)}
         status={
           lastRefreshed > 0 ? (
             <>

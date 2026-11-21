@@ -347,7 +347,7 @@ describe('CleanerPage — administrador e pendências', () => {
     render(<CleanerPage />);
 
     expect(screen.getByText(/exigem administrador/)).not.toBeNull();
-    expect(screen.getByRole('group', { name: 'Atualizar dados' }).className).toContain('pb-6');
+    expect(screen.getByRole('group', { name: 'Atualizar dados' }).className).not.toContain('pb-6');
 
     const updateCheckbox = screen.getByLabelText(
       'Selecionar Cache do Windows Update'

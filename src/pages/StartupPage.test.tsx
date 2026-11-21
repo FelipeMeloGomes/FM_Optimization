@@ -261,7 +261,7 @@ describe('StartupPage — conteúdo', () => {
 
     expect(screen.getByText('Sem permissão de administrador')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Reiniciar como admin' })).toBeDefined();
-    expect(screen.getByRole('group', { name: 'Atualizar dados' }).className).toContain('pb-6');
+    expect(screen.getByRole('group', { name: 'Atualizar dados' }).className).not.toContain('pb-6');
   });
 });
 
