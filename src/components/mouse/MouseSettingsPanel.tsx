@@ -6,7 +6,7 @@ import {
   MOUSE_POINTER_SPEED_MIN,
 } from '../../../electron/shared/mouse-settings';
 import { useMouseSettings } from '../../hooks/use-mouse-settings';
-import { Button, Switch } from '../ui';
+import { AnimatedNumber, Button, Switch } from '../ui';
 import { MouseTrailPreview } from './MouseTrailPreview';
 
 export function MouseSettingsPanel() {
@@ -52,9 +52,11 @@ export function MouseSettingsPanel() {
           <label htmlFor="mouse-pointer-speed" className="font-medium text-foreground">
             Velocidade do ponteiro
           </label>
-          <span className="font-semibold text-primary">
-            {draft.pointerSpeed} / {MOUSE_POINTER_SPEED_MAX}
-          </span>
+          <AnimatedNumber
+            value={draft.pointerSpeed}
+            suffix={` / ${MOUSE_POINTER_SPEED_MAX}`}
+            className="font-semibold text-primary"
+          />
         </div>
         <input
           id="mouse-pointer-speed"
@@ -90,9 +92,11 @@ export function MouseSettingsPanel() {
           <label htmlFor="mouse-double-click" className="font-medium text-foreground">
             Tempo de duplo clique
           </label>
-          <span className="rounded-md bg-muted px-2 py-1 font-semibold text-foreground">
-            {draft.doubleClickSpeed} ms
-          </span>
+          <AnimatedNumber
+            value={draft.doubleClickSpeed}
+            suffix=" ms"
+            className="rounded-md bg-muted px-2 py-1 font-semibold text-foreground"
+          />
         </div>
         <input
           id="mouse-double-click"

@@ -100,6 +100,19 @@ describe('MouseSettingsPanel — controles', () => {
     expect(text()).toContain('16 / 20');
   });
 
+  it('anima a velocidade do ponteiro quando o slider muda', async () => {
+    render(<MouseSettingsPanel />);
+    await waitFor(() =>
+      expect(screen.getByRole('slider', { name: 'Velocidade do ponteiro' })).toBeTruthy()
+    );
+
+    fireEvent.change(screen.getByRole('slider', { name: 'Velocidade do ponteiro' }), {
+      target: { value: '16' },
+    });
+
+    expect(screen.getByText('16 / 20').className).toContain('sr-only');
+  });
+
   it('aplica velocidade e tempo de duplo clique com os valores escolhidos', async () => {
     render(<MouseSettingsPanel />);
     await waitFor(() =>

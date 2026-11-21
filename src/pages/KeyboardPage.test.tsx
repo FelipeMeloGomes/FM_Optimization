@@ -42,11 +42,11 @@ beforeEach(() => {
 });
 
 describe('página Teclado', () => {
-  it('mostra o teclado animado e o painel de ajustes do Windows', async () => {
-    const { container } = render(<KeyboardPage />);
+  it('mostra a foto do teclado gamer e o painel de ajustes do Windows', async () => {
+    render(<KeyboardPage />);
 
     expect(screen.getByRole('heading', { name: 'Teclado', level: 2 })).toBeTruthy();
-    expect(container.querySelector('.animate-keyboard-glow')).not.toBeNull();
+    expect(screen.getByRole('img', { name: 'Teclado gamer Razer Ornata Chroma' })).toBeTruthy();
 
     await waitFor(() =>
       expect(screen.getByRole('slider', { name: 'Atraso até repetir' })).toBeTruthy()

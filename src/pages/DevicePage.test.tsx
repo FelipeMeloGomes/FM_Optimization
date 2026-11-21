@@ -78,15 +78,30 @@ describe('DevicePage', () => {
     await waitFor(() => expect(store.page).toHaveBeenCalledWith('Mouse'));
   });
 
-  it('mostra o título, o resumo e o selo com a quantidade de tweaks', async () => {
+  it('mostra o título, o resumo e o selo Sistema no banner', async () => {
     render(<DevicePage config={MOUSE_PAGE} />);
 
     await waitFor(() => expect(bodyText()).toContain('Mouse'));
     const text = bodyText();
 
     expect(text).toContain('O que otimiza:');
-    expect(text).toContain('2 tweaks');
+    expect(screen.getByText('Sistema')).toBeTruthy();
+    expect(text).toContain(MOUSE_PAGE.heroDescription);
     expect(text).not.toContain('Otimizações do Registro');
+  });
+
+  it('mostra a foto real do produto no banner', () => {
+    render(<DevicePage config={MOUSE_PAGE} />);
+
+    expect(
+      screen.getByRole('img', { name: 'Mouse gamer Logitech PRO X SuperLight 2 Black' })
+    ).toBeTruthy();
+  });
+
+  it('não mostra a quantidade de tweaks nos badges', () => {
+    render(<DevicePage config={MOUSE_PAGE} />);
+
+    expect(screen.queryByText(/\d+\s+tweaks/)).toBeNull();
   });
 
   it('abre a lista e executa o tweak escolhido', async () => {

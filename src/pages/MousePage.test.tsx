@@ -42,11 +42,13 @@ beforeEach(() => {
 });
 
 describe('página Mouse', () => {
-  it('mostra o cursor animado e o painel de ajustes do Windows', async () => {
-    const { container } = render(<MousePage />);
+  it('mostra a foto do SuperLight 2 e o painel de ajustes do Windows', async () => {
+    render(<MousePage />);
 
     expect(screen.getByRole('heading', { name: 'Mouse', level: 2 })).toBeTruthy();
-    expect(container.querySelector('.animate-mouse-glide')).not.toBeNull();
+    expect(
+      screen.getByRole('img', { name: 'Mouse gamer Logitech PRO X SuperLight 2 Black' })
+    ).toBeTruthy();
 
     await waitFor(() =>
       expect(screen.getByRole('slider', { name: 'Velocidade do ponteiro' })).toBeTruthy()

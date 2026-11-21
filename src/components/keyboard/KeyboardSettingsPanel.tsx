@@ -8,7 +8,7 @@ import {
   KEYBOARD_REPEAT_RATE_MIN,
 } from '../../../electron/shared/keyboard-settings';
 import { useKeyboardSettings } from '../../hooks/use-keyboard-settings';
-import { Button } from '../ui';
+import { AnimatedNumber, Button } from '../ui';
 import { KeyboardPreview } from './KeyboardPreview';
 
 const DELAY_LABELS = ['250 ms', '500 ms', '750 ms', '1000 ms'];
@@ -81,9 +81,11 @@ export function KeyboardSettingsPanel() {
           <label htmlFor="keyboard-repeat-rate" className="font-medium text-foreground">
             Velocidade de repetição
           </label>
-          <span className="font-semibold text-primary">
-            {draft.repeatRate} / {KEYBOARD_REPEAT_RATE_MAX}
-          </span>
+          <AnimatedNumber
+            value={draft.repeatRate}
+            suffix={` / ${KEYBOARD_REPEAT_RATE_MAX}`}
+            className="font-semibold text-primary"
+          />
         </div>
         <input
           id="keyboard-repeat-rate"
@@ -106,9 +108,11 @@ export function KeyboardSettingsPanel() {
           <label htmlFor="keyboard-blink-rate" className="font-medium text-foreground">
             Piscagem do cursor
           </label>
-          <span className="rounded-md bg-muted px-2 py-1 font-semibold text-foreground">
-            {draft.caretBlinkRate} ms
-          </span>
+          <AnimatedNumber
+            value={draft.caretBlinkRate}
+            suffix=" ms"
+            className="rounded-md bg-muted px-2 py-1 font-semibold text-foreground"
+          />
         </div>
         <input
           id="keyboard-blink-rate"

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { DisplayMode, DisplayMonitor } from '../../../electron/shared/display-settings';
 import { useDisplaySettings } from '../../hooks/use-display-settings';
-import { Button } from '../ui';
+import { AnimatedNumber, Button } from '../ui';
 
 function resolutionKey(mode: DisplayMode): string {
   return `${mode.width}x${mode.height}`;
@@ -78,7 +78,9 @@ function MonitorCard({
           <p className="text-lg font-semibold text-foreground">
             {draft.width} × {draft.height}
           </p>
-          <p className="text-xs text-primary">{draft.frequency} Hz</p>
+          <p className="text-xs text-primary">
+            <AnimatedNumber value={draft.frequency} suffix=" Hz" />
+          </p>
         </div>
       </div>
 

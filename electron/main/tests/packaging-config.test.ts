@@ -179,6 +179,7 @@ describe('configuracao de empacotamento', () => {
       'app-builder-lib',
       'builder-util-runtime',
       'minimatch',
+      'motion',
       'tar',
       'vitest',
       'typescript',

@@ -10,6 +10,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['electron/main/**/*.test.ts', 'src/**/*.test.{ts,tsx}', 'tests/**/*.test.ts'],
+    setupFiles: ['./tests/setup.ts'],
     globals: true,
   },
 });

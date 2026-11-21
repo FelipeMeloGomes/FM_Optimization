@@ -109,6 +109,23 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/src/components/react-bits/**/*.{ts,tsx}"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useKeyWithClickEvents": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "useIterableCallbackReturn": "off"
+          }
+        }
+      }
     }
   ]
 }

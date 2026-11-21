@@ -39,3 +39,17 @@ describe('páginas de dispositivo', () => {
     expect(stray).toEqual([]);
   });
 });
+
+describe('fotos reais dos banners', () => {
+  it('usa o PRO X SuperLight 2 preto no banner do Mouse', () => {
+    expect(MOUSE_PAGE.heroImage).toContain('mouse-superlight2-black');
+    expect(MOUSE_PAGE.heroImageAlt).toBe('Mouse gamer Logitech PRO X SuperLight 2 Black');
+  });
+
+  it('usa fotos de teclado e monitor gamer nos banners', () => {
+    expect(TECLADO_PAGE.heroImage).toContain('keyboard-gamer');
+    expect(TECLADO_PAGE.heroImageAlt).toBe('Teclado gamer Razer Ornata Chroma');
+    expect(MONITOR_PAGE.heroImage).toContain('monitor-gamer');
+    expect(MONITOR_PAGE.heroImageAlt).toBe('Monitor gamer');
+  });
+});

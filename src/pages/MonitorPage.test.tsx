@@ -59,11 +59,11 @@ beforeEach(() => {
 });
 
 describe('página Monitor', () => {
-  it('mostra o monitor animado e o painel de ajustes do Windows', async () => {
-    const { container } = render(<MonitorPage />);
+  it('mostra a foto do monitor gamer e o painel de ajustes do Windows', async () => {
+    render(<MonitorPage />);
 
     expect(screen.getByRole('heading', { name: 'Monitor', level: 2 })).toBeTruthy();
-    expect(container.querySelector('.animate-monitor-pulse')).not.toBeNull();
+    expect(screen.getByRole('img', { name: 'Monitor gamer' })).toBeTruthy();
 
     await waitFor(() =>
       expect(screen.getAllByRole('combobox', { name: 'Resolução' })).toHaveLength(2)

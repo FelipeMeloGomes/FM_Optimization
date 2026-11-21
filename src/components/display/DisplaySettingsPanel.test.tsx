@@ -106,6 +106,18 @@ describe('DisplaySettingsPanel — dois monitores', () => {
     expect(screen.getAllByRole('combobox', { name: 'Taxa de atualização' })).toHaveLength(2);
   });
 
+  it('anima a taxa de atualização quando o modo do monitor muda', async () => {
+    render(<DisplaySettingsPanel />);
+    await waitFor(() => expect(screen.getByText('Ajustes do Windows')).toBeTruthy());
+
+    const [hz] = screen.getAllByRole('combobox', { name: 'Taxa de atualização' });
+    fireEvent.change(hz, { target: { value: '60' } });
+
+    expect(screen.getAllByText('60 Hz').some((node) => node.className.includes('sr-only'))).toBe(
+      true
+    );
+  });
+
   it('mostra apenas as taxas disponíveis para a resolução escolhida', async () => {
     render(<DisplaySettingsPanel />);
     await waitFor(() => expect(screen.getByText('Ajustes do Windows')).toBeTruthy());

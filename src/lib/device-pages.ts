@@ -1,4 +1,7 @@
 import { Keyboard, type LucideIcon, Monitor, Mouse } from 'lucide-react';
+import keyboardImage from '../assets/keyboard-gamer.jpg';
+import monitorImage from '../assets/monitor-gamer.jpg';
+import mouseImage from '../assets/mouse-superlight2-black.jpg';
 
 export type DeviceCategory = 'Mouse' | 'Monitor' | 'Teclado';
 
@@ -7,6 +10,8 @@ export interface DevicePageConfig {
   name: string;
   category: DeviceCategory;
   heroDescription: string;
+  heroImage: string;
+  heroImageAlt: string;
   description: string;
   icon: LucideIcon;
   color: string;
@@ -24,6 +29,8 @@ export const MOUSE_PAGE: DevicePageConfig = {
   category: 'Mouse',
   heroDescription:
     'Desative a aceleração e obtenha movimento 1:1, com tracking consistente em jogos.',
+  heroImage: mouseImage,
+  heroImageAlt: 'Mouse gamer Logitech PRO X SuperLight 2 Black',
   description: 'Desative aceleração e obtenha movimento 1:1 preciso.',
   icon: Mouse,
   color: 'text-warning',
@@ -43,6 +50,8 @@ export const MONITOR_PAGE: DevicePageConfig = {
   name: 'Monitor',
   category: 'Monitor',
   heroDescription: 'Reduza a latência entre a GPU e a tela para ver cada quadro mais rápido.',
+  heroImage: monitorImage,
+  heroImageAlt: 'Monitor gamer',
   description: 'Minimize a latência de tolerância do driver de vídeo.',
   icon: Monitor,
   color: 'text-primary',
@@ -62,6 +71,8 @@ export const TECLADO_PAGE: DevicePageConfig = {
   name: 'Teclado',
   category: 'Teclado',
   heroDescription: 'Teclas com resposta instantânea e sem atraso na digitação.',
+  heroImage: keyboardImage,
+  heroImageAlt: 'Teclado gamer Razer Ornata Chroma',
   description: 'Reduza a latência de digitação e resposta instantânea de teclas.',
   icon: Keyboard,
   color: 'text-info',

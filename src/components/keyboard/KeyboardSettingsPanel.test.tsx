@@ -96,6 +96,19 @@ describe('KeyboardSettingsPanel — controles', () => {
     expect(screen.getByRole('button', { name: 'Aplicar' })).toHaveProperty('disabled', false);
   });
 
+  it('anima a velocidade de repetição quando o slider muda', async () => {
+    render(<KeyboardSettingsPanel />);
+    await waitFor(() =>
+      expect(screen.getByRole('slider', { name: 'Velocidade de repetição' })).toBeTruthy()
+    );
+
+    fireEvent.change(screen.getByRole('slider', { name: 'Velocidade de repetição' }), {
+      target: { value: '5' },
+    });
+
+    expect(screen.getByText('5 / 31').className).toContain('sr-only');
+  });
+
   it('aplica os três ajustes', async () => {
     render(<KeyboardSettingsPanel />);
     await waitFor(() =>

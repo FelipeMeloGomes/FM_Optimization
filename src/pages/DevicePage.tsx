@@ -1,24 +1,23 @@
 import { ChevronDown, Play, Square, Zap } from 'lucide-react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import BlurText from '../components/react-bits/BlurText';
+import GlareHover from '../components/react-bits/GlareHover';
 import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
-import { Badge, Button } from '../components/ui';
+import { Button } from '../components/ui';
 import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
 import type { DevicePageConfig } from '../lib/device-pages';
-import { countCuratedScripts } from '../lib/resolve-curated-scripts';
 import { cn } from '../lib/utils';
 
 interface DevicePageProps {
   config: DevicePageConfig;
-  /** Substitui o ícone grande do banner (ex.: cursor animado da página Mouse). */
-  heroVisual?: ReactNode;
   /** Conteúdo exibido entre o banner e os tweaks (ex.: ajustes do Windows). */
   beforeContent?: ReactNode;
 }
 
-export default function DevicePage({ config, heroVisual, beforeContent }: DevicePageProps) {
+export default function DevicePage({ config, beforeContent }: DevicePageProps) {
   const [expanded, setExpanded] = useState(false);
   const {
     state,
@@ -35,11 +34,6 @@ export default function DevicePage({ config, heroVisual, beforeContent }: Device
 
   const scripts = useMemo(
     () => categoryScripts.filter((script) => config.scriptIds.includes(script.id)),
-    [categoryScripts, config.scriptIds]
-  );
-
-  const scriptCount = useMemo(
-    () => countCuratedScripts(categoryScripts, [config.scriptIds]),
     [categoryScripts, config.scriptIds]
   );
 
@@ -72,14 +66,23 @@ export default function DevicePage({ config, heroVisual, beforeContent }: Device
 
   return (
     <div className="space-y-6">
-      {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        {heroVisual ?? (
-          <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-10">
-            <Icon className="size-24 text-primary" />
-          </div>
-        )}
-        <div className="relative p-6">
+      {/* Hero Banner: foto real do periférico com brilho e texto animados */}
+      <GlareHover
+        width="100%"
+        height="9rem"
+        borderRadius="0.75rem"
+        borderColor="transparent"
+        glareOpacity={0.3}
+        className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"
+      >
+        <img
+          src={config.heroImage}
+          alt={config.heroImageAlt}
+          className="absolute right-0 top-0 h-full w-3/5 object-cover"
+          style={{ maskImage: 'linear-gradient(90deg, transparent, black 35%)' }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-card/95 via-card/60 to-transparent" />
+        <div className="relative flex w-full flex-col justify-center self-stretch p-6">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="size-4 text-primary" />
             <span className="text-xs font-semibold text-primary uppercase tracking-wider">
@@ -87,21 +90,23 @@ export default function DevicePage({ config, heroVisual, beforeContent }: Device
             </span>
           </div>
           <h2 className="text-lg font-bold text-foreground">{config.name}</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-lg">{config.heroDescription}</p>
+          <BlurText
+            text={config.heroDescription}
+            trigger="load"
+            animateBy="words"
+            className="mt-1 max-w-lg text-sm text-muted-foreground"
+          />
         </div>
-      </div>
+      </GlareHover>
 
       {beforeContent}
 
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center mb-4">
           <div className="flex items-center gap-2">
             <div className={cn('size-1.5 rounded-full', config.dotColor)} />
             <h3 className="text-sm font-semibold text-foreground">Dispositivos</h3>
           </div>
-          <Badge variant="secondary" className="text-[10px]">
-            {scriptCount} tweaks
-          </Badge>
         </div>
 
         <div
@@ -127,9 +132,6 @@ export default function DevicePage({ config, heroVisual, beforeContent }: Device
                   <p className="text-xs text-muted-foreground mt-0.5">{config.description}</p>
                 </div>
               </div>
-              <Badge variant="secondary" className="text-[10px] shrink-0">
-                {scripts.length} tweaks
-              </Badge>
             </div>
 
             <div className="mt-4">
