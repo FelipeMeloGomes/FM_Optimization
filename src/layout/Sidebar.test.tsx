@@ -153,7 +153,7 @@ describe('Sidebar com seção Ferramentas', () => {
 describe('Sidebar com seção Sistema', () => {
   const html = renderSidebar(false);
 
-  it('reúne os antigos itens de Ferramentas e os periféricos em ordem alfabética', () => {
+  it('mostra Meu PC, Monitor, Mouse e Teclado nessa ordem no grupo Sistema', () => {
     expect(html).toContain('Sistema');
     for (const path of [
       '/armazenamento',
@@ -169,13 +169,13 @@ describe('Sidebar com seção Sistema', () => {
     }
 
     const labels = [
-      'Armazenamento',
       'Meu PC',
       'Monitor',
       'Mouse',
+      'Teclado',
+      'Armazenamento',
       'Privacidade',
       'Reparo do sistema',
-      'Teclado',
       'Utilitarios',
     ];
     const positions = labels.map((label) => html.indexOf(label));

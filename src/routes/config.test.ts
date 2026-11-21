@@ -52,14 +52,14 @@ describe('rotas da aplicacao', () => {
     );
 
     expect(routesByCategory('sistema').map((route) => route.path)).toEqual([
-      '/armazenamento',
-      '/emuladores',
       '/meu-pc',
       '/monitor',
       '/mouse',
+      '/teclado',
+      '/armazenamento',
+      '/emuladores',
       '/privacidade-seguranca',
       '/reparo-do-sistema',
-      '/teclado',
       '/utilities',
     ]);
     expect(
@@ -158,7 +158,7 @@ describe('rotas da aplicacao', () => {
     expect(CATEGORIES.map((c) => c.id)).not.toContain('programas');
   });
 
-  it('recria a categoria Ferramentas com o comparador e o overlay, e mantém Sistema em ordem alfabética', () => {
+  it('recria a categoria Ferramentas com o comparador e o overlay, e mantém Meu PC e os periféricos primeiro em Sistema', () => {
     expect(CATEGORIES.find((category) => category.id === 'ferramentas')?.label).toBe('Ferramentas');
     expect(routesByCategory('ferramentas').map((route) => route.path)).toEqual([
       '/comparar-placa',
@@ -176,16 +176,15 @@ describe('rotas da aplicacao', () => {
     expect(overlay?.protected).toBeFalsy();
 
     const labels = routesByCategory('sistema').map((route) => route.label);
-    expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     expect(labels).toEqual([
-      'Armazenamento',
-      'Emuladores',
       'Meu PC',
       'Monitor',
       'Mouse',
+      'Teclado',
+      'Armazenamento',
+      'Emuladores',
       'Privacidade',
       'Reparo do sistema',
-      'Teclado',
       'Utilitarios',
     ]);
   });

@@ -73,9 +73,17 @@ const DEVICE_COMPONENTS: Record<DeviceCategory, LazyExoticComponent<ComponentTyp
 
 /**
  * Os itens utilitários migraram para Sistema; Ferramentas volta a abrigar o
- * comparador de placas. A ordem alfabética de Sistema é aplicada aqui para que
- * sidebar, Ctrl+K e Page Lock vejam a mesma sequência.
+ * comparador de placas. Meu PC e os periféricos vêm primeiro, nessa ordem; os
+ * demais seguem em ordem alfabética. A sequência é única para que sidebar,
+ * Ctrl+K e Page Lock vejam o mesmo arranjo.
  */
+const SISTEMA_LEADING_PATHS = ['/meu-pc', '/monitor', '/mouse', '/teclado'];
+
+function sistemaOrder(route: AppRoute): number {
+  const index = SISTEMA_LEADING_PATHS.indexOf(route.path);
+  return index === -1 ? SISTEMA_LEADING_PATHS.length : index;
+}
+
 const SYSTEM_ROUTES: AppRoute[] = [
   ...DEVICE_PAGES.map((device) => ({
     path: device.path,
@@ -133,7 +141,7 @@ const SYSTEM_ROUTES: AppRoute[] = [
     protected: true,
     component: lazy(() => import('../pages/UtilitiesPage')),
   },
-].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
+].sort((a, b) => sistemaOrder(a) - sistemaOrder(b) || a.label.localeCompare(b.label, 'pt-BR'));
 
 export const ROUTES: AppRoute[] = [
   {
