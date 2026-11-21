@@ -25,6 +25,7 @@ export { EmptyState } from './EmptyState';
 export { Input } from './input';
 export { Label } from './label';
 export { Progress } from './progress';
+export { SettingsPreviewLayout } from './SettingsPreviewLayout';
 export { Skeleton } from './skeleton';
 export { Switch } from './switch';
 export { Toggle } from './Toggle';
