@@ -1,17 +1,8 @@
-import {
-  AlertCircle,
-  ArrowDown,
-  Check,
-  Loader2,
-  RefreshCw,
-  Settings,
-  Trophy,
-  Wifi,
-  Zap,
-} from 'lucide-react';
+import { AlertCircle, ArrowDown, Check, Loader2, Settings, Trophy, Wifi, Zap } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { AnimatedDns } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { PageRefreshBar } from '../components/RefreshButton';
 import { Badge, Button, Card, CardContent } from '../components/ui';
 import { DnsProvider, useDnsContext } from '../contexts/DnsContext';
 import { DNS_PROVIDERS } from '../lib/dns-providers';
@@ -177,23 +168,16 @@ function DnsPageContent() {
                 Configure seu DNS para melhor velocidade e privacidade
               </p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={runBenchmark}
-              disabled={benchmarkStatus === 'loading'}
-              className="gap-1.5"
-            >
-              {benchmarkStatus === 'loading' ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <RefreshCw className="size-3.5" />
-              )}
-              {benchmarkStatus === 'loading' ? 'Testando…' : 'Testar Novamente'}
-            </Button>
           </div>
         </div>
       </HeroBanner>
+
+      <PageRefreshBar
+        onRefresh={runBenchmark}
+        refreshing={benchmarkStatus === 'loading'}
+        label="Testar Novamente"
+        refreshingLabel="Testando…"
+      />
 
       <Card className="border-primary/20">
         <CardContent className="p-4">

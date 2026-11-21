@@ -1,19 +1,11 @@
-import {
-  Loader2,
-  Lock,
-  Package,
-  PackageX,
-  RefreshCw,
-  Search,
-  ShieldCheck,
-  Sparkles,
-} from 'lucide-react';
+import { Loader2, Lock, Package, PackageX, Search, ShieldCheck, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppxPackageInfo } from '../../electron/shared/ipc-types';
 import { ConfirmRemoveAppsDialog } from '../components/ConfirmRemoveAppsDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedDebloat } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { PageRefreshBar } from '../components/RefreshButton';
 import { Button, Input, Tabs } from '../components/ui';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { useAppxInventory } from '../hooks/use-appx-inventory';
@@ -256,42 +248,29 @@ export default function DebloatPage() {
       {/* Hero Banner */}
       <HeroBanner visual={<AnimatedDebloat />}>
         <div className="relative p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <PackageX className="size-4 text-primary" aria-hidden="true" />
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                  Debloat
-                </span>
-              </div>
-              <h2 className="text-lg font-bold text-foreground">Debloat de apps do Windows</h2>
-              <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-                Inventário dos apps Appx instalados e provisionados. Selecione o que não usa — apps
-                de sistema e frameworks ficam protegidos e não podem ser removidos.
-              </p>
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <PackageX className="size-4 text-primary" aria-hidden="true" />
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                Debloat
+              </span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => void refresh()}
-              disabled={isRefreshing}
-              aria-label="Atualizar inventário"
-              className="shrink-0 gap-1.5"
-            >
-              <RefreshCw
-                className={cn('size-3.5', isRefreshing && 'animate-spin')}
-                aria-hidden="true"
-              />
-              <span className="text-xs">{isRefreshing ? 'Varrendo…' : 'Atualizar'}</span>
-            </Button>
-          </div>
-          {lastRefreshed > 0 && (
-            <p className="mt-2 text-[10px] text-muted-foreground">
-              A varredura usa PowerShell e pode levar até 1 minuto.
+            <h2 className="text-lg font-bold text-foreground">Debloat de apps do Windows</h2>
+            <p className="text-sm text-muted-foreground mt-1 max-w-lg">
+              Inventário dos apps Appx instalados e provisionados. Selecione o que não usa — apps de
+              sistema e frameworks ficam protegidos e não podem ser removidos.
             </p>
-          )}
+          </div>
         </div>
       </HeroBanner>
+
+      <PageRefreshBar
+        onRefresh={() => void refresh()}
+        refreshing={isRefreshing}
+        ariaLabel="Atualizar inventário"
+        followedByNotice={!isAdmin}
+        status={lastRefreshed > 0 ? 'A varredura usa PowerShell e pode levar até 1 minuto.' : null}
+      />
 
       {error && packages.length > 0 && (
         <div

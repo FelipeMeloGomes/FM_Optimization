@@ -333,6 +333,7 @@ describe('DebloatPage — sem administrador', () => {
 
     expect(screen.getByText('Xbox Game Bar')).not.toBeNull();
     expect(screen.getByText(/precisa de administrador/i)).not.toBeNull();
+    expect(screen.getByRole('group', { name: 'Atualizar dados' }).className).toContain('pb-6');
 
     fireEvent.click(screen.getByLabelText('Selecionar Xbox Game Bar'));
     expect(

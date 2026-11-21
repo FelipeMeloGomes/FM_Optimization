@@ -4,7 +4,6 @@ import {
   ChevronDown,
   History,
   Loader2,
-  RefreshCw,
   RotateCcw,
   Search,
   ShieldCheck,
@@ -15,6 +14,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RemovedApp } from '../../../electron/shared/ipc-types';
 import { showEnhancedToast } from '../../components/EnhancedToast';
+import { RefreshButton } from '../../components/RefreshButton';
 import {
   Badge,
   Button,
@@ -339,15 +339,12 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
           <h2 className="text-sm font-semibold text-foreground">{emulatorName}</h2>
           <p className="text-xs text-muted-foreground">{instance.displayName || instance.name}</p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={carregando}
-          className="gap-1.5"
-        >
-          <RefreshCw className={cn('size-4', carregando && 'animate-spin')} />
-        </Button>
+        <RefreshButton
+          onRefresh={handleRefresh}
+          refreshing={carregando}
+          iconOnly
+          ariaLabel="Atualizar lista de apps"
+        />
       </div>
 
       {/* Search */}

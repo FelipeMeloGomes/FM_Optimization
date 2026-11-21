@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  ArrowLeftRight,
   Check,
   ChevronDown,
   ExternalLink,
@@ -18,6 +17,7 @@ import type {
 } from '../../electron/shared/ipc-types';
 import { AnimatedHero } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { PageRefreshBar } from '../components/RefreshButton';
 import {
   Badge,
   Button,
@@ -411,15 +411,13 @@ export default function CompararPlacaPage() {
                 </p>
               )}
             </div>
-            {state.status === 'success' && (
-              <Button variant="outline" size="sm" onClick={() => void load()} className="gap-1.5">
-                <ArrowLeftRight className="size-4" />
-                Recarregar catálogo
-              </Button>
-            )}
           </div>
         </PageContent>
       </HeroBanner>
+
+      {state.status === 'success' && (
+        <PageRefreshBar onRefresh={() => void load()} label="Recarregar catálogo" />
+      )}
 
       {state.status === 'loading' && (
         <div className="space-y-4" role="status" aria-live="polite">

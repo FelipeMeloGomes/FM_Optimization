@@ -7,7 +7,6 @@ import {
   Loader2,
   MemoryStick,
   Monitor,
-  Server,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
@@ -15,6 +14,7 @@ import { formatMemoryTotal } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
 import { AnimatedDashboard } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { PageRefreshBar } from '../components/RefreshButton';
 import { Badge, Button, Skeleton } from '../components/ui';
 import { useScriptExecutionContext } from '../contexts/ScriptExecutionContext';
 import { useSystemContext } from '../contexts/SystemContext';
@@ -109,38 +109,25 @@ export default function MeuPcPage() {
                 placa-mae, memoria, placa de video e discos.
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refresh}
-                disabled={refreshing}
-                className="gap-1.5"
-              >
-                {refreshing ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <Server className="size-3.5" />
-                )}
-                {refreshing ? 'Atualizando…' : 'Atualizar'}
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => void execute(REPORT_SCRIPT_ID)}
-                disabled={activeExecution === REPORT_SCRIPT_ID}
-                className="gap-1.5"
-              >
-                {activeExecution === REPORT_SCRIPT_ID ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <Download className="size-3.5" />
-                )}
-                Exportar relatório...
-              </Button>
-            </div>
           </div>
         </div>
       </HeroBanner>
+
+      <PageRefreshBar onRefresh={refresh} refreshing={refreshing}>
+        <Button
+          size="sm"
+          onClick={() => void execute(REPORT_SCRIPT_ID)}
+          disabled={activeExecution === REPORT_SCRIPT_ID}
+          className="gap-1.5"
+        >
+          {activeExecution === REPORT_SCRIPT_ID ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Download className="size-3.5" />
+          )}
+          Exportar relatório...
+        </Button>
+      </PageRefreshBar>
 
       {/* Componentes principais */}
       <div>

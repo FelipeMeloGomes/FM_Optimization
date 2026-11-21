@@ -1,9 +1,7 @@
 import {
-  Activity,
   Clock,
   Cpu,
   HardDrive,
-  Loader2,
   MemoryStick,
   Monitor,
   Shield,
@@ -15,6 +13,7 @@ import { formatMemoryTotal } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
 import { AnimatedDashboard } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { PageRefreshBar } from '../components/RefreshButton';
 import { Badge, Button, Skeleton } from '../components/ui';
 import { useHistoryContext } from '../contexts/HistoryContext';
 import { useScriptContext } from '../contexts/ScriptContext';
@@ -200,24 +199,12 @@ export default function DashboardPage() {
                   <span>Dados em cache</span>
                 </div>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refresh}
-                disabled={refreshing}
-                className="gap-1.5"
-              >
-                {refreshing ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <Activity className="size-3.5" />
-                )}
-                {refreshing ? 'Atualizando…' : 'Atualizar'}
-              </Button>
             </div>
           </div>
         </div>
       </HeroBanner>
+
+      <PageRefreshBar onRefresh={refresh} refreshing={refreshing} />
 
       {/* Main Stats Grid */}
       <div>

@@ -21,6 +21,7 @@ import type {
 } from '../../electron/shared/ipc-types';
 import { AnimatedStartup } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { PageRefreshBar } from '../components/RefreshButton';
 import {
   Badge,
   Button,
@@ -272,10 +273,6 @@ export default function StartupPage() {
                 reversível: nada é desinstalado, e cada item pode voltar ao estado anterior.
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={reload} className="gap-1.5">
-              <RefreshCw className="size-3.5" />
-              Atualizar
-            </Button>
           </div>
 
           <div className="mt-4 grid max-w-xl grid-cols-3 gap-2">
@@ -285,6 +282,8 @@ export default function StartupPage() {
           </div>
         </div>
       </HeroBanner>
+
+      <PageRefreshBar onRefresh={reload} followedByNotice={!data.isAdmin} />
 
       {/* Admin notice */}
       {!data.isAdmin && (

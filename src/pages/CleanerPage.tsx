@@ -21,6 +21,7 @@ import { ConfirmCleanDialog } from '../components/ConfirmCleanDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedCleaner } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { PageRefreshBar } from '../components/RefreshButton';
 import { Button } from '../components/ui';
 import { useAutoCleanContext } from '../contexts/AutoCleanContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
@@ -386,38 +387,31 @@ export default function CleanerPage() {
       {/* Hero Banner */}
       <HeroBanner visual={<AnimatedCleaner />}>
         <div className="relative p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Eraser className="size-4 text-primary" aria-hidden="true" />
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                  Limpeza
-                </span>
-              </div>
-              <h2 className="text-lg font-bold text-foreground">
-                Mantenha seu Windows limpo e rápido
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-                Escolha o que limpar, item por item, e libere espaço sem mexer no que você usa.
-              </p>
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Eraser className="size-4 text-primary" aria-hidden="true" />
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                Limpeza
+              </span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => void refresh()}
-              disabled={isRefreshing}
-              aria-label="Atualizar estatísticas"
-              className="shrink-0 gap-1.5"
-            >
-              <RefreshCw
-                className={cn('size-3.5', isRefreshing && 'animate-spin')}
-                aria-hidden="true"
-              />
-              <span className="text-xs">{isRefreshing ? 'Atualizando…' : 'Atualizar'}</span>
-            </Button>
+            <h2 className="text-lg font-bold text-foreground">
+              Mantenha seu Windows limpo e rápido
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1 max-w-lg">
+              Escolha o que limpar, item por item, e libere espaço sem mexer no que você usa.
+            </p>
           </div>
-          {lastRefreshed > 0 && (
-            <p className="mt-2 text-[10px] text-muted-foreground">
+        </div>
+      </HeroBanner>
+
+      <PageRefreshBar
+        onRefresh={() => void refresh()}
+        refreshing={isRefreshing}
+        ariaLabel="Atualizar estatísticas"
+        followedByNotice={!isAdmin && items.some((item) => item.requiresAdmin)}
+        status={
+          lastRefreshed > 0 ? (
+            <>
               Atualizado {formatTimeSince(lastRefreshed)}
               {totalStats.totalFiles > 0 && (
                 <span className="ml-2">
@@ -425,10 +419,10 @@ export default function CleanerPage() {
                   {formatBytes(totalStats.totalBytes)} totais para limpar
                 </span>
               )}
-            </p>
-          )}
-        </div>
-      </HeroBanner>
+            </>
+          ) : null
+        }
+      />
 
       <div aria-live="polite" className="sr-only">
         {cleaning

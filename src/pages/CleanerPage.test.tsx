@@ -183,6 +183,17 @@ describe('CleanerPage — estados', () => {
     expect(screen.getByRole('button', { name: 'Tentar de novo' })).not.toBeNull();
   });
 
+  it('deixa o botão de atualizar fora do hero, com fundo opaco padronizado', () => {
+    const { container } = render(<CleanerPage />);
+    const hero = container.querySelector('.bg-gradient-to-br');
+    const button = screen.getByRole('button', { name: 'Atualizar estatísticas' });
+
+    expect(hero?.contains(button)).toBe(false);
+    expect(screen.getByRole('group', { name: 'Atualizar dados' }).contains(button)).toBe(true);
+    expect(button.className).toContain('bg-card');
+    expect(button.className).not.toContain('bg-transparent');
+  });
+
   it('mantém a lista e avisa quando só a atualização falha', () => {
     state.error = 'rede fora';
 
@@ -336,6 +347,7 @@ describe('CleanerPage — administrador e pendências', () => {
     render(<CleanerPage />);
 
     expect(screen.getByText(/exigem administrador/)).not.toBeNull();
+    expect(screen.getByRole('group', { name: 'Atualizar dados' }).className).toContain('pb-6');
 
     const updateCheckbox = screen.getByLabelText(
       'Selecionar Cache do Windows Update'

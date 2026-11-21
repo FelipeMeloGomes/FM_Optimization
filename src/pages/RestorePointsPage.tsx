@@ -12,6 +12,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatedRestorePoints } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
+import { RefreshButton } from '../components/RefreshButton';
 import {
   Badge,
   Button,
@@ -168,10 +169,7 @@ export default function RestorePointsPage() {
             <Plus className="size-3.5" />
             {creating ? 'Criando…' : 'Criar'}
           </Button>
-          <Button variant="outline" size="sm" onClick={refresh} className="gap-1.5">
-            <RefreshCw className="size-3.5" />
-            Atualizar
-          </Button>
+          <RefreshButton onRefresh={refresh} />
         </div>
       </div>
 

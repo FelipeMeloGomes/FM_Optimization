@@ -99,14 +99,16 @@ describe('DnsPage', () => {
     }
   });
 
-  it('usa o hero banner padrão, com o benchmark dentro dele', () => {
+  it('usa o hero banner padrão, com o benchmark na faixa abaixo dele', () => {
     const { container } = renderPage();
     const hero = container.querySelector('.bg-gradient-to-br');
+    const button = screen.getByRole('button', { name: 'Testar Novamente' });
 
     expect(hero).not.toBeNull();
     expect(hero?.querySelector('h2')?.textContent).toBe('DNS');
     expect(hero?.textContent).toContain('Rede');
-    expect(hero?.querySelector('button')?.textContent).toContain('Testar Novamente');
+    expect(hero?.contains(button)).toBe(false);
+    expect(screen.getByRole('group', { name: 'Atualizar dados' }).contains(button)).toBe(true);
   });
 
   it('executa o benchmark chamando runBenchmark', () => {
