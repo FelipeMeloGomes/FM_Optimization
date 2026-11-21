@@ -20,6 +20,7 @@ import {
   MOUSE_POINTER_SPEED_MAX,
   MOUSE_POINTER_SPEED_MIN,
 } from '../shared/mouse-settings';
+import { DRIVE_LETTER_PATTERN } from '../shared/drive-actions';
 import { isValidOverlayHotkey } from '../shared/overlay-types';
 import {
   InterfaceIndexSchema,
@@ -262,6 +263,7 @@ export const OverlaySettingsSchema = z.object({
 /** Somente nomes gerados por `downloadSteamCover` — bloqueia path traversal. */
 export const GetOverlayCoverSchema = z.string().regex(/^\d+\.jpg$/i, 'Nome de capa inválido');
 const OverlayGameIdSchema = z.string().min(1, 'Jogo inválido');
+const DriveLetterSchema = z.string().regex(DRIVE_LETTER_PATTERN, 'Unidade inválida');
 
 export const IpcSchemas: Record<string, z.ZodSchema> = {
   'get-system-info': z.undefined(),
@@ -270,6 +272,8 @@ export const IpcSchemas: Record<string, z.ZodSchema> = {
   'get-cpu-info': z.undefined(),
   'get-memory-info': z.undefined(),
   'has-ssd': z.undefined(),
+  'storage:clean-drive': DriveLetterSchema,
+  'storage:optimize-drive': DriveLetterSchema,
   'get-scripts': z.undefined(),
   'execute-script': executeScriptSchema,
   'cancel-execution': cancelExecutionSchema,

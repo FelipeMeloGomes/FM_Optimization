@@ -1,11 +1,11 @@
 import { spawn } from 'node:child_process';
+import { DRIVE_LETTER_PATTERN } from '../../shared/drive-actions';
 import { isAdmin } from './admin-check';
 import { INTERACTIVE_WRAPPER_COMMAND } from './script-commands';
 
 export type DriveActionKind = 'cleanup' | 'optimize';
 
-/** Uma letra de unidade, sem `:` nem caminho. */
-export const DRIVE_LETTER_PATTERN = /^[A-Za-z]$/;
+export { DRIVE_LETTER_PATTERN } from '../../shared/drive-actions';
 
 const ADMIN_ERROR =
   'Este script requer privilégios de administrador. Execute o programa como administrador.';

@@ -209,3 +209,16 @@ describe('verify-page-lock-password schema', () => {
     expect(IpcSchemas['verify-page-lock-password'].safeParse({ password: 'x' }).success).toBe(true);
   });
 });
+
+describe('Storage drive action schemas', () => {
+  it('valida letra de unidade para as ações de armazenamento', () => {
+    for (const channel of ['storage:clean-drive', 'storage:optimize-drive']) {
+      const schema = IpcSchemas[channel];
+      expect(schema.safeParse('C').success).toBe(true);
+      expect(schema.safeParse('d').success).toBe(true);
+      for (const bad of ['C:', 'C:\\', '', 'CC', '../C']) {
+        expect(schema.safeParse(bad).success).toBe(false);
+      }
+    }
+  });
+});

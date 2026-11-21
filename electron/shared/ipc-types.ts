@@ -538,6 +538,8 @@ export interface ElectronAPI {
   getCpuInfo(): Promise<CpuInfo>;
   getMemoryInfo(): Promise<MemoryInfo>;
   hasSSD(): Promise<boolean>;
+  runDiskCleanup(letter: string): Promise<void>;
+  optimizeDrive(letter: string): Promise<void>;
   getScripts(): Promise<ScriptEntry[]>;
   executeScript(id: string): Promise<void>;
   cancelExecution(id: string): Promise<void>;

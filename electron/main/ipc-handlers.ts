@@ -49,6 +49,7 @@ import {
   saveUserData,
 } from './services/data-service';
 import { applyDisplaySettings, readDisplaySettings } from './services/display-settings';
+import { runDriveAction } from './services/drive-actions';
 import { relaunchElevated } from './services/elevation';
 import {
   cancelEssentialInstall,
@@ -203,6 +204,17 @@ export function registerIpcHandlers(): void {
     handleIpcNoInput('get-memory-info', () => getMemoryInfo())
   );
   ipcMain.handle('has-ssd', () => handleIpcNoInput('has-ssd', () => hasSolidStateDrive()));
+
+  ipcMain.handle('storage:clean-drive', (_e, letter: string) =>
+    handleIpc('storage:clean-drive', letter, (validated) =>
+      runDriveAction('cleanup', validated as string)
+    )
+  );
+  ipcMain.handle('storage:optimize-drive', (_e, letter: string) =>
+    handleIpc('storage:optimize-drive', letter, (validated) =>
+      runDriveAction('optimize', validated as string)
+    )
+  );
 
   ipcMain.handle('get-scripts', () => handleIpcNoInput('get-scripts', () => loadScripts()));
 
