@@ -27,9 +27,11 @@
 
 ### Otimização do Sistema
 
+As sete páginas de tweaks (Input Lag, Otimização do sistema, Personalização, Internet, Armazenamento, Privacidade e Reparo do Sistema) usam seleção múltipla: marque os cards, use **Selecionar todos** e **Aplicar selecionados**. Nenhum tweak vem marcado por padrão; os tweaks escolhidos rodam em sequência e os scripts interativos abrem janela própria.
+
 - **Dashboard** — uso de processador, placa de vídeo, memória RAM e armazenamento, com a unidade identificada como SSD NVMe, SSD ou HD, tempo de atividade e quantos ajustes já estão aplicados (`N de 50`).
 - **19 ajustes de otimização** — 12 de processador, 4 de GPU AMD e 3 de Windows (hardware, modo gamer e planos de energia). A seção de GPU tem card próprio com aviso de hardware.
-- **Input Lag** — 6 ajustes de registro e resposta do sistema (todos os tweaks, USB, TCPNoDelay, prioridade, cache e atraso de menu). Os tweaks de teclado, mouse e monitor ficam em **Sistema**.
+- **Input Lag** — 5 ajustes de registro e resposta do sistema (USB, TCPNoDelay, prioridade, cache e atraso de menu). Os tweaks de teclado, mouse e monitor ficam em **Sistema**.
 - **Inicialização** — apps, tarefas agendadas e serviços que abrem com o Windows, com interruptor reversível. Serviços essenciais ficam somente leitura.
 - **Pontos de restauração** — criação, listagem e restauração de backups do Windows, com opção de criar automaticamente antes de executar tweaks.
 
@@ -78,7 +80,7 @@ Todos os itens aparecem em ordem alfabética na barra lateral.
 - **Histórico de execução** — duração, status e origem (manual ou agendada) de cada tweak. Cards aplicados ganham o selo **Aplicado**, inclusive os scripts interativos: o app espera a janela fechar e registra o código de saída real (menu fechado sem aplicar ou handoff sem desfecho fica como `—`, e fechar o console do Spotify aparece como **Interrompido pelo usuário**, não como erro).
 - **Bloqueio de páginas** — oculte páginas da barra lateral e proteja-as com senha mestra criptografada via DPAPI (Emuladores bloqueado por padrão).
 - **Atualização integrada** — download e instalação de novas versões direto do GitHub.
-- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`). Histórico, inicialização, Limpeza, Debloat e os cards de tweaks (Desempenho, Privacidade, Personalização e Rede) usam listas virtualizadas: só as linhas visíveis são renderizadas, com a rolagem feita pela página.
+- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`). As sete páginas de tweaks (Input Lag, Otimização do sistema, Personalização, Internet, Armazenamento, Privacidade e Reparo do Sistema) têm checkbox nos cards e barra de seleção múltipla; a seleção começa vazia e os tweaks marcados são aplicados em sequência. Histórico, inicialização, Limpeza, Debloat e os cards de tweaks (Desempenho, Privacidade, Personalização e Rede) usam listas virtualizadas: só as linhas visíveis são renderizadas, com a rolagem feita pela página.
 - **Atalhos** — `Ctrl+1`…`Ctrl+9` navegam entre páginas e `Ctrl+,` abre as Configurações.
 
 ## Tecnologias
