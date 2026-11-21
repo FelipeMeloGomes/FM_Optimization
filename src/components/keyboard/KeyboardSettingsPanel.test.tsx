@@ -70,7 +70,7 @@ describe('KeyboardSettingsPanel — controles', () => {
       expect(screen.getByRole('slider', { name: 'Atraso até repetir' })).toBeTruthy()
     );
     expect(text()).toContain('Ajustes do Windows');
-    expect(text()).toContain('valores atuais');
+    expect(text()).toContain('tempo real');
     expect(screen.getByRole('slider', { name: 'Atraso até repetir' })).toHaveProperty('value', '0');
     expect(screen.getByRole('slider', { name: 'Velocidade de repetição' })).toHaveProperty(
       'value',
@@ -81,6 +81,35 @@ describe('KeyboardSettingsPanel — controles', () => {
       '200'
     );
     expect(screen.getByRole('img', { name: 'Prévia do teclado' })).toBeTruthy();
+  });
+
+  it('mostra a prévia antes dos controles e as ações depois', async () => {
+    render(<KeyboardSettingsPanel />);
+    const preview = await screen.findByRole('img', { name: 'Prévia do teclado' });
+    const slider = screen.getByRole('slider', { name: 'Atraso até repetir' });
+    const apply = screen.getByRole('button', { name: 'Aplicar' });
+
+    expect(preview.compareDocumentPosition(slider) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(slider.compareDocumentPosition(apply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('usa o selo tempo real e remove as escalas dos sliders', async () => {
+    render(<KeyboardSettingsPanel />);
+    await screen.findByRole('slider', { name: 'Atraso até repetir' });
+
+    expect(screen.getByText('tempo real')).toBeTruthy();
+    expect(screen.queryByText('valores atuais')).toBeNull();
+    expect(screen.queryByText('Curto')).toBeNull();
+    expect(screen.queryByText('Rápida')).toBeNull();
+  });
+
+  it('anima o atraso até repetir quando o slider muda', async () => {
+    render(<KeyboardSettingsPanel />);
+    const slider = await screen.findByRole('slider', { name: 'Atraso até repetir' });
+
+    fireEvent.change(slider, { target: { value: '2' } });
+
+    expect(screen.getByText('750 ms').className).toContain('sr-only');
   });
 
   it('só habilita Aplicar quando há alteração pendente', async () => {
