@@ -1,18 +1,22 @@
 // @vitest-environment jsdom
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ScriptEnded } from '../../electron/shared/ipc-types';
+import type { ScriptEnded, ScriptEntry } from '../../electron/shared/ipc-types';
 
 import { ScriptExecutionProvider, useScriptExecutionContext } from './ScriptExecutionContext';
 
 function installApi() {
-  let endedCb: ((data: ScriptEnded) => void) | null = null;
-  const offScriptEnded = vi.fn();
+  const listeners: ((data: ScriptEnded) => void)[] = [];
+  const offScriptEnded = vi.fn((cb: (data: ScriptEnded) => void) => {
+    const index = listeners.indexOf(cb);
+    if (index >= 0) listeners.splice(index, 1);
+    return () => undefined;
+  });
   const api = {
     executeScript: vi.fn<(id: string) => Promise<void>>(async () => undefined),
     cancelExecution: vi.fn<(id: string) => Promise<void>>(async () => undefined),
     onScriptEnded: vi.fn((cb: (data: ScriptEnded) => void) => {
-      endedCb = cb;
+      listeners.push(cb);
       return offScriptEnded;
     }),
   };
@@ -21,9 +25,31 @@ function installApi() {
     api,
     offScriptEnded,
     emitScriptEnded(data: ScriptEnded) {
-      endedCb?.(data);
+      listeners.forEach((cb) => {
+        cb(data);
+      });
     },
   };
+}
+
+function script(id: string, overrides: Partial<ScriptEntry> = {}): ScriptEntry {
+  return {
+    id,
+    name: id,
+    description: '',
+    category: '',
+    subcategory: '',
+    content: '',
+    extension: 'ps1',
+    requiresAdmin: false,
+    isBuiltIn: true,
+    tags: [],
+    ...overrides,
+  };
+}
+
+function renderBatchHook() {
+  return renderHook(() => useScriptExecutionContext(), { wrapper: ScriptExecutionProvider });
 }
 
 function deferred() {
@@ -185,6 +211,129 @@ describe('ScriptExecutionProvider', () => {
     unmount();
 
     expect(harness.offScriptEnded).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('executeBatch', () => {
+  it('executa o lote em sequência aguardando o fim de cada script', async () => {
+    const harness = installApi();
+    const { result } = renderBatchHook();
+    const A = script('a');
+    const B = script('b');
+
+    let pending!: Promise<{ failedIds: string[] }>;
+    await act(async () => {
+      pending = result.current.executeBatch([A, B]);
+      await Promise.resolve();
+    });
+
+    expect(harness.api.executeScript).toHaveBeenCalledTimes(1);
+    expect(result.current.batch).toEqual({ ids: ['a', 'b'], index: 1 });
+
+    await act(async () => {
+      harness.emitScriptEnded({ id: 'a', code: 0 });
+      await Promise.resolve();
+    });
+
+    expect(harness.api.executeScript).toHaveBeenNthCalledWith(2, 'b');
+    expect(result.current.batch).toEqual({ ids: ['a', 'b'], index: 2 });
+
+    await act(async () => {
+      harness.emitScriptEnded({ id: 'b', code: 0 });
+      await pending;
+    });
+
+    expect(result.current.batch).toBeNull();
+    expect(await pending).toEqual({ failedIds: [] });
+  });
+
+  it('registra falha quando o código não é zero e roda o próximo script', async () => {
+    const harness = installApi();
+    const { result } = renderBatchHook();
+    const A = script('a');
+    const B = script('b');
+
+    let pending!: Promise<{ failedIds: string[] }>;
+    await act(async () => {
+      pending = result.current.executeBatch([A, B]);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      harness.emitScriptEnded({ id: 'a', code: 1 });
+      await Promise.resolve();
+    });
+
+    expect(harness.api.executeScript).toHaveBeenNthCalledWith(2, 'b');
+
+    await act(async () => {
+      harness.emitScriptEnded({ id: 'b', code: 0 });
+      await pending;
+    });
+
+    expect(await pending).toEqual({ failedIds: ['a'] });
+  });
+
+  it('com cancelamento no script atual não falha e libera o próximo script', async () => {
+    const harness = installApi();
+    const { result } = renderBatchHook();
+    const A = script('a');
+    const B = script('b');
+
+    let pending!: Promise<{ failedIds: string[] }>;
+    await act(async () => {
+      pending = result.current.executeBatch([A, B]);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      harness.emitScriptEnded({ id: 'a', code: null, cancelled: true });
+      await Promise.resolve();
+    });
+
+    expect(harness.api.executeScript).toHaveBeenNthCalledWith(2, 'b');
+
+    await act(async () => {
+      harness.emitScriptEnded({ id: 'b', code: 0 });
+      await pending;
+    });
+
+    expect(await pending).toEqual({ failedIds: [] });
+  });
+
+  it('scripts interativos não têm timeout; scripts não interativos estouram em 30 minutos', async () => {
+    vi.useFakeTimers();
+    const harness = installApi();
+    const { result } = renderBatchHook();
+    const A = script('a', { interactive: true });
+    const B = script('b');
+
+    let pending!: Promise<{ failedIds: string[] }>;
+    await act(async () => {
+      pending = result.current.executeBatch([A, B]);
+      await Promise.resolve();
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(31 * 60 * 1000);
+    });
+    expect(harness.api.executeScript).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      harness.emitScriptEnded({ id: 'a', code: 0 });
+      await Promise.resolve();
+    });
+    expect(harness.api.executeScript).toHaveBeenNthCalledWith(2, 'b');
+
+    await act(async () => {
+      vi.advanceTimersByTime(30 * 60 * 1000);
+    });
+    await act(async () => {
+      await pending;
+    });
+
+    expect(await pending).toEqual({ failedIds: ['b'] });
+    vi.useRealTimers();
   });
 });
 
