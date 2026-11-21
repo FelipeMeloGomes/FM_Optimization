@@ -13,10 +13,10 @@ export interface UtilSection {
 }
 
 /**
- * Cards da pagina Utilitarios. Cobre exatamente os scripts de
- * `category: "Utilities"` do catalogo — o teste em script-pages.test.ts garante
- * que nenhum script fica sem card e nenhum id sobra. O relatorio de sistema
- * (`util-3`) mora na pagina Meu PC e nao aparece aqui.
+ * Ordem dos tweaks da pagina Utilitarios na lista unica. Cobre exatamente os
+ * scripts de `category: "Utilities"` do catalogo — o teste em
+ * script-pages.test.ts garante que nenhum script fica fora e nenhum id sobra. O
+ * relatorio de sistema (`util-3`) mora na pagina Meu PC e nao aparece aqui.
  */
 export const UTIL_SECTIONS: UtilSection[] = [
   {

@@ -1,115 +1,15 @@
-import { Play, Square, Wrench } from 'lucide-react';
+import { Wrench } from 'lucide-react';
 import { useMemo } from 'react';
-import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ConfirmBulkScriptDialog } from '../components/ConfirmBulkScriptDialog';
 import { AnimatedUtilities } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
-import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
-import { Badge, Button } from '../components/ui';
-import { useIsScriptApplied } from '../hooks/use-is-script-applied';
+import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
+import { VirtualizedScriptList } from '../components/VirtualizedScriptList';
 import { useScriptPage } from '../hooks/use-script-page';
-import { UTIL_SECTIONS, type UtilSection } from '../lib/util-sections';
-import { cn } from '../lib/utils';
-
-function UtilSectionCard({
-  section,
-  scripts,
-  activeExecution,
-  onCancel,
-  onConfirmExecute,
-}: {
-  section: UtilSection;
-  scripts: ScriptEntry[];
-  activeExecution: string | null;
-  onCancel: (id: string) => void;
-  onConfirmExecute: (script: ScriptEntry) => void;
-}) {
-  const Icon = section.icon;
-  const isScriptApplied = useIsScriptApplied();
-
-  const sectionScripts = useMemo(
-    () => scripts.filter((s) => section.scriptIds.includes(s.id)),
-    [scripts, section.scriptIds]
-  );
-
-  const isAnyExecuting = section.scriptIds.some((id) => activeExecution === id);
-
-  return (
-    <div
-      className={cn(
-        'rounded-xl border bg-card transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg overflow-hidden',
-        section.borderColor,
-        isAnyExecuting && 'ring-2 ring-primary/50'
-      )}
-    >
-      <div className="p-5">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className={cn('flex size-10 items-center justify-center rounded-lg', section.bgColor)}
-            >
-              <Icon className={cn('size-5', section.color)} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground">{section.name}</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">{section.description}</p>
-            </div>
-          </div>
-          <Badge variant="secondary" className="text-[10px] shrink-0">
-            {sectionScripts.length} tweaks
-          </Badge>
-        </div>
-
-        <div className="mt-4 space-y-2">
-          {sectionScripts.map((script) => {
-            const isScriptExecuting = activeExecution === script.id;
-            return (
-              <div
-                key={script.id}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg border bg-background p-3 transition-[color,background-color,border-color,box-shadow,opacity]',
-                  script.requiresAdmin && 'border-warning/20',
-                  isScriptExecuting && 'ring-2 ring-primary/50'
-                )}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium truncate">{script.name}</p>
-                    <ScriptBadge script={script} />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                    {script.description}
-                  </p>
-                </div>
-                <Button
-                  variant={isScriptExecuting ? 'destructive' : 'secondary'}
-                  size="sm"
-                  onClick={() =>
-                    isScriptExecuting ? onCancel(script.id) : onConfirmExecute(script)
-                  }
-                  className="gap-1.5 shrink-0"
-                >
-                  {isScriptExecuting ? (
-                    <>
-                      <Square className="size-3" />
-                      Cancelar
-                    </>
-                  ) : (
-                    <>
-                      <Play className="size-3" />
-                      {isScriptApplied(script) ? 'Executar novamente' : 'Executar'}
-                    </>
-                  )}
-                </Button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
+import { useScriptSelection } from '../hooks/use-script-selection';
+import { scriptsInSectionOrder } from '../lib/app-sections';
+import { UTIL_SECTIONS } from '../lib/util-sections';
 
 export default function UtilitiesPage() {
   const {
@@ -117,18 +17,32 @@ export default function UtilitiesPage() {
     categoryScripts: utilScripts,
     activeExecution,
     handleCancel,
-    handleConfirmExecute,
-    confirmScript,
-    setConfirmScript,
-    handleConfirm,
+    handleApply,
+    batch,
+    confirmBulkScripts,
+    setConfirmBulkScripts,
+    handleConfirmBulk,
+    failedScripts,
+    clearFailures,
   } = useScriptPage('Utilities');
+
+  // A ordem visual antiga das seções é preservada na lista única, sem cards.
+  const visibleScripts = useMemo(
+    () => scriptsInSectionOrder(UTIL_SECTIONS, utilScripts),
+    [utilScripts]
+  );
+
+  const { selectedIds, selectedScripts, toggle, selectAll, clear } =
+    useScriptSelection(visibleScripts);
+
+  const disabled = !!batch;
 
   if (state.status === 'loading') {
     return (
       <div className="space-y-4">
         <div className="h-24 rounded-xl bg-muted animate-pulse" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: UTIL_SECTIONS.length }).map((_, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
             <ScriptCardSkeleton key={`skeleton-${i}`} />
           ))}
@@ -165,27 +79,38 @@ export default function UtilitiesPage() {
         </div>
       </HeroBanner>
 
-      {/* Util Sections */}
-      {UTIL_SECTIONS.map((section) => (
-        <UtilSectionCard
-          key={section.id}
-          section={section}
-          scripts={utilScripts}
-          activeExecution={activeExecution}
-          onCancel={handleCancel}
-          onConfirmExecute={handleConfirmExecute}
-        />
-      ))}
+      {/* Seleção múltipla */}
+      <ScriptSelectionToolbar
+        availableIds={visibleScripts.map((s) => s.id)}
+        selectedIds={selectedIds}
+        selectedScripts={selectedScripts}
+        onSelectAll={selectAll}
+        onClear={clear}
+        onApply={handleApply}
+        applying={disabled}
+        progress={batch ? { index: batch.index, total: batch.ids.length } : null}
+        failedScripts={failedScripts}
+        onDismissFailures={clearFailures}
+      />
 
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        open={!!confirmScript}
+      {/* Lista única de tweaks */}
+      <VirtualizedScriptList
+        scripts={visibleScripts}
+        activeExecution={activeExecution}
+        onCancel={handleCancel}
+        selectedIds={selectedIds}
+        onToggle={toggle}
+        disabled={disabled}
+      />
+
+      {/* Confirmação do lote */}
+      <ConfirmBulkScriptDialog
+        open={confirmBulkScripts.length > 0}
         onOpenChange={(open) => {
-          if (!open) setConfirmScript(null);
+          if (!open) setConfirmBulkScripts([]);
         }}
-        script={confirmScript}
-        onConfirm={handleConfirm}
-        isExecuting={!!confirmScript && activeExecution === confirmScript.id}
+        scripts={confirmBulkScripts}
+        onConfirm={handleConfirmBulk}
       />
     </div>
   );
