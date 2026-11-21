@@ -67,7 +67,7 @@ describe('MouseSettingsPanel — controles', () => {
       expect(screen.getByRole('slider', { name: 'Velocidade do ponteiro' })).toBeTruthy()
     );
     expect(text()).toContain('Ajustes do Windows');
-    expect(text()).toContain('valores atuais');
+    expect(text()).toContain('tempo real');
     expect(screen.getByRole('slider', { name: 'Velocidade do ponteiro' })).toHaveProperty(
       'value',
       '10'
@@ -81,6 +81,26 @@ describe('MouseSettingsPanel — controles', () => {
       'value',
       '500'
     );
+  });
+
+  it('mostra a prévia antes dos controles e as ações depois', async () => {
+    render(<MouseSettingsPanel />);
+    const preview = await screen.findByRole('img', { name: 'Prévia do rastro do mouse' });
+    const slider = screen.getByRole('slider', { name: 'Velocidade do ponteiro' });
+    const apply = screen.getByRole('button', { name: 'Aplicar' });
+
+    expect(preview.compareDocumentPosition(slider) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(slider.compareDocumentPosition(apply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('usa o selo tempo real e remove as escalas dos sliders', async () => {
+    render(<MouseSettingsPanel />);
+    await screen.findByRole('slider', { name: 'Velocidade do ponteiro' });
+
+    expect(screen.getByText('tempo real')).toBeTruthy();
+    expect(screen.queryByText('valores atuais')).toBeNull();
+    expect(screen.queryByText('Lento')).toBeNull();
+    expect(screen.queryByText('Rápido')).toBeNull();
   });
 
   it('só habilita Aplicar quando há uma alteração pendente', async () => {
