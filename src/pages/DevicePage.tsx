@@ -1,8 +1,7 @@
 import { ChevronDown, Play, Square, Zap } from 'lucide-react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import BlurText from '../components/react-bits/BlurText';
-import GlareHover from '../components/react-bits/GlareHover';
+import { DeviceHero } from '../components/hero/DeviceHero';
 import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Button } from '../components/ui';
@@ -67,37 +66,14 @@ export default function DevicePage({ config, beforeContent }: DevicePageProps) {
   return (
     <div className="space-y-6">
       {/* Hero Banner: foto real do periférico com brilho e texto animados */}
-      <GlareHover
-        width="100%"
-        height="9rem"
-        borderRadius="0.75rem"
-        borderColor="transparent"
-        glareOpacity={0.3}
-        className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"
-      >
-        <img
-          src={config.heroImage}
-          alt={config.heroImageAlt}
-          className="absolute right-0 top-0 h-full w-3/5 object-cover"
-          style={{ maskImage: 'linear-gradient(90deg, transparent, black 35%)' }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-card/95 via-card/60 to-transparent" />
-        <div className="relative flex w-full flex-col justify-center self-stretch p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Zap className="size-4 text-primary" />
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-              Sistema
-            </span>
-          </div>
-          <h2 className="text-lg font-bold text-foreground">{config.name}</h2>
-          <BlurText
-            text={config.heroDescription}
-            trigger="load"
-            animateBy="words"
-            className="mt-1 max-w-lg text-sm text-muted-foreground"
-          />
-        </div>
-      </GlareHover>
+      <DeviceHero
+        badge="Sistema"
+        icon={Zap}
+        title={config.name}
+        description={config.heroDescription}
+        image={config.heroImage}
+        imageAlt={config.heroImageAlt}
+      />
 
       {beforeContent}
 

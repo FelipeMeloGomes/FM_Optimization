@@ -119,6 +119,34 @@ describe('TweaksPage — estados', () => {
     expect(bodyText()).toContain('Erro ao carregar tweaks');
     expect(bodyText()).toContain('catálogo indisponível');
   });
+
+  it('usa heroContent no lugar do HeroBanner e o coloca antes do beforeContent', () => {
+    render(
+      <TweaksPage
+        {...baseProps()}
+        heroContent={<p>Hero personalizado</p>}
+        beforeContent={<p>Painel de ajustes</p>}
+      />
+    );
+
+    const hero = screen.getByText('Hero personalizado');
+    const painel = screen.getByText('Painel de ajustes');
+    expect(hero.compareDocumentPosition(painel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByText('Página de teste')).toBeNull();
+    expect(screen.queryByTestId('hero-visual')).toBeNull();
+  });
+
+  it('renderiza beforeContent mesmo durante loading e erro', () => {
+    store.state = { status: 'loading' };
+    const { rerender } = render(
+      <TweaksPage {...baseProps()} beforeContent={<p>Painel sempre visível</p>} />
+    );
+    expect(screen.getByText('Painel sempre visível')).toBeDefined();
+
+    store.state = { status: 'error', error: 'x' };
+    rerender(<TweaksPage {...baseProps()} beforeContent={<p>Painel sempre visível</p>} />);
+    expect(screen.getByText('Painel sempre visível')).toBeDefined();
+  });
 });
 
 describe('TweaksPage — layout e seleção', () => {

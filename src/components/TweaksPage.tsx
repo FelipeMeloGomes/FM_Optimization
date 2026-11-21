@@ -34,6 +34,10 @@ export interface TweaksPageProps {
   buildLabels?: (scripts: ScriptEntry[]) => Record<string, { name: string; description: string }>;
   /** Conteúdo extra entre o hero e a barra (avisos da CPU, cabeçalho de Input Lag). */
   beforeList?: (visibleScripts: ScriptEntry[]) => ReactNode;
+  /** Conteúdo acima de todos os estados, inclusive carregamento e erro. */
+  beforeContent?: ReactNode;
+  /** Substitui o HeroBanner padrão quando a página usa outro banner. */
+  heroContent?: ReactNode;
   /** CPU também espera a leitura do hardware antes de mostrar a lista. */
   extraLoading?: boolean;
   /** Input Lag e CPU embrulham barra + lista em `space-y-4`; as demais usam o `space-y-6` raiz. */
@@ -56,6 +60,8 @@ function TweaksPageImpl({
   transform,
   buildLabels,
   beforeList,
+  beforeContent,
+  heroContent,
   extraLoading = false,
   compactToolbarGap = false,
 }: TweaksPageProps) {
@@ -85,9 +91,15 @@ function TweaksPageImpl({
   const { selectedIds, selectedScripts, toggle, selectAll, clear } =
     useScriptSelection(visibleScripts);
   const disabled = !!batch;
+  const withBeforeContent = (content: ReactNode) => (
+    <>
+      {beforeContent}
+      {content}
+    </>
+  );
 
   if (extraLoading || state.status === 'loading') {
-    return (
+    return withBeforeContent(
       <div className="space-y-4">
         <div className={`${skeletonHeroHeight} rounded-xl bg-muted animate-pulse`} />
         <div className={`grid grid-cols-1 ${skeletonGap} sm:grid-cols-2`}>
@@ -101,7 +113,7 @@ function TweaksPageImpl({
   }
 
   if (state.status === 'error') {
-    return (
+    return withBeforeContent(
       <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
         <p className="text-sm">Erro ao carregar tweaks</p>
         <p className="text-xs text-destructive">{state.error}</p>
@@ -110,6 +122,22 @@ function TweaksPageImpl({
   }
 
   const Icon = hero.icon;
+  // O banner vem antes do painel de ajustes; o painel continua visível em
+  // loading/erro através de `withBeforeContent`, onde não há banner.
+  const banner = heroContent ?? (
+    <HeroBanner visual={hero.visual}>
+      <div className="relative p-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Icon className="size-4 text-primary" aria-hidden="true" />
+          <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+            {hero.badge}
+          </span>
+        </div>
+        <h2 className="text-lg font-bold text-foreground">{hero.title}</h2>
+        <p className="text-sm text-muted-foreground mt-1 max-w-lg">{hero.description}</p>
+      </div>
+    </HeroBanner>
+  );
   const toolbar = (
     <ScriptSelectionToolbar
       availableIds={visibleScripts.map((s) => s.id)}
@@ -138,19 +166,8 @@ function TweaksPageImpl({
 
   return (
     <div className="space-y-6">
-      <HeroBanner visual={hero.visual}>
-        <div className="relative p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Icon className="size-4 text-primary" aria-hidden="true" />
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-              {hero.badge}
-            </span>
-          </div>
-          <h2 className="text-lg font-bold text-foreground">{hero.title}</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-lg">{hero.description}</p>
-        </div>
-      </HeroBanner>
-
+      {banner}
+      {beforeContent}
       {beforeList?.(visibleScripts)}
 
       {compactToolbarGap ? (

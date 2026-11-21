@@ -21,17 +21,13 @@ export interface DriveActionLaunch {
  * variável de ambiente para não depender de escaping na linha do PowerShell,
  * seguindo o mesmo wrapper usado pelos scripts interativos.
  */
-export function buildDriveActionCommand(
-  kind: DriveActionKind,
-  letter: string
-): DriveActionLaunch {
+export function buildDriveActionCommand(kind: DriveActionKind, letter: string): DriveActionLaunch {
   if (!DRIVE_LETTER_PATTERN.test(letter)) {
     throw new Error('Unidade inválida');
   }
 
   const drive = letter.toUpperCase();
-  const childArgs =
-    kind === 'cleanup' ? `/c cleanmgr /d ${drive}:` : `/c defrag ${drive}: /O /L`;
+  const childArgs = kind === 'cleanup' ? `/c cleanmgr /d ${drive}:` : `/c defrag ${drive}: /O /L`;
 
   return {
     command: 'powershell.exe',
@@ -48,10 +44,7 @@ export function buildDriveActionCommand(
  * `cleanmgr` é interativo e `defrag` pode demorar, então um timeout mataria a
  * operação antes do usuário terminar.
  */
-export async function runDriveAction(
-  kind: DriveActionKind,
-  letter: string
-): Promise<void> {
+export async function runDriveAction(kind: DriveActionKind, letter: string): Promise<void> {
   if (!(await isAdmin())) {
     throw new Error(ADMIN_ERROR);
   }

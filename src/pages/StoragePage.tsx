@@ -1,7 +1,9 @@
 import { HardDrive } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import { AnimatedStorage } from '../components/hero/AnimatedHero';
+import storageImage from '../assets/storage-drives.jpg';
+import { DeviceHero } from '../components/hero/DeviceHero';
+import { StorageSettingsPanel } from '../components/storage/StorageSettingsPanel';
 import { TweaksPage } from '../components/TweaksPage';
 import { scriptsInSectionOrder } from '../lib/app-sections';
 import { STORAGE_SECTIONS } from '../lib/storage-sections';
@@ -14,7 +16,7 @@ const HERO = {
   badge: 'Ferramentas',
   title: 'Armazenamento',
   description: 'Libere espaço em disco, otimize o SSD e compacte os arquivos do sistema.',
-  visual: <AnimatedStorage />,
+  visual: null,
 };
 
 export default function StoragePage() {
@@ -42,8 +44,19 @@ export default function StoragePage() {
     <TweaksPage
       category="Armazenamento"
       hero={HERO}
+      heroContent={
+        <DeviceHero
+          badge={HERO.badge}
+          icon={HERO.icon}
+          title={HERO.title}
+          description={HERO.description}
+          image={storageImage}
+          imageAlt="Unidades de armazenamento HD e SSD"
+        />
+      }
       skeletonCount={STORAGE_SECTIONS.length}
       transform={transform}
+      beforeContent={<StorageSettingsPanel />}
     />
   );
 }

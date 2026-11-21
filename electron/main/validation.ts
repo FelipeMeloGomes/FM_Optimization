@@ -6,6 +6,7 @@ import {
   DISPLAY_MIN_HEIGHT,
   DISPLAY_MIN_WIDTH,
 } from '../shared/display-settings';
+import { DRIVE_LETTER_PATTERN } from '../shared/drive-actions';
 import {
   KEYBOARD_BLINK_MAX,
   KEYBOARD_BLINK_MIN,
@@ -20,7 +21,6 @@ import {
   MOUSE_POINTER_SPEED_MAX,
   MOUSE_POINTER_SPEED_MIN,
 } from '../shared/mouse-settings';
-import { DRIVE_LETTER_PATTERN } from '../shared/drive-actions';
 import { isValidOverlayHotkey } from '../shared/overlay-types';
 import {
   InterfaceIndexSchema,

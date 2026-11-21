@@ -10,11 +10,7 @@ const h = vi.hoisted(() => ({
 vi.mock('node:child_process', () => ({ spawn: h.spawn }));
 vi.mock('./admin-check', () => ({ isAdmin: h.isAdmin }));
 
-import {
-  DRIVE_LETTER_PATTERN,
-  buildDriveActionCommand,
-  runDriveAction,
-} from './drive-actions';
+import { buildDriveActionCommand, DRIVE_LETTER_PATTERN, runDriveAction } from './drive-actions';
 
 const ADMIN_ERROR =
   'Este script requer privilégios de administrador. Execute o programa como administrador.';

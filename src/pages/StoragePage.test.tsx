@@ -1,8 +1,13 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
+import type {
+  AsyncState,
+  DashboardData,
+  ScriptEntry,
+  StorageDrive,
+} from '../../electron/shared/ipc-types';
 
 /**
  * A página Armazenamento mostra só os scripts da categoria homônima e mantém
@@ -49,6 +54,22 @@ vi.mock('../hooks/use-is-script-applied', () => ({
   useIsScriptApplied: () => () => false,
 }));
 
+const systemStore = vi.hoisted(() => ({
+  state: { status: 'success', data: { drives: [] } } as unknown as AsyncState<DashboardData>,
+  hasFetched: true,
+  refresh: vi.fn(),
+}));
+
+vi.mock('../contexts/SystemContext', () => ({
+  useSystemContext: () => ({
+    state: systemStore.state,
+    refreshing: false,
+    refresh: systemStore.refresh,
+    hasFetched: systemStore.hasFetched,
+    isFromCache: true,
+  }),
+}));
+
 import StoragePage from './StoragePage';
 
 function script(id: string, name: string): ScriptEntry {
@@ -76,11 +97,26 @@ function renderPage() {
   return render(<StoragePage />);
 }
 
+const SYSTEM_DRIVE: StorageDrive = {
+  letter: 'C:',
+  label: 'Sistema',
+  size: '512 GB',
+  free: '200 GB',
+  usedPercent: 61,
+  type: 'SSD NVMe',
+};
+
 beforeEach(() => {
   store.page = { status: 'success', data: [] };
   store.scripts = [];
   store.handleApply = vi.fn();
   store.handleCancel = vi.fn();
+  systemStore.state = {
+    status: 'success',
+    data: { drives: [SYSTEM_DRIVE] } as unknown as DashboardData,
+  };
+  systemStore.hasFetched = true;
+  systemStore.refresh.mockReset();
   setHasSSD(true);
 });
 
@@ -89,13 +125,31 @@ afterEach(() => {
 });
 
 describe('StoragePage', () => {
-  it('mostra o banner animado e o título da página', () => {
+  it('mostra o painel de discos antes da barra de tweaks', () => {
+    renderPage();
+
+    expect(screen.getByText('Ajustes do Windows')).toBeDefined();
+    expect(screen.getByText('Por disco')).toBeDefined();
+    const panel = screen.getByText('Ajustes do Windows');
+    const toolbar = screen.getByTestId('tweaks-list');
+    expect(panel.compareDocumentPosition(toolbar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('mostra o hero com foto de HD/SSD no padrão das páginas de dispositivo', () => {
     const { container } = renderPage();
 
     expect(screen.getByText('Armazenamento')).toBeDefined();
     expect(screen.getByTestId('tweaks-list')).toBeDefined();
-    expect(screen.queryByText('Otimização de armazenamento')).toBeNull();
-    expect(container.querySelector('[data-hero-animation="storage"]')).not.toBeNull();
+    const heroImage = screen.getByRole('img', { name: 'Unidades de armazenamento HD e SSD' });
+    const painel = screen.getByText('Ajustes do Windows');
+    expect(
+      heroImage.compareDocumentPosition(painel) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(container.querySelector('[data-hero-animation="storage"]')).toBeNull();
+    expect(screen.queryByTestId('hero-visual')).toBeNull();
+    expect((document.body.textContent ?? '').replace(/\s+/g, ' ')).toContain(
+      'Libere espaço em disco, otimize o SSD e compacte os arquivos do sistema.'
+    );
   });
 
   it('esconde os scripts exclusivos de SSD quando não há SSD', () => {
@@ -108,9 +162,10 @@ describe('StoragePage', () => {
 
     renderPage();
 
-    expect(screen.getByText('Limpeza WinSxS')).toBeDefined();
-    expect(screen.queryByText('Otimizar SSD')).toBeNull();
-    expect(screen.queryByText('TRIM SSD')).toBeNull();
+    const list = within(screen.getByTestId('tweaks-list'));
+    expect(list.getByText('Limpeza WinSxS')).toBeDefined();
+    expect(list.queryByText('Otimizar SSD')).toBeNull();
+    expect(list.queryByText('TRIM SSD')).toBeNull();
   });
 
   it('seleciona um tweak e aplica só ele pelo botão de lote', async () => {
