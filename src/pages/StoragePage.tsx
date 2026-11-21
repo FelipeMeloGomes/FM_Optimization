@@ -5,9 +5,10 @@ import { AnimatedStorage } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
-import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
+import { VirtualizedScriptList } from '../components/VirtualizedScriptList';
 import { useScriptPage } from '../hooks/use-script-page';
 import { useScriptSelection } from '../hooks/use-script-selection';
+import { scriptsInSectionOrder } from '../lib/app-sections';
 import { STORAGE_SECTIONS } from '../lib/storage-sections';
 
 /** Tweaks que só fazem sentido em máquinas com SSD (herdados de Utilitários). */
@@ -36,15 +37,15 @@ export default function StoragePage() {
       .catch(() => setHasSSD(false));
   }, []);
 
-  // já vem filtrado por hasSSD(): ids que somem do catálogo saem da seleção
-  // e da contagem por meio do `useScriptSelection`.
-  const visibleScripts = useMemo(
-    () =>
+  // Ids exclusivos de SSD somem quando a máquina não tem SSD; o restante entra
+  // na lista na ordem da antiga seção, sem agrupá-la em cards.
+  const visibleScripts = useMemo(() => {
+    const elegiveis =
       hasSSD === true
         ? categoryScripts
-        : categoryScripts.filter((script) => !SSD_ONLY_IDS.includes(script.id)),
-    [categoryScripts, hasSSD]
-  );
+        : categoryScripts.filter((script) => !SSD_ONLY_IDS.includes(script.id));
+    return scriptsInSectionOrder(STORAGE_SECTIONS, elegiveis);
+  }, [categoryScripts, hasSSD]);
 
   const { selectedIds, selectedScripts, toggle, selectAll, clear } =
     useScriptSelection(visibleScripts);
@@ -106,24 +107,15 @@ export default function StoragePage() {
         onDismissFailures={clearFailures}
       />
 
-      {/* Storage Sections */}
-      <div className="space-y-4">
-        {STORAGE_SECTIONS.map((section) => {
-          const scripts = visibleScripts.filter((s) => section.scriptIds.includes(s.id));
-          return (
-            <VirtualizedSectionCard
-              key={section.id}
-              section={section}
-              scripts={scripts}
-              activeExecution={activeExecution}
-              onCancel={handleCancel}
-              selectedIds={selectedIds}
-              onToggle={toggle}
-              disabled={disabled}
-            />
-          );
-        })}
-      </div>
+      {/* Lista única de tweaks */}
+      <VirtualizedScriptList
+        scripts={visibleScripts}
+        activeExecution={activeExecution}
+        onCancel={handleCancel}
+        selectedIds={selectedIds}
+        onToggle={toggle}
+        disabled={disabled}
+      />
 
       {/* Confirmação do lote */}
       <ConfirmBulkScriptDialog

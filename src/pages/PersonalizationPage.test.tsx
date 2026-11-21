@@ -106,17 +106,17 @@ describe('PersonalizationPage', () => {
     expect(html).toContain('falha ao ler catalogo');
   });
 
-  it('renderiza o herói e as seções com seus nomes', () => {
+  it('renderiza o herói e os scripts em uma única lista sem seções', () => {
     store.scripts = [script('tweaks-1', 'Tarefa 1'), script('tweaks-2', 'Efeito 1')];
 
-    const html = renderStatic();
+    renderPage();
 
-    expect(html).toContain('Aparência e mods de apps');
-    expect(html).toContain('Barra de tarefas e menus');
-    expect(html).toContain('Efeitos visuais');
-    expect(html).toContain('Discord');
-    expect(html).toContain('Spotify');
-    expect(html).not.toContain('animate-pulse');
+    expect(screen.getByText('Aparência e mods de apps')).toBeDefined();
+    expect(screen.getByTestId('tweaks-list')).toBeDefined();
+    expect(screen.getByText('Tarefa 1')).toBeDefined();
+    expect(screen.getByText('Efeito 1')).toBeDefined();
+    expect(screen.queryByText('Barra de tarefas e menus')).toBeNull();
+    expect(screen.queryByText('Efeitos visuais')).toBeNull();
   });
 
   it('lista cada script com nome e descrição', () => {

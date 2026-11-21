@@ -79,6 +79,8 @@ describe('SystemRepairPage', () => {
     const { container } = renderPage();
 
     expect(screen.getByText('Reparo do Sistema')).toBeDefined();
+    expect(screen.getByTestId('tweaks-list')).toBeDefined();
+    expect(screen.queryByText('Integridade do sistema')).toBeNull();
     expect(container.querySelector('[data-hero-animation="repair"]')).not.toBeNull();
   });
 

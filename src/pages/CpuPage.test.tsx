@@ -128,23 +128,6 @@ function text(html: string): string {
     .trim();
 }
 
-/**
- * Texto de uma seção, ancorado no título seguido da descrição (o título sozinho
- * também aparece no nome de um script quando a página está com o bug de
- * duplicação).
- */
-const PROCESSADOR = 'Processador Ajustes de processador que valem';
-const GPU_AMD = 'GPU AMD Reduz o frame pre-renderizado';
-const WINDOWS = 'Windows e energia Energia, serviços, prioridade';
-
-function sectionText(html: string, anchor: string, nextAnchor?: string): string {
-  const all = text(html);
-  const from = all.indexOf(anchor);
-  if (from < 0) throw new Error(`seção "${anchor}" não encontrada`);
-  const to = nextAnchor ? all.indexOf(nextAnchor, from + anchor.length) : all.length;
-  return all.slice(from, to < 0 ? all.length : to);
-}
-
 /** Classes do contêiner do hero (primeiro elemento com o gradiente do banner). */
 function heroShell(html: string): string {
   const match = html.match(/<div class="([^"]*bg-gradient-to-br[^"]*)"/);
@@ -371,8 +354,8 @@ describe('CpuPage — hero banner', () => {
   );
 });
 
-describe('CpuPage — seções por categoria', () => {
-  it('mostra em cada seção apenas os scripts da categoria correspondente', () => {
+describe('CpuPage — lista única', () => {
+  it('mostra os scripts de todas as categorias em uma única lista sem seções', () => {
     store.scripts = [
       script('cpu-16', 'Ajuste de processador', '', 'CPU'),
       script('builtin-4', 'Ajuste de GPU AMD', '', 'GPU'),
@@ -380,21 +363,13 @@ describe('CpuPage — seções por categoria', () => {
     ];
 
     const html = renderStatic();
-    const processador = sectionText(html, PROCESSADOR, GPU_AMD);
-    const gpu = sectionText(html, GPU_AMD, WINDOWS);
-    const windows = sectionText(html, WINDOWS);
 
-    expect(processador).toContain('Ajuste de processador');
-    expect(processador).not.toContain('Ajuste de GPU AMD');
-    expect(processador).not.toContain('Ajuste de Windows e energia');
-
-    expect(gpu).toContain('Ajuste de GPU AMD');
-    expect(gpu).not.toContain('Ajuste de processador');
-    expect(gpu).not.toContain('Ajuste de Windows e energia');
-
-    expect(windows).toContain('Ajuste de Windows e energia');
-    expect(windows).not.toContain('Ajuste de processador');
-    expect(windows).not.toContain('Ajuste de GPU AMD');
+    expect(html).toContain('tweaks-list');
+    expect(html).toContain('Ajuste de processador');
+    expect(html).toContain('Ajuste de GPU AMD');
+    expect(html).toContain('Ajuste de Windows e energia');
+    expect(html).not.toContain('Ajustes de processador que valem');
+    expect(html).not.toContain('Reduz o frame pre-renderizado');
   });
 
   it('não mostra os scripts de pacote amplo tweaks-3 e tweaks-4 como cards', () => {

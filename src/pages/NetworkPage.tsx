@@ -5,16 +5,16 @@ import { AnimatedNetwork } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
-import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
+import { VirtualizedScriptList } from '../components/VirtualizedScriptList';
 import { useScriptPage } from '../hooks/use-script-page';
 import { useScriptSelection } from '../hooks/use-script-selection';
+import { scriptsInSectionOrder } from '../lib/app-sections';
 import { NETWORK_SECTIONS } from '../lib/network-sections';
 
 /**
  * A configuração visual de DNS saiu daqui para `DnsPage` (/dns). Esta página
- * mantém só os scripts de rede, apresentados no mesmo padrão das demais:
- * seções em `VirtualizedSectionCard` + seleção múltipla com barra de seleção
- * e confirmação de lote.
+ * mantém só os scripts de rede, apresentados em uma lista única no padrão
+ * da Limpeza, com barra de seleção e confirmação de lote.
  */
 export default function NetworkPage() {
   const {
@@ -31,22 +31,11 @@ export default function NetworkPage() {
     clearFailures,
   } = useScriptPage(['Internet', 'DNS Manager']);
 
-  // Ids que realmente têm card nesta página: a união dos `scriptIds` das
-  // seções. Scripts do catálogo que não caem em nenhuma seção não são
-  // selecionáveis aqui.
-  const networkScriptIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const section of NETWORK_SECTIONS) {
-      for (const id of section.scriptIds) {
-        ids.add(id);
-      }
-    }
-    return ids;
-  }, []);
-
+  // Ordem de exibição preservada: a lista é achatada na ordem das seções, sem
+  // agrupá-las em cards. Ids fora das seções não entram na lista nem na seleção.
   const visibleScripts = useMemo(
-    () => categoryScripts.filter((s) => networkScriptIds.has(s.id)),
-    [categoryScripts, networkScriptIds]
+    () => scriptsInSectionOrder(NETWORK_SECTIONS, categoryScripts),
+    [categoryScripts]
   );
 
   const { selectedIds, selectedScripts, toggle, selectAll, clear } =
@@ -110,24 +99,15 @@ export default function NetworkPage() {
         onDismissFailures={clearFailures}
       />
 
-      {/* Network Sections */}
-      <div className="space-y-4">
-        {NETWORK_SECTIONS.map((section) => {
-          const scripts = visibleScripts.filter((s) => section.scriptIds.includes(s.id));
-          return (
-            <VirtualizedSectionCard
-              key={section.id}
-              section={section}
-              scripts={scripts}
-              activeExecution={activeExecution}
-              onCancel={handleCancel}
-              selectedIds={selectedIds}
-              onToggle={toggle}
-              disabled={disabled}
-            />
-          );
-        })}
-      </div>
+      {/* Lista única de tweaks */}
+      <VirtualizedScriptList
+        scripts={visibleScripts}
+        activeExecution={activeExecution}
+        onCancel={handleCancel}
+        selectedIds={selectedIds}
+        onToggle={toggle}
+        disabled={disabled}
+      />
 
       {/* Confirmação do lote */}
       <ConfirmBulkScriptDialog

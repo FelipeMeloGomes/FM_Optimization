@@ -105,15 +105,15 @@ describe('PrivacySecurityPage', () => {
     expect(html).toContain('catálogo indisponível');
   });
 
-  it('renderiza o herói e a seção Privacidade', () => {
+  it('renderiza o herói e os scripts em uma única lista sem seções', () => {
     store.scripts = [script('apps-1', 'Telemetria')];
 
-    const html = renderStatic();
+    renderPage();
 
-    expect(html).toContain('Privacidade do Windows');
-    expect(html).toContain('Privacidade');
-    expect(html).toContain('Desative a telemetria');
-    expect(html).not.toContain('animate-pulse');
+    expect(screen.getByText('Privacidade do Windows')).toBeDefined();
+    expect(screen.getByTestId('tweaks-list')).toBeDefined();
+    expect(screen.getByText('Telemetria')).toBeDefined();
+    expect(screen.queryByText(/Desative a telemetria e a coleta de dados do Windows/)).toBeNull();
   });
 
   it('lista cada script com nome e descrição', () => {

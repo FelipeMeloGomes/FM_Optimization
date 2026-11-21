@@ -1,5 +1,43 @@
 import { describe, expect, it } from 'vitest';
+import type { ScriptEntry } from '../../electron/shared/ipc-types';
+import { scriptsInSectionOrder } from './app-sections';
 import { PERSONALIZATION_SECTIONS } from './personalization-sections';
+
+function script(id: string): ScriptEntry {
+  return {
+    id,
+    name: `Script ${id}`,
+    description: '',
+    category: 'CPU',
+    subcategory: '',
+    content: '',
+    extension: 'ps1',
+    requiresAdmin: false,
+    isBuiltIn: true,
+    tags: [],
+  };
+}
+
+describe('scriptsInSectionOrder', () => {
+  const sections = [
+    { id: 'a', scriptIds: ['x', 'y'] },
+    { id: 'b', scriptIds: ['z', 'x'] },
+  ];
+
+  it('devolve os scripts na ordem das seções, sem duplicar e sem ids fora delas', () => {
+    const scripts = [script('z'), script('y'), script('fora'), script('x')];
+
+    expect(scriptsInSectionOrder(sections, scripts).map((s) => s.id)).toEqual(['x', 'y', 'z']);
+  });
+
+  it('ignora ids de seção que não existem no catálogo', () => {
+    const sectionsComFantasma = [...sections, { id: 'c', scriptIds: ['fantasma'] }];
+
+    expect(scriptsInSectionOrder(sectionsComFantasma, [script('x')]).map((s) => s.id)).toEqual([
+      'x',
+    ]);
+  });
+});
 
 /**
  * A cobertura das categorias pelos cards é verificada em

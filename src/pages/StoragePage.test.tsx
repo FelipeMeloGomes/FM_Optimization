@@ -93,6 +93,8 @@ describe('StoragePage', () => {
     const { container } = renderPage();
 
     expect(screen.getByText('Armazenamento')).toBeDefined();
+    expect(screen.getByTestId('tweaks-list')).toBeDefined();
+    expect(screen.queryByText('Otimização de armazenamento')).toBeNull();
     expect(container.querySelector('[data-hero-animation="storage"]')).not.toBeNull();
   });
 

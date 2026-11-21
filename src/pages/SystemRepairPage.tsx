@@ -1,12 +1,14 @@
 import { ShieldCheck } from 'lucide-react';
+import { useMemo } from 'react';
 import { ConfirmBulkScriptDialog } from '../components/ConfirmBulkScriptDialog';
 import { AnimatedRepair } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
-import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
+import { VirtualizedScriptList } from '../components/VirtualizedScriptList';
 import { useScriptPage } from '../hooks/use-script-page';
 import { useScriptSelection } from '../hooks/use-script-selection';
+import { scriptsInSectionOrder } from '../lib/app-sections';
 import { REPAIR_SECTIONS } from '../lib/repair-sections';
 
 export default function SystemRepairPage() {
@@ -24,7 +26,11 @@ export default function SystemRepairPage() {
     clearFailures,
   } = useScriptPage('Reparo do Sistema');
 
-  const visibleScripts = categoryScripts;
+  // Lista achatada na ordem das antigas seções, sem agrupá-las em cards.
+  const visibleScripts = useMemo(
+    () => scriptsInSectionOrder(REPAIR_SECTIONS, categoryScripts),
+    [categoryScripts]
+  );
 
   const { selectedIds, selectedScripts, toggle, selectAll, clear } =
     useScriptSelection(visibleScripts);
@@ -86,24 +92,15 @@ export default function SystemRepairPage() {
         onDismissFailures={clearFailures}
       />
 
-      {/* Repair Sections */}
-      <div className="space-y-4">
-        {REPAIR_SECTIONS.map((section) => {
-          const scripts = visibleScripts.filter((s) => section.scriptIds.includes(s.id));
-          return (
-            <VirtualizedSectionCard
-              key={section.id}
-              section={section}
-              scripts={scripts}
-              activeExecution={activeExecution}
-              onCancel={handleCancel}
-              selectedIds={selectedIds}
-              onToggle={toggle}
-              disabled={disabled}
-            />
-          );
-        })}
-      </div>
+      {/* Lista única de tweaks */}
+      <VirtualizedScriptList
+        scripts={visibleScripts}
+        activeExecution={activeExecution}
+        onCancel={handleCancel}
+        selectedIds={selectedIds}
+        onToggle={toggle}
+        disabled={disabled}
+      />
 
       {/* Confirmação do lote */}
       <ConfirmBulkScriptDialog

@@ -99,7 +99,7 @@ describe('NetworkPage', () => {
     expect(screen.queryByRole('button', { name: 'Testar Novamente' })).toBeNull();
   });
 
-  it('mostra o herói e as seções de scripts no padrão das outras páginas', () => {
+  it('mostra o herói e os scripts em uma única lista sem seções', () => {
     store.scripts = [
       script('internet-1', 'Ajustar TCP/IP'),
       script('dns-2', 'Restaurar pilha de rede', 'DNS Manager'),
@@ -108,10 +108,11 @@ describe('NetworkPage', () => {
     renderPage();
 
     expect(screen.getByText('Internet')).toBeDefined();
-    expect(screen.getByText('TCP/IP e MTU')).toBeDefined();
-    expect(screen.getByText('Reparo e diagnóstico')).toBeDefined();
+    expect(screen.getByTestId('tweaks-list')).toBeDefined();
     expect(screen.getByText('Ajustar TCP/IP')).toBeDefined();
     expect(screen.getByText('Restaurar pilha de rede')).toBeDefined();
+    expect(screen.queryByText('TCP/IP e MTU')).toBeNull();
+    expect(screen.queryByText('Reparo e diagnóstico')).toBeNull();
   });
 
   it('não mostra mais a seção DNS e resolução', () => {
@@ -125,13 +126,13 @@ describe('NetworkPage', () => {
     ).toBeNull();
   });
 
-  it('conta os tweaks por seção e não pelo catálogo inteiro', () => {
+  it('conta os tweaks da lista visível e não o catálogo inteiro', () => {
     store.scripts = [script('internet-1', 'Ajustar TCP/IP')];
 
     renderPage();
 
-    expect(screen.getByText('1 tweaks')).toBeDefined();
-    expect(screen.queryByText('17 tweaks')).toBeNull();
+    expect(screen.getByText('0 de 1 selecionados')).toBeDefined();
+    expect(screen.queryByText('0 de 17 selecionados')).toBeNull();
   });
 
   it('seleciona um tweak e aplica só ele pelo botão de lote', () => {
@@ -155,8 +156,8 @@ describe('NetworkPage', () => {
 
     renderPage();
 
+    expect(screen.getByTestId('tweaks-list')).toBeDefined();
     expect(screen.getByText('Reverter Internet')).toBeDefined();
-    expect(screen.getByText('Restauração')).toBeDefined();
     expect(screen.getByRole('checkbox', { name: 'Selecionar Reverter Internet' })).toBeDefined();
   });
 

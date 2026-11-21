@@ -6,7 +6,7 @@ import { HeroBanner } from '../components/hero/HeroBanner';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
 import { Button, Card, CardContent } from '../components/ui';
-import { VirtualizedSectionCard } from '../components/VirtualizedSectionCard';
+import { VirtualizedScriptList } from '../components/VirtualizedScriptList';
 import { useCpuContext, useMemoryContext } from '../contexts/SystemContext';
 import { useCpuVendor } from '../hooks/use-cpu-vendor';
 import { useScriptPage } from '../hooks/use-script-page';
@@ -316,22 +316,14 @@ export default function CpuPage() {
               failedScripts={failedScripts}
               onDismissFailures={clearFailures}
             />
-            <div className="space-y-4">
-              {sections
-                .filter(({ scripts }) => scripts.length > 0)
-                .map(({ section, scripts }) => (
-                  <VirtualizedSectionCard
-                    key={section.id}
-                    section={section}
-                    scripts={scripts}
-                    activeExecution={activeExecution}
-                    onCancel={handleCancel}
-                    selectedIds={selectedIds}
-                    onToggle={toggle}
-                    disabled={disabled}
-                  />
-                ))}
-            </div>
+            <VirtualizedScriptList
+              scripts={visibleScripts}
+              activeExecution={activeExecution}
+              onCancel={handleCancel}
+              selectedIds={selectedIds}
+              onToggle={toggle}
+              disabled={disabled}
+            />
           </>
         )}
       </div>
