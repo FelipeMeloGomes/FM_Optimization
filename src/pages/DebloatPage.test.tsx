@@ -387,4 +387,12 @@ describe('DebloatPage — virtualização', () => {
     expect(list?.className).not.toContain('overflow-y-auto');
     expect(list?.className).not.toContain('max-h-');
   });
+
+  it('expõe data-index na linha medida para o virtualizador não reclamar', () => {
+    state.virtual = { indices: [2], paddingTop: 138, paddingBottom: 69 };
+    render(<DebloatPage />);
+
+    const row = screen.getByText('Paciência').closest('li');
+    expect(row?.getAttribute('data-index')).toBe('2');
+  });
 });

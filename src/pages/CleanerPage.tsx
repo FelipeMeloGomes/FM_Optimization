@@ -544,6 +544,7 @@ export default function CleanerPage() {
               return (
                 <li
                   key={item.id}
+                  data-index={virtualRow.index}
                   ref={measureElement}
                   className={cn(
                     'flex items-center gap-3 px-4 py-3 transition-colors',

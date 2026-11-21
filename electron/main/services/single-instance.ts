@@ -1,11 +1,14 @@
+import { execFile } from 'node:child_process';
 import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { app } from 'electron';
 
 interface InstanceInfo {
   pid: number;
   elevated: boolean;
   startedAt: string;
+  /** Nome do executável que gravou o arquivo; valida reaproveitamento de PID. */
+  processName?: string;
 }
 
 interface HandoverRequest {
@@ -50,8 +53,8 @@ function removeFile(name: string): void {
   }
 }
 
-export function writeInstanceInfo(info: InstanceInfo): void {
-  writeJson(INSTANCE_FILE, info);
+export function writeInstanceInfo(info: Omit<InstanceInfo, 'processName'>): void {
+  writeJson(INSTANCE_FILE, { ...info, processName: basename(process.execPath) });
 }
 
 export function readInstanceInfo(): InstanceInfo | null {
@@ -61,6 +64,7 @@ export function readInstanceInfo(): InstanceInfo | null {
     pid: raw.pid,
     elevated: raw.elevated === true,
     startedAt: typeof raw.startedAt === 'string' ? raw.startedAt : '',
+    processName: typeof raw.processName === 'string' ? raw.processName : undefined,
   };
 }
 
@@ -99,6 +103,44 @@ export function isProcessAlive(pid: number): boolean {
   } catch (error) {
     return (error as NodeJS.ErrnoException).code === 'EPERM';
   }
+}
+
+/** Extrai o nome do executável da linha CSV do `tasklist /FO CSV /NH`. */
+export function parseTasklistName(output: string): string | null {
+  for (const line of output.split(/\r?\n/)) {
+    const match = /^\s*"([^"]+)"/.exec(line);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+async function queryProcessName(pid: number): Promise<string | null> {
+  return new Promise((resolveName) => {
+    execFile(
+      'tasklist',
+      ['/FI', `PID eq ${pid}`, '/FO', 'CSV', '/NH'],
+      { timeout: 3000, windowsHide: true },
+      (error, stdout) => {
+        resolveName(error ? null : parseTasklistName(String(stdout ?? '')));
+      }
+    );
+  });
+}
+
+/**
+ * `isProcessAlive` sozinho não basta: o Windows reaproveita PIDs e um
+ * `instance.json` órfão pode apontar para svchost/outro programa. Sem validar
+ * o nome do executável, o boot bloqueia achando que há uma instância elevada.
+ */
+export async function isInstanceAlive(
+  info: InstanceInfo,
+  expectedProcessName = basename(process.execPath)
+): Promise<boolean> {
+  if (!isProcessAlive(info.pid)) return false;
+  const actual = await queryProcessName(info.pid);
+  if (actual === null) return false;
+  const expected = info.processName ?? expectedProcessName;
+  return actual.toLowerCase() === expected.toLowerCase();
 }
 
 function sleep(ms: number): Promise<void> {

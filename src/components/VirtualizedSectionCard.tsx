@@ -37,6 +37,7 @@ const SECTION_ROW_HEIGHT = 69;
 
 interface ScriptRowProps {
   script: ScriptEntry;
+  index: number;
   isScriptExecuting: boolean;
   isScriptApplied: boolean;
   onCancel: (id: string) => void;
@@ -46,6 +47,7 @@ interface ScriptRowProps {
 
 function ScriptRow({
   script,
+  index,
   isScriptExecuting,
   isScriptApplied,
   onCancel,
@@ -54,6 +56,7 @@ function ScriptRow({
 }: ScriptRowProps) {
   return (
     <div
+      data-index={index}
       ref={rowRef}
       className={cn(
         'flex items-center gap-3 rounded-lg border bg-background p-3 transition-[color,background-color,border-color,box-shadow,opacity]',
@@ -172,6 +175,7 @@ export function VirtualizedSectionCard({
                 <ScriptRow
                   key={script.id}
                   script={script}
+                  index={virtualRow.index}
                   isScriptExecuting={isScriptExecuting}
                   isScriptApplied={isScriptApplied(script)}
                   onCancel={onCancel}

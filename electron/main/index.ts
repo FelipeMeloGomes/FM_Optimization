@@ -1,5 +1,5 @@
 import { existsSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, dialog, Menu, Notification, powerMonitor, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
@@ -18,6 +18,7 @@ import { loadScripts } from './services/script-registry';
 import {
   clearHandoverRequest,
   clearInstanceInfo,
+  isInstanceAlive,
   isProcessAlive,
   readHandoverRequest,
   readInstanceInfo,
@@ -208,7 +209,10 @@ async function ensureSingleInstance(): Promise<boolean> {
   }
 
   const other = readInstanceInfo();
-  const otherAlive = other !== null && other.pid !== process.pid && isProcessAlive(other.pid);
+  const otherAlive =
+    other !== null &&
+    other.pid !== process.pid &&
+    (await isInstanceAlive(other, basename(process.execPath)));
   const elevated = isAdmin();
 
   if (otherAlive && elevated && !other.elevated) {

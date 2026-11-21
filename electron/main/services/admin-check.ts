@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process';
+import { execFile, execSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import { auditAdminCheck } from '../audit-logger';
 
@@ -45,15 +45,17 @@ export function isAdmin(): boolean {
   }
 
   try {
-    const { execSync } = require('node:child_process');
-    execSync('net session', { timeout: 3000 });
+    execSync('net session', { timeout: 3000, stdio: ['ignore', 'pipe', 'ignore'] });
     adminCache = { result: true, expires: Date.now() + CACHE_TTL };
     auditAdminCheck(true, 'net session');
     return true;
   } catch {
     try {
-      const { execSync } = require('node:child_process');
-      const output = execSync('whoami /groups', { timeout: 3000, encoding: 'utf-8' });
+      const output = execSync('whoami /groups', {
+        timeout: 3000,
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
       const result = output.includes('S-1-16-12288');
       adminCache = { result, expires: Date.now() + CACHE_TTL };
       auditAdminCheck(result, 'whoami /groups');

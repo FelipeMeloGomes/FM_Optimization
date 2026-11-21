@@ -475,7 +475,7 @@ export default function DebloatPage() {
                 // Label associa a linha inteira ao checkbox: clicar no nome ou no
                 // ícone seleciona, e o clique no próprio checkbox não duplica.
                 return (
-                  <li key={app.familyName} ref={measureElement}>
+                  <li key={app.familyName} data-index={virtualRow.index} ref={measureElement}>
                     {locked ? (
                       <div className={rowClass}>{rowContent}</div>
                     ) : (

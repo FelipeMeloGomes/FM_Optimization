@@ -254,4 +254,12 @@ describe('VirtualizedSectionCard — rolagem da página', () => {
     expect(styled.some((el) => el.style.height === 'auto')).toBe(false);
     expect(container.querySelector('.overflow-y-auto')).toBeNull();
   });
+
+  it('expõe data-index na linha medida para o virtualizador não reclamar', () => {
+    renderCard();
+
+    const name = screen.getByText('Remover Apps de Terceiros');
+    const row = name.closest('[data-index]');
+    expect(row?.getAttribute('data-index')).toBe('0');
+  });
 });

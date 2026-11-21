@@ -412,6 +412,14 @@ describe('CleanerPage — virtualização', () => {
     expect(list?.className).not.toContain('overflow-y-auto');
     expect(list?.className).not.toContain('max-h-');
   });
+
+  it('expõe data-index na linha medida para o virtualizador não reclamar', () => {
+    state.virtual = { indices: [1], paddingTop: 72, paddingBottom: 144 };
+    render(<CleanerPage />);
+
+    const row = screen.getByText('Cache do Google Chrome').closest('li');
+    expect(row?.getAttribute('data-index')).toBe('1');
+  });
 });
 
 describe('CleanerPage — selecionar recomendados', () => {
