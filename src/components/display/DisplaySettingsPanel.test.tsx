@@ -100,8 +100,18 @@ describe('DisplaySettingsPanel — dois monitores', () => {
     expect(text()).toContain('Monitor 1');
     expect(text()).toContain('Principal');
     expect(text()).toContain('Monitor 2');
-    expect(text()).toContain('1920 × 1080');
-    expect(text()).toContain('1440 × 900');
+    expect(screen.getAllByText('1920').some((node) => node.className.includes('sr-only'))).toBe(
+      true
+    );
+    expect(screen.getAllByText('1080').some((node) => node.className.includes('sr-only'))).toBe(
+      true
+    );
+    expect(screen.getAllByText('1440').some((node) => node.className.includes('sr-only'))).toBe(
+      true
+    );
+    expect(screen.getAllByText('900').some((node) => node.className.includes('sr-only'))).toBe(
+      true
+    );
     expect(screen.getAllByRole('combobox', { name: 'Resolução' })).toHaveLength(2);
     expect(screen.getAllByRole('combobox', { name: 'Taxa de atualização' })).toHaveLength(2);
   });
@@ -114,6 +124,39 @@ describe('DisplaySettingsPanel — dois monitores', () => {
     fireEvent.change(hz, { target: { value: '60' } });
 
     expect(screen.getAllByText('60 Hz').some((node) => node.className.includes('sr-only'))).toBe(
+      true
+    );
+  });
+
+  it('coloca a prévia de cada monitor antes dos selects e as ações depois', async () => {
+    render(<DisplaySettingsPanel />);
+    await screen.findAllByRole('combobox', { name: 'Resolução' });
+
+    const preview = screen.getAllByText('180 Hz')[0];
+    const resolution = screen.getAllByRole('combobox', { name: 'Resolução' })[0];
+    const apply = screen.getAllByRole('button', { name: 'Aplicar' })[0];
+
+    expect(
+      preview.compareDocumentPosition(resolution) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(
+      resolution.compareDocumentPosition(apply) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(screen.getByText('Por monitor')).toBeTruthy();
+    expect(screen.queryByText('2 monitores')).toBeNull();
+  });
+
+  it('anima a resolução quando o modo do monitor muda', async () => {
+    render(<DisplaySettingsPanel />);
+    await screen.findAllByRole('combobox', { name: 'Resolução' });
+
+    const [resolution] = screen.getAllByRole('combobox', { name: 'Resolução' });
+    fireEvent.change(resolution, { target: { value: '1280x720' } });
+
+    expect(screen.getAllByText('1280').some((node) => node.className.includes('sr-only'))).toBe(
+      true
+    );
+    expect(screen.getAllByText('720').some((node) => node.className.includes('sr-only'))).toBe(
       true
     );
   });
