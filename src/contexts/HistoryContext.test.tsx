@@ -134,7 +134,12 @@ function renderProvider(_settings: Partial<AppSettings> = {}) {
   );
 }
 
-afterEach(() => {
+afterEach(async () => {
+  // Drena atualizações pendentes (getSettings() -> setSettings -> efeito do listener)
+  // antes de remover o API, para que nenhum efeito tardio acesse window.electronAPI.
+  await act(async () => {
+    await Promise.resolve();
+  });
   delete (window as unknown as { electronAPI?: unknown }).electronAPI;
 });
 
