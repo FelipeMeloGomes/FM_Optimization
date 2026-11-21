@@ -335,6 +335,65 @@ describe('executeBatch', () => {
     expect(await pending).toEqual({ failedIds: ['b'] });
     vi.useRealTimers();
   });
+
+  it('desmonta o provider durante o lote e resolve a promise sem iniciar o próximo script', async () => {
+    vi.useFakeTimers();
+    const harness = installApi();
+    const { result, unmount } = renderBatchHook();
+    const A = script('a');
+    const B = script('b');
+
+    let pending!: Promise<{ failedIds: string[] }>;
+    await act(async () => {
+      pending = result.current.executeBatch([A, B]);
+      await Promise.resolve();
+    });
+
+    expect(harness.api.executeScript).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(1);
+
+    unmount();
+
+    expect(vi.getTimerCount()).toBe(0);
+
+    await pending;
+
+    expect(harness.api.executeScript).toHaveBeenCalledTimes(1);
+    expect(await pending).toEqual({ failedIds: [] });
+    vi.useRealTimers();
+  });
+
+  it('limpa a execução ativa quando o script estoura o timeout', async () => {
+    vi.useFakeTimers();
+    const harness = installApi();
+    const { result } = renderBatchHook();
+    const A = script('a');
+    const B = script('b');
+
+    let pending!: Promise<{ failedIds: string[] }>;
+    await act(async () => {
+      pending = result.current.executeBatch([A, B]);
+      await Promise.resolve();
+    });
+
+    expect(result.current.activeExecution).toBe('a');
+
+    await act(async () => {
+      vi.advanceTimersByTime(30 * 60 * 1000);
+      await Promise.resolve();
+    });
+    expect(harness.api.executeScript).toHaveBeenNthCalledWith(2, 'b');
+
+    await act(async () => {
+      harness.emitScriptEnded({ id: 'b', code: 0 });
+      await pending;
+    });
+
+    expect(await pending).toEqual({ failedIds: ['a'] });
+    expect(result.current.activeExecution).toBeNull();
+    expect(result.current.batch).toBeNull();
+    vi.useRealTimers();
+  });
 });
 
 describe('useScriptExecutionContext', () => {

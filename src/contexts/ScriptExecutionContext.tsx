@@ -11,6 +11,14 @@ import type { ScriptEnded, ScriptEntry } from '../../electron/shared/ipc-types';
 
 const SCRIPT_TIMEOUT_MS = 30 * 60 * 1000;
 
+interface InFlightBatch {
+  promise: Promise<{ failedIds: string[] }>;
+  resolve: (result: { failedIds: string[] }) => void;
+  failedIds: string[];
+  cleanup: () => void;
+  aborted: boolean;
+}
+
 interface ScriptExecutionContextValue {
   activeExecution: string | null;
   execute: (id: string) => Promise<void>;
@@ -25,12 +33,24 @@ export function ScriptExecutionProvider({ children }: { children: ReactNode }) {
   const [activeExecution, setActiveExecution] = useState<string | null>(null);
   const [batch, setBatch] = useState<{ ids: string[]; index: number } | null>(null);
   const activeRef = useRef<string | null>(null);
+  const inFlightBatchRef = useRef<InFlightBatch | null>(null);
 
   useEffect(() => {
-    return window.electronAPI.onScriptEnded((data) => {
+    const unsubscribeEnded = window.electronAPI.onScriptEnded((data) => {
       setActiveExecution((prev) => (prev === data.id ? null : prev));
       if (activeRef.current === data.id) activeRef.current = null;
     });
+
+    return () => {
+      const inFlight = inFlightBatchRef.current;
+      if (inFlight) {
+        inFlight.aborted = true;
+        inFlight.cleanup();
+        inFlight.resolve({ failedIds: inFlight.failedIds });
+        inFlightBatchRef.current = null;
+      }
+      unsubscribeEnded();
+    };
   }, []);
 
   const runOne = useCallback(async (id: string): Promise<boolean> => {
@@ -66,53 +86,88 @@ export function ScriptExecutionProvider({ children }: { children: ReactNode }) {
 
   const executeBatch = useCallback(
     async (scripts: ScriptEntry[]): Promise<{ failedIds: string[] }> => {
-      const failedIds: string[] = [];
+      let resolvePromise!: (result: { failedIds: string[] }) => void;
+      const promise = new Promise<{ failedIds: string[] }>((resolve) => {
+        resolvePromise = resolve;
+      });
+      const inFlight: InFlightBatch = {
+        promise,
+        resolve: resolvePromise,
+        failedIds: [],
+        cleanup: () => undefined,
+        aborted: false,
+      };
+      inFlightBatchRef.current = inFlight;
 
-      for (let index = 0; index < scripts.length; index++) {
-        const script = scripts[index];
-        setBatch({ ids: scripts.map((s) => s.id), index: index + 1 });
+      const run = async (): Promise<void> => {
+        for (let index = 0; index < scripts.length; index++) {
+          if (inFlight.aborted) break;
+          const script = scripts[index];
+          setBatch({ ids: scripts.map((s) => s.id), index: index + 1 });
 
-        let unsubscribe: (() => void) | undefined;
-        const endedPromise = new Promise<ScriptEnded>((resolve) => {
-          unsubscribe = window.electronAPI.onScriptEnded((data) => {
-            if (data.id !== script.id) return;
-            resolve(data);
-          });
-        });
-
-        let timer: ReturnType<typeof setTimeout> | undefined;
-        const timeoutPromise = script.interactive
-          ? new Promise<never>(() => undefined)
-          : new Promise<never>((_resolve, reject) => {
-              timer = setTimeout(
-                () => reject(new Error('Script execution timed out')),
-                SCRIPT_TIMEOUT_MS
-              );
+          let unsubscribe: (() => void) | undefined;
+          let resolveEnded: ((data: ScriptEnded) => void) | undefined;
+          const endedPromise = new Promise<ScriptEnded>((resolve) => {
+            resolveEnded = resolve;
+            unsubscribe = window.electronAPI.onScriptEnded((data) => {
+              if (data.id !== script.id) return;
+              resolve(data);
             });
+          });
 
-        let failed = false;
-        try {
-          const spawned = await runOne(script.id);
-          if (spawned) {
-            const data = await Promise.race([endedPromise, timeoutPromise]);
-            failed = data.code !== 0 && !data.cancelled;
-          } else {
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          const timeoutPromise = script.interactive
+            ? new Promise<never>(() => undefined)
+            : new Promise<never>((_resolve, reject) => {
+                timer = setTimeout(
+                  () => reject(new Error('Script execution timed out')),
+                  SCRIPT_TIMEOUT_MS
+                );
+              });
+
+          inFlight.cleanup = () => {
+            clearTimeout(timer);
+            unsubscribe?.();
+            if (inFlight.aborted) {
+              resolveEnded?.({ id: script.id, code: 0 });
+            }
+          };
+
+          let failed = false;
+          try {
+            const spawned = await runOne(script.id);
+            if (spawned) {
+              const data = await Promise.race([endedPromise, timeoutPromise]);
+              failed = data.code !== 0 && !data.cancelled;
+            } else {
+              failed = true;
+            }
+          } catch {
             failed = true;
+            // timeout: sem script-ended chegará, então limpa o estado do passo
+            activeRef.current = null;
+            setActiveExecution((prev) => (prev === script.id ? null : prev));
+          } finally {
+            clearTimeout(timer);
+            unsubscribe?.();
           }
-        } catch {
-          failed = true;
-        } finally {
-          clearTimeout(timer);
-          unsubscribe?.();
+
+          if (failed && !inFlight.aborted) inFlight.failedIds.push(script.id);
         }
 
-        if (failed) failedIds.push(script.id);
-      }
+        inFlight.cleanup = () => undefined;
+        inFlight.resolve({ failedIds: inFlight.failedIds });
+        inFlightBatchRef.current = null;
+        setBatch(null);
+        const lastId = scripts[scripts.length - 1]?.id;
+        if (lastId) {
+          activeRef.current = null;
+          setActiveExecution((prev) => (prev === lastId ? null : prev));
+        }
+      };
 
-      setBatch(null);
-      const lastId = scripts[scripts.length - 1]?.id;
-      if (lastId) setActiveExecution((prev) => (prev === lastId ? null : prev));
-      return { failedIds };
+      await run();
+      return promise;
     },
     [runOne]
   );
