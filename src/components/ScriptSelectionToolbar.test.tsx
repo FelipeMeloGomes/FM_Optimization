@@ -5,9 +5,9 @@ import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { ScriptSelectionToolbar } from './ScriptSelectionToolbar';
 
 /**
- * Barra de seleção de tweaks: contador da seleção visível, botão
- * "Selecionar todos"/"Limpar seleção", botão "Aplicar selecionados" (desabilitado
- * com zero selecionados ou com o lote em andamento) e alerta de falhas.
+ * Barra de seleção de tweaks no padrão da Limpeza: checkbox "Selecionar todos"
+ * com contador no mesmo label, botão "Limpar seleção" e botão de aplicar com
+ * estado de progresso.
  */
 
 function script(id: string, name = `Script ${id}`): ScriptEntry {
@@ -71,61 +71,66 @@ function setup(overrides: SetupProps = {}) {
   return props;
 }
 
+function selectAllCheckbox(): HTMLInputElement {
+  return screen.getByRole('checkbox', { name: /Selecionar todos/ }) as HTMLInputElement;
+}
+
 describe('ScriptSelectionToolbar', () => {
-  it('mostra contador zerado, aplicar desabilitado e selecionar todos marca', () => {
+  it('mostra o contador dentro do label do checkbox e aplicar desabilitado com zero', () => {
     const props = setup();
 
-    expect(screen.getByText('0 de 3 selecionados')).not.toBeNull();
-    expect(screen.getByRole('button', { name: 'Selecionar todos' })).not.toBeNull();
+    const checkbox = selectAllCheckbox();
+    expect(checkbox.checked).toBe(false);
+    expect(checkbox.id).toBe('select-all-tweaks');
+    expect(checkbox.closest('label')?.textContent).toContain('0 de 3 selecionados');
     expect(
       (screen.getByRole('button', { name: 'Aplicar selecionados' }) as HTMLButtonElement).disabled
     ).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: 'Selecionar todos' }));
+    expect(
+      (screen.getByRole('button', { name: 'Limpar seleção' }) as HTMLButtonElement).disabled
+    ).toBe(true);
+
+    fireEvent.click(checkbox);
     expect(props.onSelectAll).toHaveBeenCalledTimes(1);
   });
 
   it('conta apenas a seleção visível e habilita aplicar com algo marcado', () => {
     setup({ selectedIds: new Set(['a']) });
 
-    expect(screen.getByText('1 de 3 selecionados')).not.toBeNull();
+    expect(selectAllCheckbox().closest('label')?.textContent).toContain('1 de 3 selecionados');
     expect(
       (screen.getByRole('button', { name: 'Aplicar selecionados' }) as HTMLButtonElement).disabled
     ).toBe(false);
   });
 
-  it('mostra Limpar seleção e habilita aplicar quando tudo está selecionado', () => {
+  it('marca o checkbox e usa Limpar seleção quando tudo está selecionado', () => {
     const props = setup({ selectedIds: new Set(['a', 'b', 'c']) });
 
-    expect(screen.getByText('3 de 3 selecionados')).not.toBeNull();
-    expect(screen.getByRole('button', { name: 'Limpar seleção' })).not.toBeNull();
-    expect(
-      (screen.getByRole('button', { name: 'Aplicar selecionados' }) as HTMLButtonElement).disabled
-    ).toBe(false);
+    expect(selectAllCheckbox().checked).toBe(true);
+    expect(selectAllCheckbox().closest('label')?.textContent).toContain('3 de 3 selecionados');
     fireEvent.click(screen.getByRole('button', { name: 'Limpar seleção' }));
     expect(props.onClear).toHaveBeenCalledTimes(1);
   });
 
-  it('desabilita aplicar durante o lote com progresso', () => {
+  it('desabilita aplicar durante o lote, mostra progresso e Aplicando…', () => {
     const props = setup({
       applying: true,
       progress: { index: 2, total: 5 },
       selectedIds: new Set(['a']),
     });
 
-    const status = screen.getByRole('status');
-    expect(status).not.toBeNull();
+    expect(screen.getByRole('status')).not.toBeNull();
     expect(screen.getByText('2 de 5')).not.toBeNull();
-    expect(
-      (screen.getByRole('button', { name: 'Aplicar selecionados' }) as HTMLButtonElement).disabled
-    ).toBe(true);
+    expect((screen.getByRole('button', { name: 'Aplicando…' }) as HTMLButtonElement).disabled).toBe(
+      true
+    );
     expect(props.onApply).not.toHaveBeenCalled();
   });
 
   it('mostra alerta de falhas com o nome do script e fecha', () => {
     const props = setup({ failedScripts: [script('b', 'Tweak do B')] });
 
-    const alert = screen.getByRole('alert');
-    expect(alert).not.toBeNull();
+    expect(screen.getByRole('alert')).not.toBeNull();
     expect(screen.getByText('Tweak do B')).not.toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Fechar' }));
     expect(props.onDismissFailures).toHaveBeenCalledTimes(1);
@@ -134,14 +139,7 @@ describe('ScriptSelectionToolbar', () => {
   it('envia os scripts selecionados ao aplicar, inclusive sem falhas', () => {
     const a = script('a', 'Tweak A');
     const b = script('b', 'Tweak B');
-    const props = setup({
-      selectedIds: new Set(['a', 'b']),
-      selectedScripts: [a, b],
-    });
-
-    expect(
-      (screen.getByRole('button', { name: 'Aplicar selecionados' }) as HTMLButtonElement).disabled
-    ).toBe(false);
+    const props = setup({ selectedIds: new Set(['a', 'b']), selectedScripts: [a, b] });
 
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar selecionados' }));
     expect(props.onApply).toHaveBeenCalledTimes(1);

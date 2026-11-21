@@ -1,3 +1,4 @@
+import { Loader2, Zap } from 'lucide-react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { Badge, Button } from './ui';
 
@@ -15,9 +16,9 @@ export interface ScriptSelectionToolbarProps {
 }
 
 /**
- * Barra de seleção de tweaks: contador da seleção visível, botão
- * "Selecionar todos"/"Limpar seleção", botão "Aplicar selecionados" (desabilitado
- * com zero selecionados ou com o lote em andamento) e alerta de falhas.
+ * Barra de seleção de tweaks no padrão da Limpeza: checkbox "Selecionar todos"
+ * com contador, "Limpar seleção" como ação secundária e botão de aplicar com
+ * estado de progresso e alerta de falhas.
  */
 export function ScriptSelectionToolbar({
   availableIds,
@@ -49,12 +50,31 @@ export function ScriptSelectionToolbar({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={handleSelectAllClick} className="gap-1.5">
-          {allSelected ? 'Limpar seleção' : 'Selecionar todos'}
+        <label
+          htmlFor="select-all-tweaks"
+          className="flex items-center gap-2 text-sm text-foreground"
+        >
+          <input
+            id="select-all-tweaks"
+            type="checkbox"
+            className="size-4 accent-primary"
+            checked={allSelected}
+            onChange={handleSelectAllClick}
+            disabled={availableIds.length === 0 || applying}
+          />
+          Selecionar todos
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {`${selectedCount} de ${availableIds.length} selecionados`}
+          </span>
+        </label>
+        <Button
+          variant="subtle"
+          size="sm"
+          onClick={onClear}
+          disabled={selectedCount === 0 || applying}
+        >
+          Limpar seleção
         </Button>
-        <span className="text-sm text-muted-foreground tabular-nums">
-          {`${selectedCount} de ${availableIds.length} selecionados`}
-        </span>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -88,7 +108,17 @@ export function ScriptSelectionToolbar({
           disabled={selectedCount === 0 || applying}
           className="gap-1.5"
         >
-          Aplicar selecionados
+          {applying ? (
+            <>
+              <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+              Aplicando…
+            </>
+          ) : (
+            <>
+              <Zap className="size-3.5" aria-hidden="true" />
+              Aplicar selecionados
+            </>
+          )}
         </Button>
       </div>
     </div>
