@@ -152,28 +152,30 @@ export default function InputLagPage() {
         </div>
 
         {/* Seleção múltipla */}
-        <ScriptSelectionToolbar
-          availableIds={selectableScripts.map((s) => s.id)}
-          selectedIds={selectedIds}
-          selectedScripts={selectedScripts}
-          onSelectAll={selectAll}
-          onClear={clear}
-          onApply={handleApply}
-          applying={disabled}
-          progress={batch ? { index: batch.index, total: batch.ids.length } : null}
-          failedScripts={failedScripts}
-          onDismissFailures={clearFailures}
-        />
+        <div className="space-y-4">
+          <ScriptSelectionToolbar
+            availableIds={selectableScripts.map((s) => s.id)}
+            selectedIds={selectedIds}
+            selectedScripts={selectedScripts}
+            onSelectAll={selectAll}
+            onClear={clear}
+            onApply={handleApply}
+            applying={disabled}
+            progress={batch ? { index: batch.index, total: batch.ids.length } : null}
+            failedScripts={failedScripts}
+            onDismissFailures={clearFailures}
+          />
 
-        <VirtualizedScriptList
-          scripts={selectableScripts}
-          labels={labels}
-          activeExecution={activeExecution}
-          onCancel={handleCancel}
-          selectedIds={selectedIds}
-          onToggle={toggle}
-          disabled={disabled}
-        />
+          <VirtualizedScriptList
+            scripts={selectableScripts}
+            labels={labels}
+            activeExecution={activeExecution}
+            onCancel={handleCancel}
+            selectedIds={selectedIds}
+            onToggle={toggle}
+            disabled={disabled}
+          />
+        </div>
       </div>
 
       {/* Confirmação do lote */}

@@ -194,6 +194,17 @@ describe('InputLagPage — lista única no padrão da Limpeza', () => {
     expect(screen.queryByText('Pacote Amplo de Input')).toBeNull();
   });
 
+  it('mantém espaço entre a barra de seleção e a lista', async () => {
+    render(<InputLagPage />);
+
+    await waitFor(() => expect(screen.getByTestId('tweaks-list')).toBeDefined());
+    const list = screen.getByTestId('tweaks-list');
+    const selectAll = screen.getByRole('checkbox', { name: /Selecionar todos/ });
+
+    expect(list.parentElement?.className).toContain('space-y-4');
+    expect(list.parentElement?.contains(selectAll)).toBe(true);
+  });
+
   it('atualiza o contador da barra ao marcar um tweak da lista', async () => {
     render(<InputLagPage />);
 

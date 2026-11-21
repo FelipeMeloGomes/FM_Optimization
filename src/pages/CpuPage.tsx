@@ -226,7 +226,7 @@ export default function CpuPage() {
             <p className="text-xs text-muted-foreground">Tente ajustar sua busca ou filtro</p>
           </div>
         ) : (
-          <>
+          <div className="space-y-4">
             <ScriptSelectionToolbar
               availableIds={visibleScripts.map((s) => s.id)}
               selectedIds={selectedIds}
@@ -247,7 +247,7 @@ export default function CpuPage() {
               onToggle={toggle}
               disabled={disabled}
             />
-          </>
+          </div>
         )}
       </div>
 

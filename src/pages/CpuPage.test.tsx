@@ -339,6 +339,20 @@ describe('CpuPage — hero banner', () => {
   );
 });
 
+describe('CpuPage — espaçamento da lista', () => {
+  it('mantém espaço entre a barra de seleção e a lista', () => {
+    store.scripts = [script('cpu-16', 'Ajuste comum de CPU')];
+
+    renderPage();
+
+    const list = screen.getByTestId('tweaks-list');
+    const selectAll = screen.getByRole('checkbox', { name: /Selecionar todos/ });
+
+    expect(list.parentElement?.className).toContain('space-y-4');
+    expect(list.parentElement?.contains(selectAll)).toBe(true);
+  });
+});
+
 describe('CpuPage — lista única', () => {
   it('mostra os scripts de todas as categorias em uma única lista sem seções', () => {
     store.scripts = [
