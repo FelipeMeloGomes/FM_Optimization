@@ -180,6 +180,30 @@ describe('InputLagPage — contagem dos selos', () => {
   });
 });
 
+describe('InputLagPage — lista única no padrão da Limpeza', () => {
+  it('usa uma lista com divide-y, nomes curados e sem o pacote inputlag-4', async () => {
+    store.scripts = [...FULL_CATALOG, script('inputlag-4', 'Pacote Amplo de Input')];
+
+    render(<InputLagPage />);
+
+    await waitFor(() => expect(screen.getByTestId('tweaks-list')).toBeDefined());
+    const list = screen.getByTestId('tweaks-list');
+    expect(list.querySelector('ul')?.className).toContain('divide-y');
+    expect(list.querySelectorAll('li[data-index]')).toHaveLength(5);
+    expect(screen.getByText('Reduzir Input Lag USB').closest('label')).not.toBeNull();
+    expect(screen.queryByText('Pacote Amplo de Input')).toBeNull();
+  });
+
+  it('atualiza o contador da barra ao marcar um tweak da lista', async () => {
+    render(<InputLagPage />);
+
+    await waitFor(() => expect(screen.getByTestId('tweaks-list')).toBeDefined());
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Selecionar TCPNoDelay' }));
+
+    expect(screen.getByText('1 de 5 selecionados')).toBeDefined();
+  });
+});
+
 describe('InputLagPage — registros', () => {
   it('não mostra "Aplicar Todas Otimizações" nem o card do pacote amplo', async () => {
     render(<InputLagPage />);

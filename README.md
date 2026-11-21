@@ -27,10 +27,10 @@
 
 ### Otimização do Sistema
 
-As sete páginas de tweaks (Input Lag, Otimização do sistema, Personalização, Internet, Armazenamento, Privacidade e Reparo do Sistema) usam seleção múltipla: marque os cards, use **Selecionar todos** e **Aplicar selecionados**. Nenhum tweak vem marcado por padrão; os tweaks escolhidos rodam em sequência e os scripts interativos abrem janela própria.
+As sete páginas de tweaks (Input Lag, Otimização do sistema, Personalização, Internet, Armazenamento, Privacidade e Reparo do Sistema) usam seleção múltipla no mesmo padrão da Limpeza: uma única lista de tweaks, sem cards nem agrupamento por seção, com **Selecionar todos**, **Limpar seleção** e **Aplicar selecionados**. Nenhum tweak vem marcado por padrão; os tweaks escolhidos rodam em sequência e os scripts interativos abrem janela própria.
 
 - **Dashboard** — uso de processador, placa de vídeo, memória RAM e armazenamento, com a unidade identificada como SSD NVMe, SSD ou HD, tempo de atividade e quantos ajustes já estão aplicados (`N de 50`).
-- **19 ajustes de otimização** — 12 de processador, 4 de GPU AMD e 3 de Windows (hardware, modo gamer e planos de energia). A seção de GPU tem card próprio com aviso de hardware.
+- **19 ajustes de otimização** — 12 de processador, 4 de GPU AMD e 3 de Windows (hardware, modo gamer e planos de energia), todos na mesma lista de tweaks.
 - **Input Lag** — 5 ajustes de registro e resposta do sistema (USB, TCPNoDelay, prioridade, cache e atraso de menu). Os tweaks de teclado, mouse e monitor ficam em **Sistema**.
 - **Inicialização** — apps, tarefas agendadas e serviços que abrem com o Windows, com interruptor reversível. Serviços essenciais ficam somente leitura.
 - **Pontos de restauração** — criação, listagem e restauração de backups do Windows, com opção de criar automaticamente antes de executar tweaks.
@@ -44,13 +44,13 @@ As sete páginas de tweaks (Input Lag, Otimização do sistema, Personalização
 
 - **Debloat** — inventário dos apps Appx instalados e provisionados, um por linha, com busca, abas (Todos, Recomendados e Protegidos), atalho “Selecionar recomendados”, seleção individual ou em lote e remoção confirmada. A lista é virtualizada e acompanha a rolagem da página. Os nomes vêm do manifesto do Windows; componentes de sistema com nome GUID são identificados pelo caminho de instalação, em vez de aparecerem como texto quebrado. Apps de sistema, frameworks, drivers de placa de vídeo (AMD, Intel e NVIDIA) e componentes marcados como não removíveis aparecem com cadeado e são recusados pelo main mesmo se a interface insistir. Sem administrador é possível selecionar itens para consulta, mas a remoção fica bloqueada e a página oferece reiniciar como admin.
 - **Essenciais PC** — instalação via winget de CPU-Z, HWMonitor, MSI Afterburner, 7-Zip, WinRAR, Brave, qBittorrent, DirectX (runtime legado) e BCUninstaller, com progresso na própria página. O winget baixa do canal oficial e confere o hash do manifesto antes de rodar o instalador.
-- **Personalização** — barra de tarefas e menu Iniciar limpos, menu de contexto clássico, animações, transparência e efeitos visuais. Inclui os mods de Discord (Equicord + FakeNitro) e Spotify (Spicetify), cada um com o card de reverter ao lado.
+- **Personalização** — barra de tarefas e menu Iniciar limpos, menu de contexto clássico, animações, transparência e efeitos visuais. Inclui os mods de Discord (Equicord + FakeNitro) e Spotify (Spicetify), cada um com o selo de reverter.
 
 ### Rede e DNS
 
 - **DNS** — página própria com 19 provedores (privacidade, segurança, bloqueio de anúncios e controle parental), benchmark de latência com varredura animada provedor a provedor, provedor em uso fixado no topo da lista, ordenação dos demais por velocidade, aplicação do melhor e indicador de DNS ativo.
 - **Velocidade** — teste real de internet com medidor animado: mede download, upload, ping e jitter contra a rede de servidores do Speedtest.net (o servidor mais próximo é escolhido automaticamente), move a agulha em tempo real com transições suaves entre fases e mantém o resultado final na tela. Sem histórico e sem salvar medições.
-- **Internet** — tweaks para reduzir latência e melhorar a estabilidade da conexão, apresentados em seções virtualizadas.
+- **Internet** — tweaks para reduzir latência e melhorar a estabilidade da conexão, apresentados em uma única lista virtualizada.
 
 ### Ferramentas
 
@@ -80,7 +80,7 @@ Todos os itens aparecem em ordem alfabética na barra lateral.
 - **Histórico de execução** — duração, status e origem (manual ou agendada) de cada tweak. Cards aplicados ganham o selo **Aplicado**, inclusive os scripts interativos: o app espera a janela fechar e registra o código de saída real (menu fechado sem aplicar ou handoff sem desfecho fica como `—`, e fechar o console do Spotify aparece como **Interrompido pelo usuário**, não como erro).
 - **Bloqueio de páginas** — oculte páginas da barra lateral e proteja-as com senha mestra criptografada via DPAPI (Emuladores bloqueado por padrão).
 - **Atualização integrada** — download e instalação de novas versões direto do GitHub.
-- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`). As sete páginas de tweaks (Input Lag, Otimização do sistema, Personalização, Internet, Armazenamento, Privacidade e Reparo do Sistema) têm checkbox nos cards e barra de seleção múltipla; a seleção começa vazia e os tweaks marcados são aplicados em sequência. Histórico, inicialização, Limpeza, Debloat e os cards de tweaks (Desempenho, Privacidade, Personalização e Rede) usam listas virtualizadas: só as linhas visíveis são renderizadas, com a rolagem feita pela página.
+- **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`). As sete páginas de tweaks (Input Lag, Otimização do sistema, Personalização, Internet, Armazenamento, Privacidade e Reparo do Sistema) exibem uma única lista virtualizada no padrão da Limpeza, com checkbox por linha e barra de seleção múltipla; a seleção começa vazia e os tweaks marcados são aplicados em sequência. Histórico, inicialização e Debloat também usam listas virtualizadas: só as linhas visíveis são renderizadas, com a rolagem feita pela página.
 - **Atalhos** — `Ctrl+1`…`Ctrl+9` navegam entre páginas e `Ctrl+,` abre as Configurações.
 
 ## Tecnologias

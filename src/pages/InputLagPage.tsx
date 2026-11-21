@@ -1,16 +1,15 @@
-import { Square, Terminal, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { useMemo } from 'react';
 import { ConfirmBulkScriptDialog } from '../components/ConfirmBulkScriptDialog';
 import { AnimatedInputLag } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
-import { ScriptBadge } from '../components/ScriptBadge';
 import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { ScriptSelectionToolbar } from '../components/ScriptSelectionToolbar';
-import { Badge, Button } from '../components/ui';
+import { Badge } from '../components/ui';
+import { VirtualizedScriptList } from '../components/VirtualizedScriptList';
 import { useScriptPage } from '../hooks/use-script-page';
 import { useScriptSelection } from '../hooks/use-script-selection';
 import { resolveCuratedItems } from '../lib/resolve-curated-scripts';
-import { cn } from '../lib/utils';
 
 interface RegistryItem {
   id: string;
@@ -81,7 +80,19 @@ export default function InputLagPage() {
     [registryItems]
   );
 
-  const { selectedIds, selectedScripts, toggle, isSelected, selectAll, clear } =
+  // A lista usa os nomes e descrições curados do registry, não os do catálogo.
+  const labels = useMemo(
+    () =>
+      Object.fromEntries(
+        registryItems.map(({ item, script }) => [
+          script.id,
+          { name: item.name, description: item.description },
+        ])
+      ),
+    [registryItems]
+  );
+
+  const { selectedIds, selectedScripts, toggle, selectAll, clear } =
     useScriptSelection(selectableScripts);
 
   const disabled = !!batch;
@@ -154,74 +165,15 @@ export default function InputLagPage() {
           onDismissFailures={clearFailures}
         />
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {registryItems.map(({ item, script }) => {
-            const isExecuting = activeExecution === script.id;
-            const isSel = isSelected(script.id);
-
-            return (
-              <div
-                key={item.id}
-                className={cn(
-                  'group relative rounded-xl border bg-card p-4 transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg',
-                  script.requiresAdmin ? 'border-warning/20' : 'border-border',
-                  (isSel || isExecuting) && 'ring-2 ring-primary/50'
-                )}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        'flex size-8 items-center justify-center rounded-lg',
-                        script.requiresAdmin ? 'bg-warning/10' : 'bg-muted'
-                      )}
-                    >
-                      <Terminal
-                        className={cn(
-                          'size-4',
-                          script.requiresAdmin ? 'text-warning' : 'text-muted-foreground'
-                        )}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-semibold text-foreground truncate">
-                          {item.name}
-                        </h4>
-                        <ScriptBadge script={script} />
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 flex gap-2">
-                  <input
-                    type="checkbox"
-                    aria-label={`Selecionar ${item.name}`}
-                    checked={isSel}
-                    disabled={disabled || isExecuting}
-                    onChange={() => toggle(script.id)}
-                    className="shrink-0 mt-0.5"
-                  />
-                  {isExecuting ? (
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleCancel(script.id)}
-                      className="flex-1 gap-2"
-                    >
-                      <Square className="size-3.5" />
-                      Cancelar
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <VirtualizedScriptList
+          scripts={selectableScripts}
+          labels={labels}
+          activeExecution={activeExecution}
+          onCancel={handleCancel}
+          selectedIds={selectedIds}
+          onToggle={toggle}
+          disabled={disabled}
+        />
       </div>
 
       {/* Confirmação do lote */}
