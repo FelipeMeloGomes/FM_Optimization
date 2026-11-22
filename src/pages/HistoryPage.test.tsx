@@ -99,7 +99,7 @@ describe('HistoryPage', () => {
     expect(html).toContain('Execute um script para vê-lo aqui');
   });
 
-  it('renderiza herói, contador e estatísticas', () => {
+  it('renderiza herói e estatísticas sem badge de contagem', () => {
     store.state = {
       status: 'success',
       data: [entry(), entry({ exitCode: 1 }), entry({ wasCancelled: true })],
@@ -108,7 +108,7 @@ describe('HistoryPage', () => {
     const html = render();
 
     expect(html).toContain('Histórico de Execuções');
-    expect(html).toContain('3 execuções');
+    expect(html).not.toContain('3 execuções');
     expect(html).toContain('Total');
     expect(html).toContain('3');
     expect(html).toContain('Sucesso');

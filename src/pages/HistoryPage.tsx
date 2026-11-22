@@ -171,22 +171,17 @@ export default function HistoryPage() {
       {/* Hero Banner */}
       <HeroBanner visual={<AnimatedHistory />}>
         <div className="relative p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <RouteIcon path="/history" />
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                  Histórico
-                </span>
-              </div>
-              <h2 className="text-lg font-bold text-foreground">Histórico de Execuções</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Acompanhe todas as execuções de tweaks realizadas no sistema.
-              </p>
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <RouteIcon path="/history" />
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                Histórico
+              </span>
             </div>
-            <Badge variant="secondary" className="text-xs px-3 py-1">
-              {history.length} execuções
-            </Badge>
+            <h2 className="text-lg font-bold text-foreground">Histórico de Execuções</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Acompanhe todas as execuções de tweaks realizadas no sistema.
+            </p>
           </div>
         </div>
       </HeroBanner>
