@@ -147,56 +147,55 @@ export default function DashboardPage() {
       {/* Hero Section */}
       <HeroBanner visual={<AnimatedDashboard />}>
         <div className="relative p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <RouteIcon path="/" />
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                  Painel do Sistema
-                </span>
-              </div>
-              <h2 className="text-xl font-bold text-foreground">{data.os.name}</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Build {data.os.build} · {data.os.edition}
-              </p>
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <RouteIcon path="/" />
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                Painel do Sistema
+              </span>
             </div>
-            <div className="flex items-center gap-4">
-              {systemHealth && (
-                <div className="text-right">
-                  <div
-                    className={cn(
-                      'text-3xl font-bold tabular-nums',
-                      systemHealth.health >= 80
-                        ? 'text-success'
-                        : systemHealth.health >= 50
-                          ? 'text-warning'
-                          : 'text-destructive'
-                    )}
-                  >
-                    {systemHealth.health}%
-                  </div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                    Saúde:{' '}
-                    {systemHealth.health >= 80
-                      ? 'Saudável'
-                      : systemHealth.health >= 50
-                        ? 'Atenção'
-                        : 'Crítico'}
-                  </p>
-                </div>
-              )}
-              {isFromCache && (
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Clock className="size-3" />
-                  <span>Dados em cache</span>
-                </div>
-              )}
-            </div>
+            <h2 className="text-xl font-bold text-foreground">{data.os.name}</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Build {data.os.build} · {data.os.edition}
+            </p>
           </div>
         </div>
       </HeroBanner>
 
-      <PageRefreshBar onRefresh={refresh} refreshing={refreshing} />
+      <PageRefreshBar onRefresh={refresh} refreshing={refreshing}>
+        <div className="mr-auto flex flex-wrap items-center gap-x-3 gap-y-1">
+          {systemHealth && (
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  'text-base font-bold tabular-nums',
+                  systemHealth.health >= 80
+                    ? 'text-success'
+                    : systemHealth.health >= 50
+                      ? 'text-warning'
+                      : 'text-destructive'
+                )}
+              >
+                {systemHealth.health}%
+              </span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Saúde:{' '}
+                {systemHealth.health >= 80
+                  ? 'Saudável'
+                  : systemHealth.health >= 50
+                    ? 'Atenção'
+                    : 'Crítico'}
+              </span>
+            </div>
+          )}
+          {isFromCache && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Clock className="size-3" />
+              <span>Dados em cache</span>
+            </div>
+          )}
+        </div>
+      </PageRefreshBar>
 
       {/* Main Stats Grid */}
       <div>

@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import { render as renderDom, screen } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
@@ -21,10 +23,17 @@ const store = vi.hoisted(() => ({
   system: { status: 'loading' } as AsyncState<DashboardData>,
   scripts: { status: 'loading' } as AsyncState<ScriptEntry[]>,
   history: { status: 'loading' } as AsyncState<ExecutionHistoryEntry[]>,
+  cache: false,
 }));
 
 vi.mock('../contexts/SystemContext', () => ({
-  useSystemContext: () => ({ state: store.system, refreshing: false, refresh: () => {} }),
+  useSystemContext: () => ({
+    state: store.system,
+    refreshing: false,
+    refresh: () => {},
+    hasFetched: true,
+    isFromCache: store.cache,
+  }),
 }));
 
 vi.mock('../contexts/ScriptContext', () => ({
@@ -128,6 +137,7 @@ beforeEach(() => {
   store.system = { status: 'loading' };
   store.scripts = { status: 'loading' };
   store.history = { status: 'loading' };
+  store.cache = false;
 });
 
 describe('DashboardPage — estados de carregamento', () => {
@@ -196,6 +206,20 @@ describe('DashboardPage — dados do sistema', () => {
 
     expect(html).toContain('100%');
     expect(html).toContain('Saúde: Saudável');
+  });
+
+  it('deixa o canto do hero livre para a animação', () => {
+    store.system = { status: 'success', data: dashboard() };
+    store.cache = true;
+
+    const { container } = renderDom(<DashboardPage />);
+    const hero = container
+      .querySelector('[data-hero-animation="scan"]')
+      ?.closest('.bg-gradient-to-br');
+
+    expect(hero).not.toBeNull();
+    expect(hero?.contains(screen.getByText(/Saúde:/))).toBe(false);
+    expect(hero?.contains(screen.getByText('Dados em cache'))).toBe(false);
   });
 
   it('cai para Atenção quando CPU, RAM e disco estão todos no limite', () => {
