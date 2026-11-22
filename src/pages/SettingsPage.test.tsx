@@ -76,6 +76,11 @@ describe('SettingsPage', () => {
     expect(html).not.toContain('max-w-lg');
     expect(html).not.toContain('lg:grid-cols-2');
 
+    // O numero da versão não pode ficar no hero: ele cobre o visual animado.
+    // No SSR a versão ainda não carregou, então o badge antigo renderiza "v…".
+    expect(html).not.toContain('>v…<');
+    expect(html).toContain('Versao atual');
+
     for (const title of [
       'Tema',
       'Preferencias',
