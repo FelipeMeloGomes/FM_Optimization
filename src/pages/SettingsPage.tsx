@@ -20,7 +20,7 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className="space-y-6 max-w-lg">
+    <div className="space-y-6">
       {/* Hero Banner */}
       <HeroBanner visual={<AnimatedSettings />}>
         <div className="relative p-6">
@@ -46,12 +46,14 @@ export default function SettingsPage() {
         </div>
       </HeroBanner>
 
-      <ThemeSection />
-      <PreferencesSection />
-      <PageLockSection />
-      <DataSection />
-      <NotificationsSection />
-      <UpdatesSection appVersion={appVersion} packaged={packaged} />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ThemeSection />
+        <PreferencesSection />
+        <PageLockSection />
+        <DataSection />
+        <NotificationsSection />
+        <UpdatesSection appVersion={appVersion} packaged={packaged} />
+      </div>
     </div>
   );
 }

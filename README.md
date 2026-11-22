@@ -81,6 +81,7 @@ Na barra lateral, **Meu PC, Monitor, Mouse e Teclado** aparecem nessa ordem; os 
 - **Bloqueio de páginas** — oculte páginas da barra lateral e proteja-as com senha mestra criptografada via DPAPI (Emuladores bloqueado por padrão).
 - **Atualização integrada** — download e instalação de novas versões direto do GitHub.
 - **Interface** — temas claro/escuro, janela sem barra de título nativa, notificações com som opcional, mini-guia por tweak e paleta de comandos (`Ctrl+K`). As oito páginas de tweaks (Input Lag, Otimização do sistema, Personalização, Internet, Armazenamento, Privacidade, Reparo do Sistema e Utilitários) exibem uma única lista virtualizada no padrão da Limpeza, com checkbox por linha e barra de seleção múltipla; a seleção começa vazia e os tweaks marcados são aplicados em sequência. Histórico, inicialização e Debloat também usam listas virtualizadas: só as linhas visíveis são renderizadas, com a rolagem feita pela página.
+- **Cards em grade** — a página Configurações ocupa toda a largura disponível, com os cards de Tema, Preferências, Bloqueio de Páginas, Dados, Notificações e Atualizações organizados em duas colunas em telas largas (uma em telas estreitas).
 - **Atalhos** — `Ctrl+1`…`Ctrl+9` navegam entre páginas e `Ctrl+,` abre as Configurações.
 
 ## Tecnologias
