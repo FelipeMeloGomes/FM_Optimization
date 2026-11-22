@@ -67,6 +67,27 @@ describe('AnimatedHero', () => {
 
     expect(container.querySelector('svg')?.className.baseVal).toContain('text-success');
   });
+
+  it.each(['pulse', 'repair'] as const)(
+    'centraliza o ícone e mantém o anel de %s maior que o quadrado do ícone',
+    (animation) => {
+      const { container } = render(<AnimatedHero path="/cpu" animation={animation} />);
+      const visual = container.querySelector('[data-hero-animation]');
+      const icon = visual?.querySelector('svg');
+      const ring = visual?.querySelector('.rounded-full.border');
+
+      // O ícone precisa ficar no centro dos 80px do contêiner, e não no canto:
+      // as decorações (anel, scanline, pontos) são posicionadas em relação ao centro.
+      expect(icon?.parentElement?.className).toContain('flex');
+      expect(icon?.parentElement?.className).toContain('items-center');
+      expect(icon?.parentElement?.className).toContain('justify-center');
+
+      // Anel de 80px (inset-0) x ícone de 56px: a diagonal do quadrado do
+      // ícone (≈79px) cabe no diâmetro do círculo, então não sobra ponta fora.
+      expect(ring?.className).toContain('inset-0');
+      expect(icon?.getAttribute('class')).toContain('size-14');
+    }
+  );
 });
 
 describe('visuais temáticos dos banners', () => {

@@ -32,7 +32,7 @@ function accentFor(animation: HeroAnimation): ReactNode {
         <div className="absolute -bottom-1 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full bg-primary/30 blur-sm" />
       );
     case 'pulse':
-      return <div className="absolute inset-2 rounded-full border border-primary/20" />;
+      return <div className="absolute inset-0 rounded-full border border-primary/20" />;
     case 'spin':
       return (
         <div className="absolute left-1/2 top-0 size-1.5 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
@@ -57,7 +57,7 @@ function accentFor(animation: HeroAnimation): ReactNode {
       );
     case 'repair':
       return (
-        <div className="absolute inset-2 rounded-full border border-primary/30 animate-hero-pulse" />
+        <div className="absolute inset-0 rounded-full border border-primary/30 animate-hero-pulse" />
       );
   }
 }
@@ -86,12 +86,14 @@ export function AnimatedHero({ path, animation, iconClassName, className }: Anim
         className={cn('relative size-20', ANIMATION_CLASS[animation])}
       >
         <div className="absolute inset-0 rounded-2xl bg-primary/10 blur-xl" />
-        <Icon
-          className={cn(
-            'relative size-16 text-primary drop-shadow-[0_0_12px_var(--color-primary)]',
-            iconClassName
-          )}
-        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Icon
+            className={cn(
+              'size-14 text-primary drop-shadow-[0_0_12px_var(--color-primary)]',
+              iconClassName
+            )}
+          />
+        </div>
         {accentFor(animation)}
       </div>
     </div>
