@@ -4,7 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 /**
  * Regressão do layout da página Configurações: os cards devem ocupar a largura
- * toda do container (grid responsivo), sem a limitação antiga de max-w-lg.
+ * toda do container, empilhados em uma única coluna, sem limitação de largura
+ * nem grade que deixe espaços vazios entre eles.
  */
 
 const settings = {
@@ -68,11 +69,12 @@ vi.stubGlobal('window', {
 import SettingsPage from './SettingsPage';
 
 describe('SettingsPage', () => {
-  it('organiza os cards em grid responsivo sem limitar a largura', () => {
+  it('empilha os cards em uma coluna sem limitar a largura', () => {
     const html = renderToStaticMarkup(<SettingsPage />);
 
-    expect(html).toContain('grid gap-6 lg:grid-cols-2');
+    expect(html).toContain('<div class="space-y-6">');
     expect(html).not.toContain('max-w-lg');
+    expect(html).not.toContain('lg:grid-cols-2');
 
     for (const title of [
       'Tema',

@@ -46,14 +46,12 @@ export default function SettingsPage() {
         </div>
       </HeroBanner>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ThemeSection />
-        <PreferencesSection />
-        <PageLockSection />
-        <DataSection />
-        <NotificationsSection />
-        <UpdatesSection appVersion={appVersion} packaged={packaged} />
-      </div>
+      <ThemeSection />
+      <PreferencesSection />
+      <PageLockSection />
+      <DataSection />
+      <NotificationsSection />
+      <UpdatesSection appVersion={appVersion} packaged={packaged} />
     </div>
   );
 }
