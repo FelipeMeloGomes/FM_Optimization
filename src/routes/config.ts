@@ -140,6 +140,13 @@ export const ROUTES: AppRoute[] = [
     component: lazy(() => import('../pages/DashboardPage')),
   }),
   route({
+    path: '/otimizar-pc',
+    label: 'Otimizar PC',
+    category: 'desempenho',
+    protected: true,
+    component: lazy(() => import('../pages/OptimizePcPage')),
+  }),
+  route({
     path: '/input-lag',
     label: 'Input Lag',
     category: 'desempenho',

@@ -29,6 +29,7 @@
 
 As oito páginas de tweaks (Input Lag, Otimização do sistema, Personalização, Internet, Armazenamento, Privacidade, Reparo do Sistema e Utilitários) usam seleção múltipla no mesmo padrão da Limpeza: uma única lista de tweaks, sem cards nem agrupamento por seção, com **Selecionar todos**, **Limpar seleção** e **Aplicar selecionados**. Nenhum tweak vem marcado por padrão; os tweaks escolhidos rodam em sequência e os scripts interativos abrem janela própria.
 
+- **Otimizar PC** — análise sob demanda (nada roda no startup) do estado atual contra um plano curado de 16 ajustes persistentes. Mostra um **índice de otimização de 0 a 10**, o total de ajustes aplicados, o detalhamento por área e a lista de pendências com nome, descrição e risco. **Aplicar otimizações** cria um ponto de restauração único para o lote, executa apenas as pendências em sequência, mostra progresso, continua se um ajuste falhar e reanalisa ao terminar. A nota mede aderência ao plano — não é benchmark. Ajustes que o Windows não permite verificar aparecem como “Não verificado” e ficam fora do cálculo. Sem admin, a página oferece reiniciar como administrador.
 - **Dashboard** — uso de processador, placa de vídeo, memória RAM e armazenamento, com a unidade identificada como SSD NVMe, SSD ou HD, tempo de atividade e quantos ajustes já estão aplicados (`N de 50`).
 - **19 ajustes de otimização** — 12 de processador, 4 de GPU AMD e 3 de Windows (hardware, modo gamer e planos de energia), todos na mesma lista de tweaks.
 - **Input Lag** — 5 ajustes de registro e resposta do sistema (USB, TCPNoDelay, prioridade, cache e atraso de menu). Os tweaks de teclado, mouse e monitor ficam em **Sistema**.
@@ -150,6 +151,20 @@ O `electron-builder.yml` usa uma **whitelist** de `files` (`out/`, `package.json
 | `bun run test`      | Testes do main process e do renderer (Vitest) |
 
 Antes de commitar: `bun run lint && bun run typecheck && bun run test`.
+
+### Testando os tweaks com segurança
+
+A página Otimizar PC lê o estado real com `reg query`, `netsh int tcp show global` e `powercfg`. As verificações são derivadas do conteúdo dos próprios scripts em `resources/scripts.json`, e a suíte roda contra `tests/fixtures/optimization/real-state.json`, capturado de um Windows real — inclusive ajustes que o sistema não reporta, que viram `unknown` em vez de “não aplicado”.
+
+Em desenvolvimento (`bun run dev`) a página exibe **Modo simulação**: a análise continua real, mas aplicar não grava registro, não cria ponto de restauração e não executa scripts. O botão só existe fora do build instalado.
+
+Para validar o efeito real de um ajuste sem risco, habilite o Windows Sandbox uma vez (pede reboot) e rode:
+
+```powershell
+.\scripts\test-tweaks.ps1 -Id tweaks-1
+```
+
+O script extrai o tweak e as verificações do catálogo real, roda tudo dentro do Sandbox com pastas mapeadas e imprime o ANTES/DEPOIS de cada chave com o veredito. Ao fechar o Sandbox, nada permanece no Windows. Para reboot ou persistência, use uma VM Hyper-V com checkpoint — só necessário para tweaks que pedem reinício.
 
 O Biome cobre TypeScript, JSON, CSS e **Markdown**: os `.md` do repositório entram no `lint`/`format`, com tabelas alinhadas e blocos de código embutidos formatados.
 

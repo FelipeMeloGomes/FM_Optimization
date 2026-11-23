@@ -20,6 +20,7 @@ import {
   Settings,
   Shield,
   ShieldCheck,
+  WandSparkles,
   Wifi,
   Wrench,
 } from 'lucide-react';
@@ -34,6 +35,7 @@ import { DEVICE_PAGES } from '../lib/device-pages';
 export const ROUTE_ICONS: Record<string, LucideIcon> = {
   '/': Home,
   '/input-lag': MousePointerClick,
+  '/otimizar-pc': WandSparkles,
   '/cpu': Gauge,
   '/inicializacao': Rocket,
   '/cleaner': Eraser,

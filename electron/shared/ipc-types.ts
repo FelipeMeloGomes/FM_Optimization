@@ -148,6 +148,76 @@ export interface ScriptEntry {
   riskLevel?: 'safe' | 'moderate' | 'deep';
 }
 
+export type OptimizationArea =
+  | 'interface'
+  | 'privacidade'
+  | 'energia'
+  | 'jogos'
+  | 'input-lag'
+  | 'rede';
+
+export type OptimizationTweakStatusValue = 'applied' | 'pending' | 'unknown';
+
+export interface OptimizationCheckResult {
+  id: string;
+  expected: string;
+  actual: string | null;
+  ok: boolean | null;
+}
+
+export interface OptimizationTweakStatus {
+  id: string;
+  area: OptimizationArea;
+  name: string;
+  description: string;
+  riskLevel: 'safe' | 'moderate' | 'deep';
+  requiresAdmin: boolean;
+  requiresRestart: boolean;
+  status: OptimizationTweakStatusValue;
+  checks: OptimizationCheckResult[];
+}
+
+export interface OptimizationAreaSummary {
+  area: OptimizationArea;
+  label: string;
+  applied: number;
+  total: number;
+  score: number | null;
+}
+
+export interface OptimizationReport {
+  score: number | null;
+  applied: number;
+  pending: number;
+  unknown: number;
+  total: number;
+  areas: OptimizationAreaSummary[];
+  tweaks: OptimizationTweakStatus[];
+  generatedAt: string;
+}
+
+export interface OptimizationProgress {
+  current: number;
+  total: number;
+  id: string;
+  name: string;
+  status: 'running' | 'done' | 'failed' | 'cancelled';
+}
+
+export interface OptimizationFailure {
+  id: string;
+  name: string;
+  error: string;
+}
+
+export interface OptimizationSummary {
+  applied: string[];
+  failed: OptimizationFailure[];
+  skipped: string[];
+  cancelled: boolean;
+  requiresRestart: string[];
+}
+
 export interface RestorePointEntry {
   sequenceNumber: number;
   description: string;
@@ -543,6 +613,11 @@ export interface ElectronAPI {
   getScripts(): Promise<ScriptEntry[]>;
   executeScript(id: string): Promise<void>;
   cancelExecution(id: string): Promise<void>;
+  analyzeOptimization(): Promise<OptimizationReport>;
+  applyOptimization(): Promise<OptimizationSummary>;
+  cancelOptimization(): Promise<void>;
+  setOptimizationSimulation(enabled: boolean): Promise<void>;
+  onOptimizationProgress(cb: (data: OptimizationProgress) => void): () => void;
   getRestorePoints(): Promise<RestorePointEntry[]>;
   createRestorePoint(name: string): Promise<void>;
   deleteRestorePoint(seq: number): Promise<void>;

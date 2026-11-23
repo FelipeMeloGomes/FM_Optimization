@@ -27,6 +27,9 @@ import type {
   IpcResult,
   MemoryInfo,
   NetworkInfo,
+  OptimizationProgress,
+  OptimizationReport,
+  OptimizationSummary,
   RemoveAppResult,
   RemovedApp,
   RestorePointEntry,
@@ -76,6 +79,7 @@ const autoCleanStatusCallbacks = new Set<(status: AutoCleanStatus) => void>();
 const autoCleanFinishedCallbacks = new Set<(result: AutoCleanRunResult) => void>();
 const essentialInstallCallbacks = new Set<(data: EssentialInstallProgress) => void>();
 const overlayStatusCallbacks = new Set<(status: OverlayStatus) => void>();
+const optimizationProgressCallbacks = new Set<(data: OptimizationProgress) => void>();
 
 function setupListeners(): void {
   ipcRenderer.on('script-ended', (_e: IpcRendererEvent, raw: string) => {
@@ -124,6 +128,12 @@ function setupListeners(): void {
 
   ipcRenderer.on('speed-progress', (_e: IpcRendererEvent, data: SpeedProgress) => {
     speedProgressCallbacks.forEach((cb) => {
+      cb(data);
+    });
+  });
+
+  ipcRenderer.on('optimization-progress', (_e: IpcRendererEvent, data: OptimizationProgress) => {
+    optimizationProgressCallbacks.forEach((cb) => {
       cb(data);
     });
   });
@@ -186,6 +196,14 @@ const electronAPI: ElectronAPI = {
   onScriptEnded: (cb: (data: ScriptEnded) => void) => {
     scriptEndedCallbacks.add(cb);
     return () => scriptEndedCallbacks.delete(cb);
+  },
+  analyzeOptimization: () => ipc<OptimizationReport>('analyze-optimization'),
+  applyOptimization: () => ipc<OptimizationSummary>('apply-optimization'),
+  cancelOptimization: () => ipcVoid('cancel-optimization'),
+  setOptimizationSimulation: (enabled: boolean) => ipcVoid('set-optimization-simulation', enabled),
+  onOptimizationProgress: (cb: (data: OptimizationProgress) => void) => {
+    optimizationProgressCallbacks.add(cb);
+    return () => optimizationProgressCallbacks.delete(cb);
   },
   getExecutionHistory: () => ipc<ExecutionHistoryEntry[]>('get-execution-history'),
   restoreSystem: (seq) => ipcVoid('restore-system', seq),

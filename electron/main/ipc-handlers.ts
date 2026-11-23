@@ -64,6 +64,13 @@ import { applyKeyboardSettings, readKeyboardSettings } from './services/keyboard
 import { launchOverlayGameById } from './services/launch-game';
 import { applyMouseSettings, readMouseSettings } from './services/mouse-settings';
 import {
+  analyzeOptimization,
+  applyOptimization,
+  getOptimizationApplyDeps,
+  requestOptimizationCancellation,
+  setOptimizationSimulation,
+} from './services/optimization';
+import {
   getOverlayStatus,
   refreshOverlayConfig,
   restartOverlayElevated,
@@ -229,6 +236,30 @@ export function registerIpcHandlers(): void {
       cancelExecution(validated as string);
     });
   });
+
+  ipcMain.handle('analyze-optimization', () =>
+    handleIpcNoInput('analyze-optimization', () => analyzeOptimization())
+  );
+
+  ipcMain.handle('apply-optimization', (event) =>
+    handleIpcNoInput('apply-optimization', () =>
+      applyOptimization(
+        (progress) => event.sender.send('optimization-progress', progress),
+        getOptimizationApplyDeps()
+      )
+    )
+  );
+
+  ipcMain.handle('cancel-optimization', () =>
+    handleIpcNoInput('cancel-optimization', () => requestOptimizationCancellation())
+  );
+
+  ipcMain.handle('set-optimization-simulation', (_e, enabled: boolean) =>
+    handleIpc('set-optimization-simulation', enabled, (validated) => {
+      if (app.isPackaged) throw new Error('Modo simulação indisponível no build instalado.');
+      setOptimizationSimulation(validated as boolean);
+    })
+  );
 
   ipcMain.handle('get-restore-points', () =>
     handleIpcNoInput('get-restore-points', async () => getRestorePoints())
