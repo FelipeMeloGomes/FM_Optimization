@@ -182,6 +182,23 @@ describe('OptimizePcPage', () => {
     expect(screen.getByText(/A nota mede aderência ao plano/)).toBeTruthy();
   });
 
+  it('separa cobertura e índice de cada área com progresso e texto explícito', async () => {
+    render(<OptimizePcPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Analisar PC' }));
+    await screen.findByText('Nota 5 de 10');
+
+    expect(screen.getByText('Cobertura')).toBeTruthy();
+    expect(screen.getByText(/é a nota de 0 a 10 da área/)).toBeTruthy();
+    expect(
+      screen.getByRole('progressbar', { name: 'Interface: 1 de 2 ajustes aplicados' })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('progressbar', { name: 'Rede: 0 de 1 ajustes aplicados' })
+    ).toBeTruthy();
+    expect(screen.getByText('Índice de Interface: 5 de 10')).toBeTruthy();
+    expect(screen.getByText('Sem índice')).toBeTruthy();
+  });
+
   it('mostra erro de análise com nova tentativa', async () => {
     state.analysisError = 'acesso negado';
     render(<OptimizePcPage />);

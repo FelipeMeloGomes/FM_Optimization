@@ -20,6 +20,7 @@ import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedHero } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import GlareHover from '../components/react-bits/GlareHover';
 import { RISK_STYLES } from '../components/ScriptCard';
 import {
   AnimatedNumber,
@@ -302,16 +303,62 @@ export default function OptimizePcPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">Por área</CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-2 sm:grid-cols-2">
-                {report.areas.map((area) => (
-                  <div key={area.area} className="flex items-center justify-between gap-2 text-xs">
-                    <span className="text-muted-foreground">{area.label}</span>
-                    <span className="tabular-nums text-foreground">
-                      {area.applied}/{area.total}
-                      {area.score === null ? ' · —' : ` · ${area.score}/10`}
-                    </span>
-                  </div>
-                ))}
+              <CardContent className="space-y-3">
+                <p className="text-[11px] text-muted-foreground">
+                  <span className="font-medium text-foreground">Cobertura</span> mostra quantos
+                  ajustes já estão aplicados; o{' '}
+                  <span className="font-medium text-foreground">índice</span> é a nota de 0 a 10 da
+                  área.
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {report.areas.map((area) => (
+                    <GlareHover
+                      key={area.area}
+                      width="100%"
+                      height="auto"
+                      borderRadius="0.625rem"
+                      borderColor="transparent"
+                      glareOpacity={0.14}
+                      rimGlint={false}
+                      className="bg-muted/30"
+                    >
+                      <div className="w-full p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-xs font-medium text-foreground">
+                            {area.label}
+                          </span>
+                          <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
+                            <AnimatedNumber value={area.applied} />/{area.total}
+                          </span>
+                        </div>
+                        <Progress
+                          value={area.total > 0 ? (area.applied / area.total) * 100 : 0}
+                          ariaLabel={`${area.label}: ${area.applied} de ${area.total} ajustes aplicados`}
+                          className="mt-2 h-1.5"
+                        />
+                        <div className="mt-2 flex items-center justify-between gap-2">
+                          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                            Índice
+                          </span>
+                          {area.score === null ? (
+                            <span className="text-[11px] text-muted-foreground">Sem índice</span>
+                          ) : (
+                            <>
+                              <AnimatedNumber
+                                value={area.score}
+                                suffix="/10"
+                                className="text-xs font-semibold text-primary"
+                              />
+                              <span className="sr-only">
+                                Índice de {area.label}: {area.score} de 10
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </GlareHover>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </section>
