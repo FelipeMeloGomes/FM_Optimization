@@ -40,7 +40,9 @@ function matchesQuery(app: AppxPackageInfo, query: string): boolean {
 function isInTab(app: AppxPackageInfo, tab: TabId): boolean {
   if (tab === 'recommended') return app.recommended;
   if (tab === 'protected') return !app.removable;
-  return true;
+  // Componentes de sistema (inclusive pacotes com nome GUID) ficam só na aba
+  // Protegidos: a aba Todos mostra o que a pessoa pode realmente remover.
+  return app.removable;
 }
 
 /**
@@ -94,7 +96,7 @@ export default function DebloatPage() {
 
   const counts = useMemo(
     () => ({
-      all: packages.length,
+      all: packages.filter((app) => app.removable).length,
       recommended: packages.filter((app) => app.recommended).length,
       protected: packages.filter((app) => !app.removable).length,
     }),
@@ -258,8 +260,9 @@ export default function DebloatPage() {
             </div>
             <h2 className="text-lg font-bold text-foreground">Debloat de apps do Windows</h2>
             <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-              Inventário dos apps Appx instalados e provisionados. Selecione o que não usa — apps de
-              sistema e frameworks ficam protegidos e não podem ser removidos.
+              Inventário dos apps Appx instalados e provisionados. A aba Todos mostra o que pode ser
+              removido; apps de sistema, frameworks e componentes com nome GUID ficam na aba
+              Protegidos.
             </p>
           </div>
         </div>

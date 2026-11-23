@@ -110,6 +110,18 @@ const SOLITAIRE = app({
   recommended: false,
 });
 
+// Componentes de sistema com nome GUID: apareciam na aba Todos com o GUID cru
+// e a versão, em vez de ficarem só na aba Protegidos.
+const ABRIR_COM = app({
+  familyName: 'E2A4F912-2574-4A75-9BB0-0D023378592B_cw5n1h2txyewy',
+  packageName: 'E2A4F912-2574-4A75-9BB0-0D023378592B',
+  displayName: 'Abrir com',
+  version: '10.0.19640.1000',
+  removable: false,
+  protectionReason: 'Componente essencial do Windows',
+  recommended: false,
+});
+
 const PHOTOS = app({
   familyName: 'Microsoft.Windows.Photos_8wekyb3d8bbwe',
   packageName: 'Microsoft.Windows.Photos',
@@ -166,18 +178,37 @@ describe('DebloatPage — carregamento e erro', () => {
 });
 
 describe('DebloatPage — inventário', () => {
-  it('lista uma linha por app com nome, pacote e selo de protegido', () => {
+  it('lista uma linha por app removível com nome e pacote', () => {
     render(<DebloatPage />);
 
     expect(screen.getByText('Debloat de apps do Windows')).not.toBeNull();
     expect(screen.getByText('Xbox Game Bar')).not.toBeNull();
     expect(screen.getAllByText(GAME_BAR).length).toBeGreaterThan(0);
-    expect(screen.getByText('Microsoft Store')).not.toBeNull();
-    expect(screen.getByText('Protegido')).not.toBeNull();
-
-    // Protegidos aparecem, mas não ganham checkbox.
     expect(screen.getByLabelText('Selecionar Xbox Game Bar')).not.toBeNull();
-    expect(screen.queryByLabelText('Selecionar Microsoft Store')).toBeNull();
+
+    // Protegidos ficam na própria aba, fora da lista padrão.
+    expect(screen.queryByText('Microsoft Store')).toBeNull();
+    expect(screen.queryByText('Protegido')).toBeNull();
+  });
+
+  it('mantém componentes protegidos com nome GUID apenas na aba Protegidos', () => {
+    state.inventory = inventory([app(), ABRIR_COM, PROTECTED_STORE]);
+    render(<DebloatPage />);
+
+    expect(screen.getByText('Xbox Game Bar')).not.toBeNull();
+    expect(screen.queryByText('Abrir com')).toBeNull();
+    expect(screen.queryByText('Microsoft Store')).toBeNull();
+    expect(screen.queryByText('10.0.19640.1000')).toBeNull();
+    expect(screen.queryByText('Protegido')).toBeNull();
+    expect(screen.getByRole('tab', { name: /Todos/ }).textContent).toContain('1');
+
+    fireEvent.click(screen.getByRole('tab', { name: /Protegidos/ }));
+
+    expect(screen.getByText('Abrir com')).not.toBeNull();
+    expect(screen.getByText('E2A4F912-2574-4A75-9BB0-0D023378592B')).not.toBeNull();
+    expect(screen.getByText('Microsoft Store')).not.toBeNull();
+    expect(screen.queryByText('Xbox Game Bar')).toBeNull();
+    expect(screen.getByRole('tab', { name: /Protegidos/ }).textContent).toContain('2');
   });
 
   it('busca por nome ou package family', () => {
@@ -347,8 +378,8 @@ describe('DebloatPage — sem administrador', () => {
 
 describe('DebloatPage — virtualização', () => {
   it('renderiza só as linhas visíveis devolvidas pelo virtualizador', () => {
-    // A ordem padrão do beforeEach é: Xbox(0), Store(1), Paciência(2), Fotos(3).
-    state.virtual = { indices: [2], paddingTop: 138, paddingBottom: 69 };
+    // A ordem padrão na aba Todos é: Xbox(0), Paciência(1), Fotos(2).
+    state.virtual = { indices: [1], paddingTop: 138, paddingBottom: 69 };
     render(<DebloatPage />);
 
     expect(screen.getByText('Paciência')).not.toBeNull();
@@ -368,7 +399,7 @@ describe('DebloatPage — virtualização', () => {
   });
 
   it('a lista virtualizada continua permitindo selecionar a linha visível', () => {
-    state.virtual = { indices: [2], paddingTop: 138, paddingBottom: 69 };
+    state.virtual = { indices: [1], paddingTop: 138, paddingBottom: 69 };
     render(<DebloatPage />);
 
     fireEvent.click(screen.getByText('Paciência'));
@@ -390,10 +421,10 @@ describe('DebloatPage — virtualização', () => {
   });
 
   it('expõe data-index na linha medida para o virtualizador não reclamar', () => {
-    state.virtual = { indices: [2], paddingTop: 138, paddingBottom: 69 };
+    state.virtual = { indices: [1], paddingTop: 138, paddingBottom: 69 };
     render(<DebloatPage />);
 
     const row = screen.getByText('Paciência').closest('li');
-    expect(row?.getAttribute('data-index')).toBe('2');
+    expect(row?.getAttribute('data-index')).toBe('1');
   });
 });
