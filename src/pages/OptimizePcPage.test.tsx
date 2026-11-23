@@ -174,8 +174,8 @@ describe('OptimizePcPage', () => {
     expect(await screen.findByText('Nota 5 de 10')).toBeTruthy();
     expect(screen.getByText(/1 de 3 ajustes aplicados/)).toBeTruthy();
     expect(screen.getByText(/1 não verificado/)).toBeTruthy();
-    expect(screen.getByText('Interface')).toBeTruthy();
-    expect(screen.getByText('Rede')).toBeTruthy();
+    expect(screen.getByText('Interface', { selector: '.sr-only' })).toBeTruthy();
+    expect(screen.getByText('Rede', { selector: '.sr-only' })).toBeTruthy();
     expect(screen.getByText('Ajuste pendente')).toBeTruthy();
     expect(screen.getByText('Ajuste não verificado')).toBeTruthy();
     expect(screen.getByText('1 ajuste(s) pendente(s)')).toBeTruthy();

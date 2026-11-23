@@ -20,6 +20,7 @@ import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedHero } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import BlurText from '../components/react-bits/BlurText';
 import GlareHover from '../components/react-bits/GlareHover';
 import { RISK_STYLES } from '../components/ScriptCard';
 import {
@@ -324,9 +325,12 @@ export default function OptimizePcPage() {
                     >
                       <div className="w-full p-3">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="truncate text-xs font-medium text-foreground">
-                            {area.label}
-                          </span>
+                          <BlurText
+                            text={area.label}
+                            trigger="load"
+                            animateBy="words"
+                            className="min-w-0 text-xs font-medium text-foreground"
+                          />
                           <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
                             <AnimatedNumber value={area.applied} />/{area.total}
                           </span>
