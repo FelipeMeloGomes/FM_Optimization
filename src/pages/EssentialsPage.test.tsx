@@ -124,6 +124,31 @@ describe('EssentialsPage — conteúdo', () => {
     expect(screen.getByText('xyz.pkg')).toBeDefined();
   });
 
+  it.each([
+    { id: 'msi-afterburner', name: 'MSI Afterburner' },
+    { id: 'brave', name: 'Brave' },
+  ])('o ícone de $name usa um token derivado do tema', ({ id, name }) => {
+    essentials({
+      state: {
+        status: 'success',
+        data: [{ ...item, id, name, packageId: `vendor.${id}` }],
+      },
+    });
+
+    render(<EssentialsPage />);
+
+    const card = screen.getByText(name).closest('div.rounded-xl');
+    expect(card).not.toBeNull();
+
+    const icon = card?.querySelector('svg');
+    const classes = icon?.getAttribute('class') ?? '';
+
+    expect(classes).not.toContain('text-destructive');
+    expect(classes).toMatch(/text-(?:primary|info|warning|success)\b/);
+    expect(card?.innerHTML).not.toContain('bg-destructive/10');
+    expect(card?.innerHTML).not.toContain('border-destructive/20');
+  });
+
   it('chama install ao clicar em Instalar', () => {
     const { install } = store.essentials;
 

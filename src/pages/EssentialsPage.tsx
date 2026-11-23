@@ -50,9 +50,9 @@ const PROGRAM_STYLES: Record<string, ProgramStyle> = {
   },
   'msi-afterburner': {
     icon: Gauge,
-    color: 'text-destructive',
-    bgColor: 'bg-destructive/10',
-    borderColor: 'border-destructive/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/20',
   },
   '7-zip': {
     icon: FolderArchive,
@@ -68,9 +68,9 @@ const PROGRAM_STYLES: Record<string, ProgramStyle> = {
   },
   brave: {
     icon: Compass,
-    color: 'text-destructive',
-    bgColor: 'bg-destructive/10',
-    borderColor: 'border-destructive/20',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/20',
   },
   qbittorrent: {
     icon: Download,
