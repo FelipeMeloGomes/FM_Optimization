@@ -26,8 +26,11 @@ export function useVirtualRows<T>(
   // Sem array de dependências: a lista pode ser desmontada e remontada (troca
   // de aba, filtro que esvazia a lista) sem trocar o objeto do ref. Medir a cada
   // render garante que o deslocamento seja recalculado quando ela volta.
-  // O valor é estável durante a rolagem (topo da lista e scrollTop variam
-  // juntos), então o setState não causa loop.
+  //
+  // O `<ul>` fica abaixo do spacer superior, então medir ele direto devolve
+  // "offset da lista + paddingTop". Como paddingTop = item.start - scrollMargin,
+  // isso realimenta o próprio scrollMargin ao rolar e gera loop de render.
+  // Descontar o spacer mede o contêiner estático, que não muda com a rolagem.
   useLayoutEffect(() => {
     if (!pageScroll) return;
     const scrollEl = document.getElementById(MAIN_CONTENT_ID);
@@ -35,6 +38,7 @@ export function useVirtualRows<T>(
     if (!scrollEl || !listEl) return;
     const offset =
       listEl.getBoundingClientRect().top -
+      paddingTop -
       scrollEl.getBoundingClientRect().top +
       scrollEl.scrollTop;
     setScrollMargin(Math.max(0, offset));
