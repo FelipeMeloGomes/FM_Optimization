@@ -85,7 +85,8 @@ describe('EssentialsPage — estados', () => {
 
     render(<EssentialsPage />);
 
-    expect(document.querySelector('.animate-pulse')).not.toBeNull();
+    expect(document.querySelectorAll('[data-skeleton="card"]')).toHaveLength(3);
+    expect(document.querySelector('[data-skeleton="grid"]')).toBeNull();
     expect(screen.queryByText('App Essenciais PC')).toBeNull();
   });
 

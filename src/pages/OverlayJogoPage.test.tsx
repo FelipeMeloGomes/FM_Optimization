@@ -87,6 +87,16 @@ afterEach(() => {
 });
 
 describe('OverlayJogoPage', () => {
+  it('mostra cards de jogo no esqueleto enquanto a lista carrega', () => {
+    installApi();
+
+    const { container } = render(<OverlayJogoPage />);
+
+    expect(screen.getByRole('status', { name: 'Carregando jogos…' })).toBeTruthy();
+    expect(container.querySelectorAll('[data-skeleton="card"]')).toHaveLength(2);
+    expect(container.querySelector('[data-skeleton="grid"]')).toBeNull();
+  });
+
   it('abre com a lista, a engrenagem e o aviso de borderless', async () => {
     installApi();
     render(<OverlayJogoPage />);

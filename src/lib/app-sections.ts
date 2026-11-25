@@ -11,6 +11,14 @@ export type SectionIconName =
   | 'sliders'
   | 'palette';
 
+/**
+ * Quantidade de scripts visíveis nas seções. Usada pelo esqueleto para mostrar
+ * o mesmo número de linhas da lista carregada, sem números digitados à mão.
+ */
+export function countSectionScripts(sections: ReadonlyArray<{ scriptIds: string[] }>): number {
+  return sections.reduce((total, section) => total + section.scriptIds.length, 0);
+}
+
 export interface AppSection {
   id: string;
   name: string;

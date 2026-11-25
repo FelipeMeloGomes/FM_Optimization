@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { DisplayMode, DisplayMonitor } from '../../../electron/shared/display-settings';
 import { useDisplaySettings } from '../../hooks/use-display-settings';
+import { PageSkeleton } from '../PageSkeleton';
 import { AnimatedNumber, Button, SettingsPreviewLayout } from '../ui';
 
 function resolutionKey(mode: DisplayMode): string {
@@ -167,13 +168,7 @@ export function DisplaySettingsPanel() {
   }
 
   if (state.status === 'loading') {
-    return (
-      <div className="space-y-3 rounded-xl border border-border bg-card p-5">
-        <div className="h-4 w-48 animate-pulse rounded bg-muted" />
-        <div className="h-24 animate-pulse rounded bg-muted" />
-        <div className="h-24 animate-pulse rounded bg-muted" />
-      </div>
-    );
+    return <PageSkeleton layout="settings" label="Carregando ajustes do monitor…" />;
   }
 
   return (

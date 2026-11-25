@@ -5,6 +5,7 @@ import { DashboardWidget } from '../components/DashboardWidget';
 import { AnimatedDashboard } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Badge, Button, Skeleton } from '../components/ui';
 import { useHistoryContext } from '../contexts/HistoryContext';
@@ -88,24 +89,7 @@ export default function DashboardPage() {
   }, [scriptsState, historyState]);
 
   if (state.status === 'loading') {
-    return (
-      <div className="space-y-6">
-        <div className="h-32 rounded-xl bg-muted animate-pulse" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
-              key={`skeleton-${i}`}
-              className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
-            >
-              <Skeleton className="h-4 w-1/3" />
-              <Skeleton className="h-6 w-2/3" />
-              <Skeleton className="h-3 w-1/2" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <PageSkeleton layout="dashboard" label="Carregando informações do sistema…" />;
   }
 
   if (state.status === 'error') {

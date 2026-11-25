@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AnimatedRestorePoints } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { RefreshButton } from '../components/RefreshButton';
 import {
   Badge,
@@ -71,12 +72,7 @@ export default function RestorePointsPage() {
   );
 
   if (state.status === 'loading') {
-    return (
-      <div className="space-y-4">
-        <div className="h-32 rounded-xl bg-muted animate-pulse" />
-        <div className="h-64 rounded-xl bg-muted animate-pulse" />
-      </div>
-    );
+    return <PageSkeleton layout="restore" label="Carregando pontos de restauração…" />;
   }
 
   if (state.status === 'error') {

@@ -1,7 +1,7 @@
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedNetwork } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
-import { scriptsInSectionOrder } from '../lib/app-sections';
+import { countSectionScripts, scriptsInSectionOrder } from '../lib/app-sections';
 import { NETWORK_SECTIONS } from '../lib/network-sections';
 
 /**
@@ -26,7 +26,7 @@ export default function NetworkPage() {
     <TweaksPage
       category={['Internet', 'DNS Manager']}
       hero={HERO}
-      skeletonCount={NETWORK_SECTIONS.length}
+      skeletonCount={countSectionScripts(NETWORK_SECTIONS)}
       transform={bySections}
     />
   );

@@ -145,6 +145,9 @@ describe('DashboardPage — estados de carregamento', () => {
     const html = renderToStaticMarkup(<DashboardPage />);
 
     expect(html).toContain('animate-pulse');
+    expect(html.match(/data-skeleton="card"/g)).toHaveLength(6);
+    expect(html.match(/data-skeleton="section"/g)).toHaveLength(2);
+    expect(html).toContain('data-skeleton="footer"');
     expect(text(html)).not.toContain('Windows 11 Pro');
   });
 

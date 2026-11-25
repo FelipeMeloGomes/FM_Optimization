@@ -111,6 +111,19 @@ describe('DnsPage', () => {
     expect(screen.getByRole('group', { name: 'Atualizar dados' }).contains(button)).toBe(true);
   });
 
+  it('mostra o esqueleto de DNS enquanto a interface de rede carrega', () => {
+    dns({ networkInfo: null });
+
+    const { container } = renderPage();
+
+    expect(screen.getByRole('status', { name: 'Carregando informações de rede…' })).toBeDefined();
+    expect(container.querySelectorAll('[data-skeleton="dns-provider"]')).toHaveLength(
+      DNS_PROVIDERS.length
+    );
+    expect(screen.getByText('DNS')).toBeDefined();
+    expect(screen.queryByText('Carregando…')).toBeNull();
+  });
+
   it('executa o benchmark chamando runBenchmark', () => {
     const { runBenchmark } = store.dns;
 

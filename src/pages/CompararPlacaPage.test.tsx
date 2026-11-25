@@ -71,6 +71,18 @@ afterEach(() => {
 });
 
 describe('CompararPlacaPage', () => {
+  it('mostra o esqueleto da comparação enquanto o catálogo carrega', () => {
+    const { getGpuCatalog } = installApi();
+    getGpuCatalog.mockImplementationOnce(() => new Promise<GpuCatalogResult>(() => {}));
+
+    const { container } = render(<CompararPlacaPage />);
+
+    expect(screen.getByText('Carregando catálogo de placas de vídeo…')).toBeTruthy();
+    expect(container.querySelectorAll('[data-skeleton="picker"]')).toHaveLength(2);
+    expect(container.querySelector('[data-skeleton="versus"]')).not.toBeNull();
+    expect(container.querySelector('[data-skeleton="column"]')).not.toBeNull();
+  });
+
   it('abre com a placa detectada na Placa A e mostra o selo', async () => {
     mocks.systemName = 'NVIDIA GeForce RTX 4090';
     const { getGpuCatalog, searchGpu } = installApi();

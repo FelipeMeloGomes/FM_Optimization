@@ -80,6 +80,8 @@ describe('HistoryPage', () => {
     const html = renderToStaticMarkup(<HistoryPage />);
 
     expect(html).toContain('animate-pulse');
+    expect(html.match(/data-skeleton="stat"/g)).toHaveLength(4);
+    expect(html.match(/data-skeleton="column"/g)).toHaveLength(5);
     expect(text(html)).not.toContain('Histórico de Execuções');
   });
 

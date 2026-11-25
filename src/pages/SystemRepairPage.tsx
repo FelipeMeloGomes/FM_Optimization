@@ -1,7 +1,7 @@
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedRepair } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
-import { scriptsInSectionOrder } from '../lib/app-sections';
+import { countSectionScripts, scriptsInSectionOrder } from '../lib/app-sections';
 import { REPAIR_SECTIONS } from '../lib/repair-sections';
 
 const HERO = {
@@ -19,7 +19,7 @@ export default function SystemRepairPage() {
     <TweaksPage
       category="Reparo do Sistema"
       hero={HERO}
-      skeletonCount={REPAIR_SECTIONS.length}
+      skeletonCount={countSectionScripts(REPAIR_SECTIONS)}
       transform={bySections}
     />
   );

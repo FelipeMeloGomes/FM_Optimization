@@ -167,8 +167,9 @@ describe('CleanerPage — estados', () => {
 
     const { container } = render(<CleanerPage />);
 
-    expect(screen.getByRole('status')).not.toBeNull();
-    expect(container.innerHTML).toContain('animate-pulse');
+    expect(screen.getByRole('status', { name: 'Carregando itens de limpeza…' })).not.toBeNull();
+    expect(container.querySelectorAll('[data-skeleton="row"]')).toHaveLength(6);
+    expect(container.querySelector('[data-skeleton="refresh"]')).not.toBeNull();
     expect(screen.queryByText('Mantenha seu Windows limpo e rápido')).toBeNull();
   });
 

@@ -17,6 +17,7 @@ import type {
 import { AnimatedHero } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import {
   Badge,
@@ -27,7 +28,6 @@ import {
   CardTitle,
   Label,
   Progress,
-  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -420,16 +420,13 @@ export default function CompararPlacaPage() {
       )}
 
       {state.status === 'loading' && (
-        <div className="space-y-4" role="status" aria-live="polite">
+        <div className="space-y-4" aria-live="polite">
           <p className="text-sm text-muted-foreground">
             {searching
               ? 'Buscando sua placa na internet…'
               : 'Carregando catálogo de placas de vídeo…'}
           </p>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Skeleton className="h-48 rounded-xl" />
-            <Skeleton className="h-48 rounded-xl" />
-          </div>
+          <PageSkeleton layout="comparison" label="Carregando comparação de placas…" />
         </div>
       )}
 

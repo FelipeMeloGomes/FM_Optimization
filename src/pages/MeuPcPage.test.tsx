@@ -99,6 +99,16 @@ beforeEach(() => {
 });
 
 describe('MeuPcPage', () => {
+  it('mostra os três grupos de cards no esqueleto, com sete itens no último', () => {
+    store.system = { status: 'loading' };
+
+    const { container } = render(<MeuPcPage />);
+    const grids = container.querySelectorAll('[data-skeleton="grid"]');
+
+    expect(grids).toHaveLength(3);
+    expect(grids[2].children.length).toBe(7);
+  });
+
   it('mostra o título e a descrição lida do Windows', () => {
     render(<MeuPcPage />);
 

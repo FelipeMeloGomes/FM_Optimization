@@ -1,7 +1,7 @@
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedPersonalization } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
-import { scriptsInSectionOrder } from '../lib/app-sections';
+import { countSectionScripts, scriptsInSectionOrder } from '../lib/app-sections';
 import { PERSONALIZATION_SECTIONS } from '../lib/personalization-sections';
 
 /** Config do hero fora do componente: mantém a prop estável e o memo eficaz. */
@@ -23,7 +23,7 @@ export default function PersonalizationPage() {
     <TweaksPage
       category="Personalização"
       hero={HERO}
-      skeletonCount={PERSONALIZATION_SECTIONS.length}
+      skeletonCount={countSectionScripts(PERSONALIZATION_SECTIONS)}
       transform={bySections}
     />
   );

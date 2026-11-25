@@ -111,7 +111,9 @@ describe('StorageSettingsPanel', () => {
   it('mostra esqueleto, erro com retry e estado vazio', () => {
     hook.state = { status: 'loading' };
     const { rerender } = render(<StorageSettingsPanel />);
-    expect(document.querySelector('.animate-pulse')).not.toBeNull();
+    expect(document.querySelector('[data-skeleton="preview"]')).not.toBeNull();
+    expect(document.querySelector('[data-skeleton="controls"]')).not.toBeNull();
+    expect(document.querySelectorAll('[data-skeleton="action"]')).toHaveLength(4);
 
     hook.state = { status: 'error', error: 'WMI indisponível' };
     rerender(<StorageSettingsPanel />);

@@ -155,6 +155,8 @@ describe('StartupPage — estados', () => {
     renderPage();
 
     expect(document.querySelector('.animate-pulse')).not.toBeNull();
+    expect(document.querySelectorAll('[data-skeleton="hero-stat"]')).toHaveLength(3);
+    expect(document.querySelectorAll('[data-skeleton="table"]')).toHaveLength(3);
     expect(screen.queryByRole('button', { name: /atualizar/i })).toBeNull();
   });
 

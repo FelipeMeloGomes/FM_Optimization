@@ -22,6 +22,7 @@ import type {
 import { AnimatedStartup } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import {
   Badge,
@@ -34,7 +35,6 @@ import {
   DialogTitle,
   EmptyState,
   Input,
-  Skeleton,
   Switch,
   Table,
   TableBody,
@@ -176,13 +176,7 @@ export default function StartupPage() {
   const servicesV = useVirtualRows(services, null, TABLE_ROW_HEIGHT, servicesListRef);
 
   if (state.status === 'loading') {
-    return (
-      <div className="space-y-4">
-        <div className="h-36 rounded-xl bg-muted animate-pulse" />
-        <Skeleton className="h-10 w-80" />
-        <Skeleton className="h-72 w-full rounded-xl" />
-      </div>
-    );
+    return <PageSkeleton layout="startup" label="Carregando inicialização…" />;
   }
 
   if (state.status === 'error') {

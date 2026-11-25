@@ -1,7 +1,7 @@
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedUtilities } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
-import { scriptsInSectionOrder } from '../lib/app-sections';
+import { countSectionScripts, scriptsInSectionOrder } from '../lib/app-sections';
 import { UTIL_SECTIONS } from '../lib/util-sections';
 
 const HERO = {
@@ -21,7 +21,7 @@ export default function UtilitiesPage() {
     <TweaksPage
       category="Utilities"
       hero={HERO}
-      skeletonCount={UTIL_SECTIONS.length}
+      skeletonCount={countSectionScripts(UTIL_SECTIONS)}
       transform={bySections}
     />
   );

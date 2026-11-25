@@ -20,6 +20,7 @@ import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedHero } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import BlurText from '../components/react-bits/BlurText';
 import GlareHover from '../components/react-bits/GlareHover';
 import { RISK_STYLES } from '../components/ScriptCard';
@@ -252,13 +253,7 @@ export default function OptimizePcPage() {
         </div>
       )}
 
-      {analyzing && !report && (
-        <div role="status" aria-busy="true" className="space-y-3">
-          <div className="h-32 animate-pulse rounded-xl border border-border bg-card" />
-          <div className="h-48 animate-pulse rounded-xl border border-border bg-card" />
-          <span className="sr-only">Analisando o PC…</span>
-        </div>
-      )}
+      {analyzing && !report && <PageSkeleton layout="analysis" label="Analisando o PC…" />}
 
       {!analyzing && !report && !analysisError && (
         <div className="rounded-xl border border-dashed border-border bg-card px-4 py-12 text-center">

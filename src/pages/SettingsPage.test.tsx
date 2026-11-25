@@ -39,9 +39,12 @@ const settings = {
   powerSaveMode: false,
 };
 
+const contextState = { loading: false };
+
 vi.mock('../contexts/SettingsContext', () => ({
   useSettingsContext: () => ({
     settings,
+    loading: contextState.loading,
     update: () => {},
     exportData: () => {},
     importData: () => {},
@@ -90,6 +93,21 @@ describe('SettingsPage', () => {
       'Atualizacoes',
     ]) {
       expect(html).toContain(title);
+    }
+  });
+
+  it('mostra o esqueleto das seis seções enquanto as preferências carregam', () => {
+    contextState.loading = true;
+    try {
+      const html = renderToStaticMarkup(<SettingsPage />);
+
+      expect(html).toContain('role="status"');
+      expect(html).toContain('aria-busy="true"');
+      expect(html.match(/data-skeleton="settings-section"/g)?.length).toBe(6);
+      expect(html).not.toContain('Bloqueio de Paginas');
+      expect(html).toContain('Preferencias do Sistema');
+    } finally {
+      contextState.loading = false;
     }
   });
 });

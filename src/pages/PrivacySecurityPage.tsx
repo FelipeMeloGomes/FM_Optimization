@@ -1,7 +1,7 @@
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { AnimatedPrivacySecurity } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
-import { scriptsInSectionOrder } from '../lib/app-sections';
+import { countSectionScripts, scriptsInSectionOrder } from '../lib/app-sections';
 import { PRIVACY_SECTIONS } from '../lib/privacy-sections';
 
 const HERO = {
@@ -20,7 +20,7 @@ export default function PrivacySecurityPage() {
     <TweaksPage
       category="Segurança"
       hero={HERO}
-      skeletonCount={PRIVACY_SECTIONS.length}
+      skeletonCount={countSectionScripts(PRIVACY_SECTIONS)}
       transform={bySections}
     />
   );

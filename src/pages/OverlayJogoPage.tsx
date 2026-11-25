@@ -23,6 +23,7 @@ import {
 import { AnimatedHero } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import {
   Badge,
   Button,
@@ -635,11 +636,7 @@ export default function OverlayJogoPage() {
             </Button>
           </div>
 
-          {loading && (
-            <p className="text-sm text-muted-foreground" role="status">
-              Carregando jogos…
-            </p>
-          )}
+          {loading && <PageSkeleton layout="overlay" label="Carregando jogos…" />}
 
           {!loading && games.length === 0 && (
             <Card>

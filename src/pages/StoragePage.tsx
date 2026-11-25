@@ -4,7 +4,7 @@ import storageImage from '../assets/storage-drives.jpg';
 import { DeviceHero } from '../components/hero/DeviceHero';
 import { StorageSettingsPanel } from '../components/storage/StorageSettingsPanel';
 import { TweaksPage } from '../components/TweaksPage';
-import { scriptsInSectionOrder } from '../lib/app-sections';
+import { countSectionScripts, scriptsInSectionOrder } from '../lib/app-sections';
 import { STORAGE_SECTIONS } from '../lib/storage-sections';
 
 /** Tweaks que só fazem sentido em máquinas com SSD. */
@@ -53,7 +53,7 @@ export default function StoragePage() {
           imageAlt="Unidades de armazenamento HD e SSD"
         />
       }
-      skeletonCount={STORAGE_SECTIONS.length}
+      skeletonCount={countSectionScripts(STORAGE_SECTIONS)}
       transform={transform}
       beforeContent={<StorageSettingsPanel />}
     />

@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react';
 import { AnimatedDns } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Badge, Button, Card, CardContent } from '../components/ui';
 import { DnsProvider, useDnsContext } from '../contexts/DnsContext';
@@ -37,6 +38,29 @@ export default function DnsPage() {
     <DnsProvider>
       <DnsPageContent />
     </DnsProvider>
+  );
+}
+
+function DnsHero() {
+  return (
+    <HeroBanner visual={<AnimatedDns />}>
+      <div className="relative p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <RouteIcon path="/dns" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Rede
+              </span>
+            </div>
+            <h2 className="text-lg font-bold text-foreground">DNS</h2>
+            <p className="mt-1 max-w-lg text-sm text-muted-foreground">
+              Configure seu DNS para melhor velocidade e privacidade
+            </p>
+          </div>
+        </div>
+      </div>
+    </HeroBanner>
   );
 }
 
@@ -127,6 +151,26 @@ function DnsPageContent() {
     return { medidos, proximo, total: DNS_PROVIDERS_TO_TEST.length };
   }, [benchmarks]);
 
+  if (!networkInfo) {
+    return (
+      <div className="space-y-6">
+        <DnsHero />
+        <PageRefreshBar
+          onRefresh={runBenchmark}
+          refreshing={benchmarkStatus === 'loading'}
+          label="Testar Novamente"
+          refreshingLabel="Testando…"
+        />
+        <PageSkeleton
+          layout="dns"
+          count={DNS_PROVIDERS.length}
+          hero="none"
+          label="Carregando informações de rede…"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <style>{`
@@ -153,25 +197,7 @@ function DnsPageContent() {
         }
       `}</style>
 
-      {/* Hero Banner */}
-      <HeroBanner visual={<AnimatedDns />}>
-        <div className="relative p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="mb-2 flex items-center gap-2">
-                <RouteIcon path="/dns" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-                  Rede
-                </span>
-              </div>
-              <h2 className="text-lg font-bold text-foreground">DNS</h2>
-              <p className="mt-1 max-w-lg text-sm text-muted-foreground">
-                Configure seu DNS para melhor velocidade e privacidade
-              </p>
-            </div>
-          </div>
-        </div>
-      </HeroBanner>
+      <DnsHero />
 
       <PageRefreshBar
         onRefresh={runBenchmark}

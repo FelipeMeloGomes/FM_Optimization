@@ -82,17 +82,24 @@ function baseProps() {
 }
 
 describe('TweaksPage — estados', () => {
-  it('mostra o esqueleto com a quantidade e o espaçamento pedidos', () => {
+  it('mostra uma linha por tweak no esqueleto, igual à lista carregada', () => {
     store.state = { status: 'loading' };
 
-    const { container } = render(
-      <TweaksPage {...baseProps()} skeletonCount={2} skeletonGap="gap-3" />
-    );
+    const { container } = render(<TweaksPage {...baseProps()} skeletonCount={2} />);
 
-    expect(container.querySelector('.animate-pulse')).not.toBeNull();
-    expect(container.querySelector('.grid')?.className).toContain('gap-3');
-    expect(container.querySelector('.grid')?.children.length).toBe(2);
+    expect(container.querySelectorAll('[data-skeleton="row"]')).toHaveLength(2);
+    expect(container.querySelector('[data-skeleton="hero"]')).not.toBeNull();
+    expect(container.querySelector('[data-skeleton="toolbar"]')).not.toBeNull();
+    expect(container.querySelector('[data-skeleton="card"]')).toBeNull();
     expect(container.querySelectorAll('[data-testid="tweaks-list"]').length).toBe(0);
+  });
+
+  it('usa quatro linhas quando a página não informa a quantidade', () => {
+    store.state = { status: 'loading' };
+
+    const { container } = render(<TweaksPage category="Teste" hero={HERO} />);
+
+    expect(container.querySelectorAll('[data-skeleton="row"]')).toHaveLength(4);
   });
 
   it('usa no selo o ícone da rota do hero', () => {
@@ -106,14 +113,6 @@ describe('TweaksPage — estados', () => {
 
     expect(document.querySelector('.animate-pulse')).not.toBeNull();
     expect(screen.queryByText('Página de teste')).toBeNull();
-  });
-
-  it('mantém a altura original do esqueleto do hero quando pedida', () => {
-    store.state = { status: 'loading' };
-
-    const { container } = render(<TweaksPage {...baseProps()} skeletonHeroHeight="h-32" />);
-
-    expect(container.querySelector('.animate-pulse')?.className).toContain('h-32');
   });
 
   it('mostra o erro devolvido pelo catálogo', () => {

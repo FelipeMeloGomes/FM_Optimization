@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -127,14 +127,28 @@ afterEach(() => {
 });
 
 describe('EmuladoresPage', () => {
-  it('renderiza o herói e os cartões de emulador', () => {
+  it('renderiza o herói e os cartões de emulador', async () => {
     renderPage();
 
     expect(screen.getByText('Debloat de Apps Android')).toBeDefined();
-    expect(screen.getByText('BlueStacks 4')).toBeDefined();
+    await waitFor(() => expect(screen.getByText('BlueStacks 4')).toBeDefined());
     expect(screen.getByText('BlueStacks 5')).toBeDefined();
     expect(screen.getByText('Emulador Android Nougat (64-bit)')).toBeDefined();
     expect(screen.getByText('Emulador Android Pie (64-bit)')).toBeDefined();
+  });
+
+  it('mostra o esqueleto dos emuladores enquanto ADB e versões são detectados', () => {
+    installApi({
+      adbGetPath: () => new Promise(() => {}),
+      adbDetectEmulator: () => new Promise(() => {}),
+    });
+
+    const { container } = renderPage();
+
+    expect(screen.getByRole('status', { name: 'Detectando ADB…' })).toBeDefined();
+    expect(container.querySelectorAll('[data-skeleton="card"]')).toHaveLength(2);
+    expect(screen.getByText('Debloat de Apps Android')).toBeDefined();
+    expect(screen.queryByText('Detectando…')).toBeNull();
   });
 
   it('chama adbGetPath para recuperar o caminho do ADB', () => {
@@ -155,13 +169,15 @@ describe('EmuladoresPage', () => {
     expect(api.adbDetectEmulator).toHaveBeenCalledWith('bluestacks-5');
   });
 
-  it('marca exatamente um card de emulador como ativo', () => {
-    emulator({ emulatorAtivo: 'bluestacks-4' });
-    renderPage();
-    expect(document.querySelectorAll('.border-info\\/30').length).toBe(1);
+  it('marca exatamente um card de emulador como ativo', async () => {
+    for (const [id, activeClass] of [
+      ['bluestacks-4', '.border-info\\/30'],
+      ['bluestacks-5', '.border-success\\/30'],
+    ] as const) {
+      emulator({ emulatorAtivo: id });
+      const { container } = renderPage();
 
-    emulator({ emulatorAtivo: 'bluestacks-5' });
-    renderPage();
-    expect(document.querySelectorAll('.border-info\\/30').length).toBe(1);
+      await waitFor(() => expect(container.querySelectorAll(activeClass).length).toBe(1));
+    }
   });
 });

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import { scriptsInSectionOrder } from './app-sections';
+import { countSectionScripts, scriptsInSectionOrder } from './app-sections';
 import { NETWORK_SECTIONS } from './network-sections';
 import { PERSONALIZATION_SECTIONS } from './personalization-sections';
 import { STORAGE_SECTIONS } from './storage-sections';
@@ -24,6 +24,14 @@ function script(id: string): ScriptEntry {
     tags: [],
   };
 }
+
+describe('countSectionScripts', () => {
+  it('conta os scripts das seções para o esqueleto mostrar o mesmo número de linhas', () => {
+    expect(countSectionScripts(NETWORK_SECTIONS)).toBe(12);
+    expect(countSectionScripts(PERSONALIZATION_SECTIONS)).toBe(8);
+    expect(countSectionScripts(STORAGE_SECTIONS)).toBe(5);
+  });
+});
 
 describe('scriptsInSectionOrder', () => {
   const sections = [

@@ -21,6 +21,7 @@ import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedCleaner } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Button } from '../components/ui';
 import { useAutoCleanContext } from '../contexts/AutoCleanContext';
@@ -32,7 +33,6 @@ import { cn } from '../lib/utils';
 import { formatBytes } from '../utils/format';
 
 const LARGE_CLEANUP_THRESHOLD_BYTES = 1024 * 1024 * 1024;
-const SKELETON_ROWS = 6;
 const CLEANER_ROW_HEIGHT = 72;
 
 /** Limpezas seguras e reversíveis: temporários, prefetch e cache de navegador. */
@@ -281,21 +281,7 @@ export default function CleanerPage() {
   }, [selectedItems, cleaning, settings.confirmOnExecute, runClean]);
 
   if (loading) {
-    return (
-      <div className="space-y-4" aria-busy="true" role="status">
-        <div className="h-24 rounded-xl bg-muted animate-pulse" />
-        <div className="h-14 rounded-xl bg-muted animate-pulse" />
-        <div className="space-y-2 rounded-xl border border-border bg-card p-4">
-          {Array.from({ length: SKELETON_ROWS }).map((_, index) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: placeholders estáticos, ordem fixa
-              key={`cleaner-row-skeleton-${index}`}
-              className="h-10 animate-pulse rounded-lg bg-muted"
-            />
-          ))}
-        </div>
-      </div>
-    );
+    return <PageSkeleton layout="list" label="Carregando itens de limpeza…" />;
   }
 
   if (error && items.length === 0) {

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -66,11 +66,11 @@ afterEach(() => {
 describe('EmuladoresPage — badge de conectado', () => {
   it.each(['bluestacks-4', 'bluestacks-5'])(
     'não sobrescreve o foreground do primary com cor fixa em %s',
-    (emulatorAtivo) => {
+    async (emulatorAtivo) => {
       setStore(emulatorAtivo);
       render(<EmuladoresPage />);
 
-      const badge = screen.getByText('Conectado');
+      const badge = await screen.findByText('Conectado');
       expect(badge.className).not.toContain('text-blue-400');
       expect(badge.className).not.toContain('text-emerald-400');
       expect(badge.className).toContain('text-[10px]');
@@ -78,10 +78,11 @@ describe('EmuladoresPage — badge de conectado', () => {
     }
   );
 
-  it('não usa sombra RGB fixa nos cartões ativos', () => {
+  it('não usa sombra RGB fixa nos cartões ativos', async () => {
     setStore('bluestacks-4');
     const { container } = render(<EmuladoresPage />);
 
+    await waitFor(() => expect(screen.getByText('BlueStacks 4')).toBeDefined());
     expect(container.innerHTML).not.toContain('rgba(59,130,246');
     expect(container.innerHTML).not.toContain('rgba(16,185,129');
   });

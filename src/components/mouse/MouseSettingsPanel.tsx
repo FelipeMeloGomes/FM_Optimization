@@ -6,6 +6,7 @@ import {
   MOUSE_POINTER_SPEED_MIN,
 } from '../../../electron/shared/mouse-settings';
 import { useMouseSettings } from '../../hooks/use-mouse-settings';
+import { PageSkeleton } from '../PageSkeleton';
 import { AnimatedNumber, Button, SettingsPreviewLayout, Switch } from '../ui';
 import { MouseTrailPreview } from './MouseTrailPreview';
 
@@ -23,14 +24,7 @@ export function MouseSettingsPanel() {
   }
 
   if (state.status === 'loading' || !draft) {
-    return (
-      <div className="space-y-3 rounded-xl border border-border bg-card p-5">
-        <div className="h-4 w-48 animate-pulse rounded bg-muted" />
-        <div className="h-8 animate-pulse rounded bg-muted" />
-        <div className="h-8 animate-pulse rounded bg-muted" />
-        <div className="h-32 animate-pulse rounded bg-muted" />
-      </div>
-    );
+    return <PageSkeleton layout="settings" label="Carregando ajustes do mouse…" />;
   }
 
   return (

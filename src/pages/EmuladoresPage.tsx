@@ -5,6 +5,7 @@ import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedEmuladores } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { Badge, Button, Card, CardContent, Switch } from '../components/ui';
 import { EmulatorProvider, useEmulatorContext } from '../contexts/EmulatorContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
@@ -78,21 +79,21 @@ function EmuladoresPageContent() {
   const [instances, setInstances] = useState<EmulatorInstance[]>([]);
   const [instancesLoading, setInstancesLoading] = useState(false);
   const [detectedVersions, setDetectedVersions] = useState<Record<string, string>>({});
+  const [detecting, setDetecting] = useState(true);
 
   useEffect(() => {
-    window.electronAPI
-      .adbGetPath()
-      .then(setAdbPath)
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    // Detectar versão dos emuladores na montagem (paralelo)
-    const detectAllVersions = async () => {
+    // Caminho do ADB e versões dos emuladores são lidos na montagem, em paralelo.
+    let mounted = true;
+    const detect = async () => {
       try {
-        const results = await Promise.all(
-          EMULATORS.map((emulator) => window.electronAPI.adbDetectEmulator(emulator.id))
-        );
+        const [adbPathResult, results] = await Promise.all([
+          window.electronAPI.adbGetPath(),
+          Promise.all(
+            EMULATORS.map((emulator) => window.electronAPI.adbDetectEmulator(emulator.id))
+          ),
+        ]);
+        if (!mounted) return;
+        setAdbPath(adbPathResult);
         const newVersions: Record<string, string> = {};
         for (let i = 0; i < EMULATORS.length; i++) {
           const result = results[i];
@@ -102,12 +103,17 @@ function EmuladoresPageContent() {
         }
         setDetectedVersions(newVersions);
       } catch (e: unknown) {
-        console.error('[EmuladoresPage] Error detecting versions', {
+        console.error('[EmuladoresPage] Error detecting ADB', {
           error: e instanceof Error ? e.message : String(e),
         });
+      } finally {
+        if (mounted) setDetecting(false);
       }
     };
-    detectAllVersions();
+    void detect();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleToggle = useCallback(
@@ -260,158 +266,173 @@ function EmuladoresPageContent() {
         </div>
       </HeroBanner>
 
-      {/* ADB Status */}
-      <Card className="border-primary/20">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
-              <MonitorSmartphone className="size-4 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Caminho ADB</p>
-              <p className="text-sm font-medium font-mono truncate">{adbPath || 'Detectando…'}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleChooseAdbFolder}
-              disabled={choosingAdb}
-              title="Alterar pasta do ADB"
-              aria-label="Alterar pasta do ADB"
-            >
-              {choosingAdb ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <FolderCog className="size-4" />
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Error Banner */}
-      {adbError && (
-        <div
-          role="alert"
-          className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
-        >
-          <AlertCircle className="size-4 shrink-0" />
-          {adbError}
-        </div>
-      )}
-
-      {/* Emulator Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {EMULATORS.map((emulator) => {
-          const isActive = emulatorAtivo === emulator.id;
-          const colors = COLOR_MAP[emulator.color];
-
-          return (
-            <Card
-              key={emulator.id}
-              className={cn(
-                'transition-[color,background-color,border-color,box-shadow,opacity] duration-200',
-                isActive && [colors.border, colors.shadow],
-                isActive && 'cursor-pointer'
-              )}
-              onClick={() => handleCardClick(emulator)}
-            >
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="relative shrink-0">
-                      <div
-                        className={cn(
-                          'flex size-11 items-center justify-center rounded-xl overflow-hidden transition-colors',
-                          isActive ? colors.bg : 'bg-muted'
-                        )}
-                      >
-                        <img
-                          src={bluestacksLogo}
-                          alt={`BlueStacks ${emulator.version}`}
-                          className="size-8 object-contain"
-                        />
-                      </div>
-                      <span
-                        className={cn(
-                          'absolute -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold',
-                          isActive
-                            ? `${colors.bg} ${colors.text} ring-1 ring-current/20`
-                            : 'bg-muted text-muted-foreground ring-1 ring-border'
-                        )}
-                      >
-                        {emulator.version}
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold">
-                        {emulator.name}
-                        {detectedVersions[emulator.id] && (
-                          <span className="ml-1.5 text-xs text-muted-foreground font-normal">
-                            v{detectedVersions[emulator.id]}
-                          </span>
-                        )}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">{emulator.description}</p>
-                    </div>
-                  </div>
+      {detecting ? (
+        <PageSkeleton
+          layout="emulators"
+          count={EMULATORS.length}
+          hero="none"
+          label="Detectando ADB…"
+        />
+      ) : (
+        <>
+          {/* ADB Status */}
+          <Card className="border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+                  <MonitorSmartphone className="size-4 text-primary" />
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={isActive}
-                      onCheckedChange={() => handleToggle(emulator)}
-                      disabled={connecting}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      {connecting && !isActive ? 'Conectando…' : 'ADB'}
-                    </span>
-                  </div>
-                  {isActive ? (
-                    <Badge
-                      variant="outline"
-                      className="text-[10px]"
-                      style={{ color: 'var(--color-primary)' }}
-                    >
-                      Conectado
-                    </Badge>
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground">Caminho ADB</p>
+                  <p className="text-sm font-medium font-mono truncate">
+                    {adbPath || 'Detectando…'}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleChooseAdbFolder}
+                  disabled={choosingAdb}
+                  title="Alterar pasta do ADB"
+                  aria-label="Alterar pasta do ADB"
+                >
+                  {choosingAdb ? (
+                    <Loader2 className="size-4 animate-spin" />
                   ) : (
-                    <Badge variant="secondary" className="text-[10px]">
-                      Desconectado
-                    </Badge>
+                    <FolderCog className="size-4" />
                   )}
-                </div>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-                {isActive && (
-                  <div className="mt-3 pt-3 border-t border-border">
-                    <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs">
-                      <MonitorSmartphone className="size-3.5" />
-                      Selecionar Instância
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+          {/* Error Banner */}
+          {adbError && (
+            <div
+              role="alert"
+              className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              <AlertCircle className="size-4 shrink-0" />
+              {adbError}
+            </div>
+          )}
 
-      {/* Loading overlay */}
-      {connecting && (
-        <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" />
-          Conectando ao ADB…
-        </div>
+          {/* Emulator Cards */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {EMULATORS.map((emulator) => {
+              const isActive = emulatorAtivo === emulator.id;
+              const colors = COLOR_MAP[emulator.color];
+
+              return (
+                <Card
+                  key={emulator.id}
+                  className={cn(
+                    'transition-[color,background-color,border-color,box-shadow,opacity] duration-200',
+                    isActive && [colors.border, colors.shadow],
+                    isActive && 'cursor-pointer'
+                  )}
+                  onClick={() => handleCardClick(emulator)}
+                >
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="relative shrink-0">
+                          <div
+                            className={cn(
+                              'flex size-11 items-center justify-center rounded-xl overflow-hidden transition-colors',
+                              isActive ? colors.bg : 'bg-muted'
+                            )}
+                          >
+                            <img
+                              src={bluestacksLogo}
+                              alt={`BlueStacks ${emulator.version}`}
+                              className="size-8 object-contain"
+                            />
+                          </div>
+                          <span
+                            className={cn(
+                              'absolute -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold',
+                              isActive
+                                ? `${colors.bg} ${colors.text} ring-1 ring-current/20`
+                                : 'bg-muted text-muted-foreground ring-1 ring-border'
+                            )}
+                          >
+                            {emulator.version}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold">
+                            {emulator.name}
+                            {detectedVersions[emulator.id] && (
+                              <span className="ml-1.5 text-xs text-muted-foreground font-normal">
+                                v{detectedVersions[emulator.id]}
+                              </span>
+                            )}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {emulator.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={isActive}
+                          onCheckedChange={() => handleToggle(emulator)}
+                          disabled={connecting}
+                        />
+                        <span className="text-xs text-muted-foreground">
+                          {connecting && !isActive ? 'Conectando…' : 'ADB'}
+                        </span>
+                      </div>
+                      {isActive ? (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px]"
+                          style={{ color: 'var(--color-primary)' }}
+                        >
+                          Conectado
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-[10px]">
+                          Desconectado
+                        </Badge>
+                      )}
+                    </div>
+
+                    {isActive && (
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs">
+                          <MonitorSmartphone className="size-3.5" />
+                          Selecionar Instância
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Loading overlay */}
+          {connecting && (
+            <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+              Conectando ao ADB…
+            </div>
+          )}
+
+          <InstanceSelectionModal
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            instances={instances}
+            loading={instancesLoading}
+            onSelect={handleInstanceSelect}
+          />
+        </>
       )}
-
-      <InstanceSelectionModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        instances={instances}
-        loading={instancesLoading}
-        onSelect={handleInstanceSelect}
-      />
     </div>
   );
 }

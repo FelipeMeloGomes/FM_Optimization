@@ -8,6 +8,7 @@ import {
   KEYBOARD_REPEAT_RATE_MIN,
 } from '../../../electron/shared/keyboard-settings';
 import { useKeyboardSettings } from '../../hooks/use-keyboard-settings';
+import { PageSkeleton } from '../PageSkeleton';
 import { AnimatedNumber, Button, SettingsPreviewLayout } from '../ui';
 import { KeyboardPreview } from './KeyboardPreview';
 
@@ -29,14 +30,7 @@ export function KeyboardSettingsPanel() {
   }
 
   if (state.status === 'loading' || !draft) {
-    return (
-      <div className="space-y-3 rounded-xl border border-border bg-card p-5">
-        <div className="h-4 w-48 animate-pulse rounded bg-muted" />
-        <div className="h-8 animate-pulse rounded bg-muted" />
-        <div className="h-8 animate-pulse rounded bg-muted" />
-        <div className="h-24 animate-pulse rounded bg-muted" />
-      </div>
-    );
+    return <PageSkeleton layout="settings" label="Carregando ajustes do teclado…" />;
   }
 
   return (

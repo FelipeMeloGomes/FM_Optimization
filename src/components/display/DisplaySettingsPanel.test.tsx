@@ -75,7 +75,9 @@ describe('DisplaySettingsPanel — estados de carga', () => {
   it('mostra um esqueleto enquanto lê as configurações do Windows', () => {
     const { container } = render(<DisplaySettingsPanel />);
 
-    expect(container.querySelector('.animate-pulse')).not.toBeNull();
+    expect(container.querySelector('[data-skeleton="preview"]')).not.toBeNull();
+    expect(container.querySelector('[data-skeleton="controls"]')).not.toBeNull();
+    expect(container.querySelectorAll('[data-skeleton="action"]')).toHaveLength(4);
     expect(text()).not.toContain('Ajustes do Windows');
   });
 

@@ -13,6 +13,7 @@ import { EXIT_INTERRUPTED_SENTINEL } from '../../electron/shared/exit-codes';
 import { AnimatedHistory } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import {
   Badge,
   EmptyState,
@@ -149,12 +150,7 @@ export default function HistoryPage() {
   }, [state]);
 
   if (state.status === 'loading') {
-    return (
-      <div className="space-y-4">
-        <div className="h-32 rounded-xl bg-muted animate-pulse" />
-        <div className="h-64 rounded-xl bg-muted animate-pulse" />
-      </div>
-    );
+    return <PageSkeleton layout="history" label="Carregando histórico…" />;
   }
 
   if (state.status === 'error') {

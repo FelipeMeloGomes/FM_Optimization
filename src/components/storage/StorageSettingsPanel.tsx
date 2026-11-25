@@ -1,6 +1,7 @@
 import type { StorageDrive } from '../../../electron/shared/ipc-types';
 import { useStorageDrives } from '../../hooks/use-storage-drives';
 import { cn } from '../../lib/utils';
+import { PageSkeleton } from '../PageSkeleton';
 import { AnimatedNumber, Badge, Button, Progress, SettingsPreviewLayout } from '../ui';
 
 const DRIVE_MEDIA_TYPES = new Set(['SSD NVMe', 'SSD', 'HD']);
@@ -159,13 +160,7 @@ export function StorageSettingsPanel() {
   } = useStorageDrives();
 
   if (state.status === 'loading') {
-    return (
-      <div className="space-y-3 rounded-xl border border-border bg-card p-5">
-        <div className="h-4 w-48 animate-pulse rounded bg-muted" />
-        <div className="h-28 animate-pulse rounded bg-muted" />
-        <div className="h-28 animate-pulse rounded bg-muted" />
-      </div>
-    );
+    return <PageSkeleton layout="settings" label="Carregando unidades…" />;
   }
 
   if (state.status === 'error') {

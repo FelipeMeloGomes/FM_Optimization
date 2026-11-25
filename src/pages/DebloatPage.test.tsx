@@ -159,7 +159,8 @@ describe('DebloatPage — carregamento e erro', () => {
 
     const { container } = render(<DebloatPage />);
 
-    expect(container.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('[data-skeleton="row"]')).toHaveLength(7);
+    expect(container.querySelector('[data-skeleton="toolbar"]')).not.toBeNull();
     expect(screen.queryByText('Debloat de apps do Windows')).toBeNull();
   });
 

@@ -158,6 +158,17 @@ describe('OptimizePcPage', () => {
     expect(screen.getByRole('button', { name: 'Analisar PC' })).toBeTruthy();
   });
 
+  it('mostra o esqueleto da análise enquanto o relatório é calculado', () => {
+    state.analyze.mockImplementationOnce(() => new Promise<OptimizationReport>(() => {}));
+
+    const { container } = render(<OptimizePcPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Analisar PC' }));
+
+    expect(screen.getByRole('status', { name: 'Analisando o PC…' })).toBeTruthy();
+    expect(container.querySelector('[data-skeleton="score"]')).not.toBeNull();
+    expect(container.querySelectorAll('[data-skeleton="area"]').length).toBeGreaterThan(0);
+  });
+
   it('só analisa quando o usuário clica', async () => {
     render(<OptimizePcPage />);
 

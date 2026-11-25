@@ -6,6 +6,7 @@ import { showEnhancedToast } from '../components/EnhancedToast';
 import { AnimatedDebloat } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Button, Input, Tabs } from '../components/ui';
 import { useSettingsContext } from '../contexts/SettingsContext';
@@ -13,7 +14,6 @@ import { useAppxInventory } from '../hooks/use-appx-inventory';
 import { useVirtualRows } from '../hooks/use-virtual-rows';
 import { cn } from '../lib/utils';
 
-const SKELETON_ROWS = 7;
 const APP_ROW_HEIGHT = 69;
 
 type TabId = 'all' | 'recommended' | 'protected';
@@ -208,21 +208,7 @@ export default function DebloatPage() {
   }, [settings.soundEnabled]);
 
   if (loading) {
-    return (
-      <div className="space-y-4" aria-busy="true" role="status">
-        <div className="h-24 rounded-xl bg-muted animate-pulse" />
-        <div className="h-14 rounded-xl bg-muted animate-pulse" />
-        <div className="space-y-2 rounded-xl border border-border bg-card p-4">
-          {Array.from({ length: SKELETON_ROWS }).map((_, index) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: placeholders estáticos, ordem fixa
-              key={`debloat-row-skeleton-${index}`}
-              className="h-10 animate-pulse rounded-lg bg-muted"
-            />
-          ))}
-        </div>
-      </div>
-    );
+    return <PageSkeleton layout="list" count={7} label="Carregando aplicativos…" />;
   }
 
   if (error && packages.length === 0) {

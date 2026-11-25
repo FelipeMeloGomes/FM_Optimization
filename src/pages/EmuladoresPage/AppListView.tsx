@@ -3,7 +3,6 @@ import {
   Bookmark,
   ChevronDown,
   History,
-  Loader2,
   RotateCcw,
   Search,
   ShieldCheck,
@@ -14,6 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RemovedApp } from '../../../electron/shared/ipc-types';
 import { showEnhancedToast } from '../../components/EnhancedToast';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { RefreshButton } from '../../components/RefreshButton';
 import {
   Badge,
@@ -450,10 +450,14 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
       {/* App List */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {carregando ? (
-          <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground">
-            <Loader2 className="size-5 animate-spin mb-2" />
-            <p className="text-sm">Carregando apps…</p>
-          </div>
+          <PageSkeleton
+            layout="cards"
+            count={6}
+            columns={3}
+            hero="none"
+            className="col-span-full"
+            label="Carregando apps…"
+          />
         ) : filteredApps.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground">
             <p className="text-sm">

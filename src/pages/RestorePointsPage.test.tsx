@@ -86,6 +86,8 @@ describe('RestorePointsPage — estados', () => {
     renderPage();
 
     expect(document.querySelector('.animate-pulse')).not.toBeNull();
+    expect(document.querySelectorAll('[data-skeleton="form"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-skeleton="column"]')).toHaveLength(4);
     expect(screen.queryByText('Pontos de Restauração do Sistema')).toBeNull();
   });
 

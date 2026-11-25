@@ -72,8 +72,7 @@ export default function InputLagPage() {
     <TweaksPage
       category="Input Lag"
       hero={HERO}
-      skeletonCount={4}
-      skeletonGap="gap-3"
+      skeletonCount={REGISTRY_SCRIPTS.length}
       transform={transform}
       buildLabels={buildLabels}
       compactToolbarGap

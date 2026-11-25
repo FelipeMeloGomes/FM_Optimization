@@ -72,6 +72,26 @@ beforeEach(() => {
 });
 
 describe('DevicePage', () => {
+  it('mostra o esqueleto com a foto e o cartão largo enquanto carrega', () => {
+    store.state = { status: 'loading' };
+
+    const { container } = render(<DevicePage config={MOUSE_PAGE} />);
+
+    expect(container.querySelector('[data-skeleton="hero-photo"]')).not.toBeNull();
+    expect(container.querySelectorAll('[data-skeleton="card"]')).toHaveLength(1);
+    expect(container.querySelector('[data-skeleton="settings"]')).toBeNull();
+  });
+
+  it('inclui o esqueleto dos ajustes quando a página tem painel antes da lista', () => {
+    store.state = { status: 'loading' };
+
+    const { container } = render(
+      <DevicePage config={MOUSE_PAGE} beforeContent={<div>Ajustes do Windows</div>} />
+    );
+
+    expect(container.querySelector('[data-skeleton="settings"]')).not.toBeNull();
+  });
+
   it('pede ao hook a categoria do periférico', async () => {
     render(<DevicePage config={MOUSE_PAGE} />);
 

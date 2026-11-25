@@ -5,7 +5,7 @@ import { useScriptSelection } from '../hooks/use-script-selection';
 import { ConfirmBulkScriptDialog } from './ConfirmBulkScriptDialog';
 import { HeroBanner } from './hero/HeroBanner';
 import { RouteIcon } from './hero/RouteIcon';
-import { ScriptCardSkeleton } from './ScriptCardSkeleton';
+import { PageSkeleton } from './PageSkeleton';
 import { ScriptSelectionToolbar } from './ScriptSelectionToolbar';
 import { VirtualizedScriptList } from './VirtualizedScriptList';
 
@@ -23,12 +23,8 @@ export interface TweaksPageProps {
   category: string | string[];
   /** Texto e visual do banner. Defina fora do componente para manter a prop estável. */
   hero: TweaksPageHero;
-  /** Quantidade de esqueletos no carregamento. */
-  skeletonCount: number;
-  /** Input Lag usava `gap-3` no grid de esqueletos; as demais, `gap-4`. */
-  skeletonGap?: string;
-  /** A CPU usava `h-32` no esqueleto do hero; as demais, `h-24`. */
-  skeletonHeroHeight?: string;
+  /** Linhas no esqueleto; use a quantidade real de scripts da página. */
+  skeletonCount?: number;
   /** Filtra e/ou reordena os scripts da categoria antes da lista e da seleção. */
   transform?: (scripts: ScriptEntry[]) => ScriptEntry[];
   /** Nomes e descrições curados, quando o catálogo não serve para a lista. */
@@ -56,8 +52,6 @@ function TweaksPageImpl({
   category,
   hero,
   skeletonCount,
-  skeletonGap = 'gap-4',
-  skeletonHeroHeight = 'h-24',
   transform,
   buildLabels,
   beforeList,
@@ -101,15 +95,7 @@ function TweaksPageImpl({
 
   if (extraLoading || state.status === 'loading') {
     return withBeforeContent(
-      <div className="space-y-4">
-        <div className={`${skeletonHeroHeight} rounded-xl bg-muted animate-pulse`} />
-        <div className={`grid grid-cols-1 ${skeletonGap} sm:grid-cols-2`}>
-          {Array.from({ length: skeletonCount }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
-            <ScriptCardSkeleton key={`skeleton-${i}`} />
-          ))}
-        </div>
-      </div>
+      <PageSkeleton layout="tweaks" count={skeletonCount} label="Carregando ajustes…" />
     );
   }
 

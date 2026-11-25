@@ -2,8 +2,8 @@ import { ChevronDown, Play, Square } from 'lucide-react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DeviceHero } from '../components/hero/DeviceHero';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { ScriptBadge } from '../components/ScriptBadge';
-import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
 import { Button } from '../components/ui';
 import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
@@ -42,15 +42,11 @@ export default function DevicePage({ config, beforeContent }: DevicePageProps) {
 
   if (state.status === 'loading') {
     return (
-      <div className="space-y-4">
-        <div className="h-24 rounded-xl bg-muted animate-pulse" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
-            <ScriptCardSkeleton key={`skeleton-${i}`} />
-          ))}
-        </div>
-      </div>
+      <PageSkeleton
+        layout="device"
+        settings={Boolean(beforeContent)}
+        label="Carregando ajustes do periférico…"
+      />
     );
   }
 

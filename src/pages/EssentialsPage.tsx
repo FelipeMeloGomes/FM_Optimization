@@ -23,7 +23,7 @@ import type {
 import { AnimatedEssentials } from '../components/hero/AnimatedHero';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
-import { ScriptCardSkeleton } from '../components/ScriptCardSkeleton';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { Badge, Button, Progress } from '../components/ui';
 import { useEssentials } from '../hooks/use-essentials';
 import { cn } from '../lib/utils';
@@ -235,19 +235,7 @@ export default function EssentialsPage() {
   } = useEssentials();
 
   if (state.status === 'loading') {
-    return (
-      <div className="space-y-4">
-        <div className="h-24 rounded-xl bg-muted animate-pulse" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <ScriptCardSkeleton
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders, fixed count
-              key={`skeleton-${i}`}
-            />
-          ))}
-        </div>
-      </div>
-    );
+    return <PageSkeleton layout="cards" columns={1} label="Carregando programas essenciais…" />;
   }
 
   if (state.status === 'error') {
