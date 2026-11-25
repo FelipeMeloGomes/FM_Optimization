@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AnimatedSettings } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { DataSection } from '../components/settings/DataSection';
@@ -10,10 +9,11 @@ import { PreferencesSection } from '../components/settings/PreferencesSection';
 import { ThemeSection } from '../components/settings/ThemeSection';
 import { UpdatesSection } from '../components/settings/UpdatesSection';
 import { useSettingsContext } from '../contexts/SettingsContext';
+import { HERO_ART } from '../lib/hero-art';
 
 function SettingsHero() {
   return (
-    <HeroBanner visual={<AnimatedSettings />}>
+    <HeroBanner {...HERO_ART['/settings']}>
       <div className="relative p-6">
         <div>
           <div className="mb-2 flex items-center gap-2">
@@ -25,9 +25,7 @@ function SettingsHero() {
           <h2 className="text-balance text-lg font-bold text-foreground">
             Preferencias do Sistema
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Personalize o comportamento do FM Optimize.
-          </p>
+          <HeroDescription text="Personalize o comportamento do FM Optimize." />
         </div>
       </div>
     </HeroBanner>

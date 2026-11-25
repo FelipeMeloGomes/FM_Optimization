@@ -4,7 +4,6 @@ import { useScriptPage } from '../hooks/use-script-page';
 import { useScriptSelection } from '../hooks/use-script-selection';
 import { ConfirmBulkScriptDialog } from './ConfirmBulkScriptDialog';
 import { HeroBanner } from './hero/HeroBanner';
-import { RouteIcon } from './hero/RouteIcon';
 import { PageSkeleton } from './PageSkeleton';
 import { ScriptSelectionToolbar } from './ScriptSelectionToolbar';
 import { VirtualizedScriptList } from './VirtualizedScriptList';
@@ -15,7 +14,8 @@ export interface TweaksPageHero {
   badge: string;
   title: string;
   description: string;
-  visual: ReactNode;
+  image: string;
+  imageAlt: string;
 }
 
 export interface TweaksPageProps {
@@ -111,18 +111,14 @@ function TweaksPageImpl({
   // O banner vem antes do painel de ajustes; o painel continua visível em
   // loading/erro através de `withBeforeContent`, onde não há banner.
   const banner = heroContent ?? (
-    <HeroBanner visual={hero.visual}>
-      <div className="relative p-6">
-        <div className="flex items-center gap-2 mb-2">
-          <RouteIcon path={hero.path} />
-          <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-            {hero.badge}
-          </span>
-        </div>
-        <h2 className="text-lg font-bold text-foreground">{hero.title}</h2>
-        <p className="text-sm text-muted-foreground mt-1 max-w-lg">{hero.description}</p>
-      </div>
-    </HeroBanner>
+    <HeroBanner
+      image={hero.image}
+      imageAlt={hero.imageAlt}
+      badge={hero.badge}
+      path={hero.path}
+      title={hero.title}
+      description={hero.description}
+    />
   );
   const toolbar = (
     <ScriptSelectionToolbar

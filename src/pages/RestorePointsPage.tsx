@@ -9,8 +9,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { AnimatedRestorePoints } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { RefreshButton } from '../components/RefreshButton';
@@ -31,6 +30,7 @@ import {
   TableRow,
 } from '../components/ui';
 import { useRestorePointContext } from '../contexts/RestorePointContext';
+import { HERO_ART } from '../lib/hero-art';
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString('pt-BR');
@@ -114,7 +114,7 @@ export default function RestorePointsPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner visual={<AnimatedRestorePoints />}>
+      <HeroBanner {...HERO_ART['/restore-points']}>
         <div className="relative p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -127,9 +127,7 @@ export default function RestorePointsPage() {
               <h2 className="text-lg font-bold text-foreground">
                 Pontos de Restauração do Sistema
               </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Crie e gerencie pontos de restauração para reverter mudanças quando necessário.
-              </p>
+              <HeroDescription text="Crie e gerencie pontos de restauração para reverter mudanças quando necessário." />
             </div>
             <Badge variant="secondary" className="text-xs px-3 py-1">
               {restorePoints.length} pontos

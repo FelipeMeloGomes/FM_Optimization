@@ -1,6 +1,6 @@
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import { AnimatedInputLag } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
+import { HERO_ART } from '../lib/hero-art';
 import { resolveCuratedItems } from '../lib/resolve-curated-scripts';
 
 interface RegistryItem {
@@ -51,7 +51,7 @@ const HERO = {
   title: 'Reduza o Input Lag do seu PC',
   description:
     'Ajustes de registro e do sistema que reduzem a latência de resposta, USB e rede para uma experiência de jogo mais competitiva.',
-  visual: <AnimatedInputLag />,
+  ...HERO_ART['/input-lag'],
 };
 
 /** Só os ajustes curados entram na lista — o catálogo pode ter scripts de device. */

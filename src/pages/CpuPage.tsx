@@ -1,12 +1,12 @@
 import { AlertTriangle } from 'lucide-react';
 import { useCallback, useEffect, useMemo } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import { AnimatedCpu } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
 import { Button, Card, CardContent } from '../components/ui';
 import { useCpuContext, useMemoryContext } from '../contexts/SystemContext';
 import { useCpuVendor } from '../hooks/use-cpu-vendor';
 import { CPU_CATEGORY } from '../lib/cpu-vendor';
+import { HERO_ART } from '../lib/hero-art';
 import { PERFORMANCE_SECTIONS } from '../lib/performance-sections';
 import { getRamScriptId } from '../lib/ram-script';
 
@@ -20,7 +20,7 @@ const HERO = {
   title: 'Otimização do Sistema',
   description:
     'Ajustes de hardware e do Windows para extrair mais desempenho e estabilidade do seu PC.',
-  visual: <AnimatedCpu />,
+  ...HERO_ART['/cpu'],
 };
 
 export default function CpuPage() {

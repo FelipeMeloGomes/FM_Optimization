@@ -496,7 +496,7 @@ function renderRecipe(
             <CardGrid count={3} columns={3} />
           </Section>
           <Section>
-            <CardGrid count={7} columns={4} />
+            <CardGrid count={9} columns={4} />
           </Section>
         </>
       );

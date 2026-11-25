@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import storageImage from '../assets/storage-drives.jpg';
-import { DeviceHero } from '../components/hero/DeviceHero';
 import { StorageSettingsPanel } from '../components/storage/StorageSettingsPanel';
 import { TweaksPage } from '../components/TweaksPage';
 import { countSectionScripts, scriptsInSectionOrder } from '../lib/app-sections';
+import { HERO_ART } from '../lib/hero-art';
 import { STORAGE_SECTIONS } from '../lib/storage-sections';
 
 /** Tweaks que só fazem sentido em máquinas com SSD. */
@@ -15,7 +14,7 @@ const HERO = {
   badge: 'Ferramentas',
   title: 'Armazenamento',
   description: 'Libere espaço em disco, otimize o SSD e compacte os arquivos do sistema.',
-  visual: null,
+  ...HERO_ART['/armazenamento'],
 };
 
 export default function StoragePage() {
@@ -43,16 +42,6 @@ export default function StoragePage() {
     <TweaksPage
       category="Armazenamento"
       hero={HERO}
-      heroContent={
-        <DeviceHero
-          badge={HERO.badge}
-          path={HERO.path}
-          title={HERO.title}
-          description={HERO.description}
-          image={storageImage}
-          imageAlt="Unidades de armazenamento HD e SSD"
-        />
-      }
       skeletonCount={countSectionScripts(STORAGE_SECTIONS)}
       transform={transform}
       beforeContent={<StorageSettingsPanel />}

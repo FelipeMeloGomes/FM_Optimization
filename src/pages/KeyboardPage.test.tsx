@@ -42,11 +42,13 @@ beforeEach(() => {
 });
 
 describe('página Teclado', () => {
-  it('mostra a foto do teclado gamer e o painel de ajustes do Windows', async () => {
+  it('mostra a ilustração do teclado e o painel de ajustes do Windows', async () => {
     render(<KeyboardPage />);
 
     expect(screen.getByRole('heading', { name: 'Teclado', level: 2 })).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'Teclado gamer Razer Ornata Chroma' })).toBeTruthy();
+    expect(
+      screen.getByRole('img', { name: 'Ilustração de teclado gamer com iluminação RGB' })
+    ).toBeTruthy();
 
     await waitFor(() =>
       expect(screen.getByRole('slider', { name: 'Atraso até repetir' })).toBeTruthy()

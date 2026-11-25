@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="panel" x1="620" y1="210" x2="1100" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3b4859" />
+      <stop offset="0.45" stop-color="#1a2532" />
+      <stop offset="1" stop-color="#070d15" />
+    </linearGradient>
+    <linearGradient id="face" x1="660" y1="240" x2="1060" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#253242" />
+      <stop offset="0.5" stop-color="#101a26" />
+      <stop offset="1" stop-color="#050a11" />
+    </linearGradient>
+    <radialGradient id="gauge" cx="0" cy="0" r="1" gradientTransform="translate(0 0) scale(72)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1c2a38" />
+      <stop offset="0.7" stop-color="#0a121c" />
+      <stop offset="1" stop-color="#04080e" />
+    </radialGradient>
+    <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#f1f5f9" />
+      <stop offset="0.45" stop-color="#8492a2" />
+      <stop offset="1" stop-color="#3c4958" />
+    </linearGradient>
+    <linearGradient id="rgb" x1="640" y1="400" x2="1090" y2="370" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="11" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+    <pattern id="brushed" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M0 2h8M0 6h8" stroke="#e2e8f0" stroke-opacity="0.06" />
+    </pattern>
+  </defs>
+
+  <ellipse cx="870" cy="310" rx="300" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="875" cy="445" rx="275" ry="25" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <g transform="rotate(-5 870 320)">
+    <!-- gabinete do painel -->
+    <path d="M630 218h480c16 0 28 12 28 28v142c0 16-12 28-28 28H630c-16 0-28-12-28-28V246c0-16 12-28 28-28z" fill="url(#panel)" stroke="#94a3b8" stroke-opacity="0.4" stroke-width="2.5" />
+    <path d="M630 218h480c16 0 28 12 28 28v20H602v-20c0-16 12-28 28-28z" fill="url(#chrome)" fill-opacity="0.3" />
+    <path d="M610 232h500v12H610z" fill="#ffffff" fill-opacity="0.08" />
+    <rect x="612" y="248" width="456" height="148" rx="8" fill="url(#face)" stroke="#64748b" stroke-opacity="0.5" stroke-width="2" />
+    <rect x="612" y="248" width="456" height="148" rx="8" fill="url(#brushed)" />
+
+    <!-- mostradores -->
+    <g>
+      <circle cx="700" cy="316" r="54" fill="url(#gauge)" stroke="url(#chrome)" stroke-width="4" />
+      <circle cx="700" cy="316" r="43" stroke="#22d3ee" stroke-opacity="0.3" stroke-width="1.5" />
+      <g stroke="#cbd5e1" stroke-opacity="0.65" stroke-width="2">
+        <path d="M700 278v8M738 316h-8M700 354v-8M662 316h8" />
+      </g>
+      <g stroke="#94a3b8" stroke-opacity="0.3" stroke-width="1.5">
+        <path d="M673 289l6 6M727 289l-6 6M727 343l-6-6M673 343l6-6" />
+      </g>
+      <path d="M700 316l24-24" stroke="#f8fafc" stroke-width="3" stroke-linecap="round" />
+      <circle cx="700" cy="316" r="5" fill="#22d3ee" />
+      <text x="700" y="344" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="9" text-anchor="middle" letter-spacing="1">CPU</text>
+
+      <circle cx="840" cy="316" r="54" fill="url(#gauge)" stroke="url(#chrome)" stroke-width="4" />
+      <circle cx="840" cy="316" r="43" stroke="#8b5cf6" stroke-opacity="0.35" stroke-width="1.5" />
+      <g stroke="#cbd5e1" stroke-opacity="0.65" stroke-width="2">
+        <path d="M840 278v8M878 316h-8M840 354v-8M802 316h8" />
+      </g>
+      <path d="M840 316l-18-28" stroke="#f8fafc" stroke-width="3" stroke-linecap="round" />
+      <circle cx="840" cy="316" r="5" fill="#a78bfa" />
+      <text x="840" y="344" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="9" text-anchor="middle" letter-spacing="1">GPU</text>
+
+      <circle cx="980" cy="316" r="54" fill="url(#gauge)" stroke="url(#chrome)" stroke-width="4" />
+      <circle cx="980" cy="316" r="43" stroke="#4ade80" stroke-opacity="0.35" stroke-width="1.5" />
+      <g stroke="#cbd5e1" stroke-opacity="0.65" stroke-width="2">
+        <path d="M980 278v8M1018 316h-8M980 354v-8M942 316h8" />
+      </g>
+      <path d="M980 316l28-10" stroke="#f8fafc" stroke-width="3" stroke-linecap="round" />
+      <circle cx="980" cy="316" r="5" fill="#4ade80" />
+      <text x="980" y="344" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="9" text-anchor="middle" letter-spacing="1">RAM</text>
+    </g>
+
+    <!-- LEDs e botões -->
+    <g>
+      <circle cx="646" cy="270" r="5" fill="#4ade80" />
+      <circle cx="664" cy="270" r="5" fill="#22d3ee" />
+      <circle cx="682" cy="270" r="5" fill="#a3e635" />
+      <circle cx="1034" cy="270" r="5" fill="#f472b6" />
+      <circle cx="1052" cy="270" r="5" fill="#8b5cf6" />
+    </g>
+    <g filter="url(#glow)">
+      <circle cx="664" cy="270" r="9" fill="#22d3ee" />
+      <circle cx="1052" cy="270" r="9" fill="#8b5cf6" />
+    </g>
+    <rect x="640" y="372" width="400" height="8" rx="4" fill="url(#rgb)" filter="url(#glow)" />
+    <rect x="640" y="372" width="400" height="8" rx="4" fill="url(#rgb)" />
+    <text x="840" y="365" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="10" text-anchor="middle" letter-spacing="3">SYSTEM MONITOR</text>
+
+    <!-- parafusos do gabinete -->
+    <g fill="#0a1018" stroke="url(#chrome)" stroke-width="2">
+      <circle cx="618" cy="256" r="7" />
+      <circle cx="1122" cy="256" r="7" />
+      <circle cx="618" cy="388" r="7" />
+      <circle cx="1122" cy="388" r="7" />
+    </g>
+  </g>
+</svg>

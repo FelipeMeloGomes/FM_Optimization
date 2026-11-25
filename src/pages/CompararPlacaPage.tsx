@@ -14,8 +14,7 @@ import type {
   GpuCatalogEntry,
   GpuCatalogResult,
 } from '../../electron/shared/ipc-types';
-import { AnimatedHero } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
@@ -37,6 +36,7 @@ import {
 } from '../components/ui';
 import { useSystemContext } from '../contexts/SystemContext';
 import { findUserGpu, normalizeGpuName } from '../lib/gpu-match';
+import { HERO_ART } from '../lib/hero-art';
 import { cn } from '../lib/utils';
 
 const numberFormat = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
@@ -389,7 +389,7 @@ export default function CompararPlacaPage() {
 
   return (
     <div className="space-y-6">
-      <HeroBanner visual={<AnimatedHero path="/comparar-placa" animation="scan" />}>
+      <HeroBanner {...HERO_ART['/comparar-placa']}>
         <PageContent>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -400,10 +400,10 @@ export default function CompararPlacaPage() {
                 </span>
               </div>
               <h2 className="text-2xl font-bold text-foreground">Comparar Placas</h2>
-              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                Sua placa aparece primeiro. Busque outra para ver a diferença de desempenho e as
-                especificações lado a lado.
-              </p>
+              <HeroDescription
+                className="max-w-2xl"
+                text="Sua placa aparece primeiro. Busque outra para ver a diferença de desempenho e as especificações lado a lado."
+              />
               {systemGpuName && (
                 <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                   <Sparkles className="size-3" />

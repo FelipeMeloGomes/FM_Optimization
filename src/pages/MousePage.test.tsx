@@ -42,12 +42,12 @@ beforeEach(() => {
 });
 
 describe('página Mouse', () => {
-  it('mostra a foto do SuperLight 2 e o painel de ajustes do Windows', async () => {
+  it('mostra a ilustração do mouse e o painel de ajustes do Windows', async () => {
     render(<MousePage />);
 
     expect(screen.getByRole('heading', { name: 'Mouse', level: 2 })).toBeTruthy();
     expect(
-      screen.getByRole('img', { name: 'Mouse gamer Logitech PRO X SuperLight 2 Black' })
+      screen.getByRole('img', { name: 'Ilustração de mouse gamer com iluminação RGB' })
     ).toBeTruthy();
 
     await waitFor(() =>

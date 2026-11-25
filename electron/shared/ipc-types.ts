@@ -93,6 +93,8 @@ export interface MotherboardInfo {
   manufacturer: string;
   product: string;
   version: string;
+  biosVersion?: string;
+  biosReleaseDate?: string;
 }
 
 export interface CacheInfo {

@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="shell" x1="640" y1="190" x2="1100" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3d4959" />
+      <stop offset="0.5" stop-color="#1a2431" />
+      <stop offset="1" stop-color="#070c14" />
+    </linearGradient>
+    <linearGradient id="door" x1="700" y1="220" x2="1050" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#47566a" />
+      <stop offset="0.45" stop-color="#253242" />
+      <stop offset="1" stop-color="#0b121c" />
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#e2e8f0" />
+      <stop offset="0.45" stop-color="#8492a2" />
+      <stop offset="1" stop-color="#3c4958" />
+    </linearGradient>
+    <radialGradient id="keypad" cx="0" cy="0" r="1" gradientTransform="translate(960 320) scale(70)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1b2836" />
+      <stop offset="1" stop-color="#050a10" />
+    </radialGradient>
+    <linearGradient id="rim" x1="660" y1="420" x2="1080" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#6366f1" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="11" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+    <pattern id="brushed" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M0 2h8M0 6h8" stroke="#e2e8f0" stroke-opacity="0.06" />
+    </pattern>
+  </defs>
+
+  <ellipse cx="870" cy="300" rx="290" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="875" cy="445" rx="270" ry="26" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <g transform="rotate(-5 870 320)">
+    <!-- corpo do cofre -->
+    <path d="M650 200h400c16 0 28 12 28 28v188c0 16-12 28-28 28H650c-16 0-28-12-28-28V228c0-16 12-28 28-28z" fill="url(#shell)" stroke="#94a3b8" stroke-opacity="0.4" stroke-width="2.5" />
+    <path d="M650 200h400c16 0 28 12 28 28v22H622v-22c0-16 12-28 28-28z" fill="url(#steel)" fill-opacity="0.35" />
+    <path d="M636 218h428v16H636z" fill="#ffffff" fill-opacity="0.08" />
+    <rect x="622" y="228" width="456" height="188" rx="4" fill="url(#brushed)" />
+
+    <!-- porta -->
+    <rect x="658" y="240" width="352" height="164" rx="10" fill="url(#door)" stroke="#cbd5e1" stroke-opacity="0.35" stroke-width="3" />
+    <rect x="668" y="250" width="332" height="144" rx="7" fill="url(#brushed)" opacity="0.7" />
+    <rect x="658" y="240" width="352" height="7" rx="3.5" fill="#ffffff" fill-opacity="0.2" />
+    <rect x="658" y="397" width="352" height="7" rx="3.5" fill="#000814" fill-opacity="0.35" />
+
+    <!-- parafusos e dobradiças -->
+    <g fill="#0a1018" stroke="url(#steel)" stroke-width="2">
+      <circle cx="672" cy="254" r="8" />
+      <circle cx="996" cy="254" r="8" />
+      <circle cx="672" cy="390" r="8" />
+      <circle cx="996" cy="390" r="8" />
+    </g>
+    <g stroke="#cbd5e1" stroke-opacity="0.5" stroke-width="2">
+      <path d="M668 254h8M992 254h8M668 390h8M992 390h8" />
+    </g>
+    <g fill="url(#steel)">
+      <rect x="640" y="266" width="12" height="34" rx="3" />
+      <rect x="640" y="344" width="12" height="34" rx="3" />
+    </g>
+
+    <!-- maçaneta cromada -->
+    <circle cx="726" cy="322" r="34" fill="#050a10" stroke="url(#steel)" stroke-width="5" />
+    <circle cx="726" cy="322" r="22" fill="url(#steel)" />
+    <circle cx="726" cy="322" r="9" fill="#0a1018" />
+    <path d="M726 288v12M726 344v12M692 322h12M748 322h12" stroke="#e2e8f0" stroke-opacity="0.5" stroke-width="3" />
+    <path d="M712 308c8-8 20-8 28 0" stroke="#ffffff" stroke-opacity="0.6" stroke-width="3" fill="none" />
+
+    <!-- teclado digital -->
+    <rect x="902" y="268" width="72" height="108" rx="10" fill="url(#keypad)" stroke="url(#steel)" stroke-opacity="0.7" stroke-width="2" />
+    <g fill="#334155" stroke="#cbd5e1" stroke-opacity="0.25">
+      <rect x="912" y="278" width="14" height="12" rx="2" />
+      <rect x="932" y="278" width="14" height="12" rx="2" />
+      <rect x="952" y="278" width="14" height="12" rx="2" />
+      <rect x="912" y="296" width="14" height="12" rx="2" />
+      <rect x="932" y="296" width="14" height="12" rx="2" />
+      <rect x="952" y="296" width="14" height="12" rx="2" />
+      <rect x="912" y="314" width="14" height="12" rx="2" />
+      <rect x="932" y="314" width="14" height="12" rx="2" />
+      <rect x="952" y="314" width="14" height="12" rx="2" />
+      <rect x="912" y="332" width="54" height="12" rx="2" />
+      <rect x="912" y="350" width="25" height="14" rx="2" />
+      <rect x="941" y="350" width="25" height="14" rx="2" />
+    </g>
+    <g stroke="#e2e8f0" stroke-opacity="0.55" stroke-width="1.5">
+      <path d="M915 284h8M935 284h8M955 284h8M915 302h8M935 302h8M955 302h8M915 320h8M935 320h8M955 320h8" />
+    </g>
+    <rect x="912" y="332" width="54" height="12" rx="2" fill="#22d3ee" fill-opacity="0.35" filter="url(#glow)" />
+    <rect x="941" y="350" width="25" height="14" rx="2" fill="#4ade80" fill-opacity="0.35" />
+
+    <!-- LED de estado -->
+    <circle cx="856" cy="274" r="6" fill="#22d3ee" filter="url(#glow)" />
+    <circle cx="856" cy="274" r="3" fill="#a5f3fc" />
+    <rect x="650" y="416" width="440" height="6" rx="3" fill="url(#rim)" fill-opacity="0.6" />
+  </g>
+</svg>

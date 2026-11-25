@@ -71,6 +71,22 @@ afterEach(() => {
 });
 
 describe('CompararPlacaPage', () => {
+  it('mostra a ilustração das placas junto com a GPU detectada no banner', async () => {
+    mocks.systemName = 'NVIDIA GeForce RTX 4090';
+    installApi();
+
+    render(<CompararPlacaPage />);
+
+    expect(
+      await screen.findByRole('img', {
+        name: 'Ilustração de duas placas de vídeo lado a lado',
+      })
+    ).toBeTruthy();
+    expect((await screen.findByText(/Detectada:/)).textContent).toContain(
+      'NVIDIA GeForce RTX 4090'
+    );
+  });
+
   it('mostra o esqueleto da comparação enquanto o catálogo carrega', () => {
     const { getGpuCatalog } = installApi();
     getGpuCatalog.mockImplementationOnce(() => new Promise<GpuCatalogResult>(() => {}));

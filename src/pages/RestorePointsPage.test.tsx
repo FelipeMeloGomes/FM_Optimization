@@ -119,6 +119,17 @@ describe('RestorePointsPage — estados', () => {
 });
 
 describe('RestorePointsPage — conteúdo', () => {
+  it('mostra a ilustração do banner junto com a contagem de pontos', () => {
+    restore({ state: { status: 'success', data: [rp(), rp({ sequenceNumber: 2 })] } });
+
+    renderPage();
+
+    expect(
+      screen.getByRole('img', { name: 'Ilustração de HD externo de backup com etiqueta' })
+    ).toBeDefined();
+    expect(screen.getByText('2 pontos')).toBeDefined();
+  });
+
   it('renderiza o herói, contador e o ponto existente', () => {
     renderPage();
 

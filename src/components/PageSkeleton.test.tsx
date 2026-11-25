@@ -81,12 +81,12 @@ describe('PageSkeleton — painéis', () => {
     expect(countOf(container, 'refresh')).toBe(1);
   });
 
-  it('mostra os três grupos do Meu PC, com sete itens no último', () => {
+  it('mostra os três grupos do Meu PC, com nove itens no último', () => {
     const { container } = renderSkeleton('meu-pc');
 
     const grids = container.querySelectorAll('[data-skeleton="grid"]');
     expect(grids).toHaveLength(3);
-    expect(grids[2].children.length).toBe(7);
+    expect(grids[2].children.length).toBe(9);
   });
 
   it('mostra quatro indicadores e uma tabela de cinco colunas no histórico', () => {

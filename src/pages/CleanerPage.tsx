@@ -18,8 +18,7 @@ import type { CleanerItemId } from '../../electron/shared/cleaner-items';
 import type { CleanerItemStats } from '../../electron/shared/ipc-types';
 import { ConfirmCleanDialog } from '../components/ConfirmCleanDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
-import { AnimatedCleaner } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
@@ -29,6 +28,7 @@ import { useSettingsContext } from '../contexts/SettingsContext';
 import { useCleanerItems } from '../hooks/use-cleaner-items';
 import { useVirtualRows } from '../hooks/use-virtual-rows';
 import { cleanerName } from '../lib/cleaner-options';
+import { HERO_ART } from '../lib/hero-art';
 import { cn } from '../lib/utils';
 import { formatBytes } from '../utils/format';
 
@@ -371,7 +371,7 @@ export default function CleanerPage() {
       )}
 
       {/* Hero Banner */}
-      <HeroBanner visual={<AnimatedCleaner />}>
+      <HeroBanner {...HERO_ART['/cleaner']}>
         <div className="relative p-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -383,9 +383,7 @@ export default function CleanerPage() {
             <h2 className="text-lg font-bold text-foreground">
               Mantenha seu Windows limpo e rápido
             </h2>
-            <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-              Escolha o que limpar, item por item, e libere espaço sem mexer no que você usa.
-            </p>
+            <HeroDescription text="Escolha o que limpar, item por item, e libere espaço sem mexer no que você usa." />
           </div>
         </div>
       </HeroBanner>

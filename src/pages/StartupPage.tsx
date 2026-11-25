@@ -19,8 +19,7 @@ import type {
   StartupAppSource,
   StartupServiceEntry,
 } from '../../electron/shared/ipc-types';
-import { AnimatedStartup } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
@@ -46,6 +45,7 @@ import {
 } from '../components/ui';
 import { useStartup } from '../hooks/use-startup';
 import { useVirtualRows } from '../hooks/use-virtual-rows';
+import { HERO_ART } from '../lib/hero-art';
 import { cn } from '../lib/utils';
 
 type TabId = 'apps' | 'tasks' | 'services';
@@ -121,15 +121,6 @@ function pendingCopy(action: PendingAction): { title: string; description: strin
   }
 }
 
-function HeroStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-border bg-card/60 px-3 py-2">
-      <p className="text-lg font-bold text-foreground tabular-nums">{value}</p>
-      <p className="text-[11px] text-muted-foreground">{label}</p>
-    </div>
-  );
-}
-
 export default function StartupPage() {
   const { state, reload, toggle, stopService, openLocation, elevate, busy } = useStartup();
   const [tab, setTab] = useState<TabId>('apps');
@@ -194,11 +185,6 @@ export default function StartupPage() {
   }
 
   const data = state.data;
-  const enabledApps = data.apps.filter((app) => app.enabled).length;
-  const enabledTasks = data.tasks.filter((task) => task.enabled).length;
-  const automaticServices = data.services.filter(
-    (service) => service.startMode === 'Automatic' || service.startMode === 'AutomaticDelayed'
-  ).length;
 
   const tabItems = [
     {
@@ -250,31 +236,16 @@ export default function StartupPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner visual={<AnimatedStartup />}>
+      <HeroBanner {...HERO_ART['/inicializacao']}>
         <div className="relative p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <RouteIcon path="/inicializacao" />
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                  Inicialização
-                </span>
-              </div>
-              <h2 className="text-lg font-bold text-foreground">
-                Controle o que abre com o Windows
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-                Aplicativos, tarefas agendadas e serviços que iniciam junto com o sistema. Tudo é
-                reversível: nada é desinstalado, e cada item pode voltar ao estado anterior.
-              </p>
-            </div>
+          <div className="flex items-center gap-2 mb-2">
+            <RouteIcon path="/inicializacao" />
+            <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+              Inicialização
+            </span>
           </div>
-
-          <div className="mt-4 grid max-w-xl grid-cols-3 gap-2">
-            <HeroStat label="apps ativos" value={`${enabledApps}/${data.apps.length}`} />
-            <HeroStat label="tarefas ativas" value={`${enabledTasks}/${data.tasks.length}`} />
-            <HeroStat label="serviços automáticos" value={String(automaticServices)} />
-          </div>
+          <h2 className="text-lg font-bold text-foreground">Controle o que abre com o Windows</h2>
+          <HeroDescription text="Aplicativos, tarefas agendadas e serviços que iniciam junto com o sistema. Tudo é reversível: nada é desinstalado, e cada item pode voltar ao estado anterior." />
         </div>
       </HeroBanner>
 

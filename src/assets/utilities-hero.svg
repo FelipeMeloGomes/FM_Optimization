@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="steel" x1="660" y1="220" x2="1080" y2="400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f1f5f9" />
+      <stop offset="0.25" stop-color="#a8b5c4" />
+      <stop offset="0.55" stop-color="#5b6878" />
+      <stop offset="0.8" stop-color="#cbd5e1" />
+      <stop offset="1" stop-color="#3d4a59" />
+    </linearGradient>
+    <linearGradient id="handle" x1="680" y1="360" x2="1080" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#334155" />
+      <stop offset="0.5" stop-color="#1b2635" />
+      <stop offset="1" stop-color="#080e16" />
+    </linearGradient>
+    <linearGradient id="rgb" x1="650" y1="420" x2="1100" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <linearGradient id="gold" x1="960" y1="280" x2="1010" y2="340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffe6a6" />
+      <stop offset="0.5" stop-color="#c99c46" />
+      <stop offset="1" stop-color="#765a26" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="11" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+    <pattern id="grip" width="10" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 5h10" stroke="#94a3b8" stroke-opacity="0.25" stroke-width="1.5" />
+    </pattern>
+  </defs>
+
+  <ellipse cx="880" cy="310" rx="290" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="880" cy="445" rx="270" ry="24" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <g transform="rotate(-7 880 320)">
+    <!-- chaves e pontas abertas -->
+    <g fill="url(#steel)" stroke="#e2e8f0" stroke-opacity="0.45" stroke-width="2">
+      <path d="M700 252c-26-10-48 4-48 26 0 16 12 26 26 28l14 96h24l-14-104 16-16-18-30z" />
+      <path d="M754 240c-22-14-44-2-46 20-2 16 8 28 22 32l10 104h24l-10-106 16-18-16-32z" />
+      <path d="M812 230c-18-18-42-10-48 10-4 16 4 30 18 36l8 108h24l-8-110 16-16-10-28z" />
+    </g>
+    <g fill="#0a1018">
+      <path d="M652 278h20v12h-20z" />
+      <path d="M708 262h18v12h-18z" />
+      <path d="M766 248h18v12h-18z" />
+    </g>
+
+    <!-- corpo do multitool -->
+    <path d="M676 344c0-14 12-24 26-24h344c14 0 26 10 26 24v62c0 14-12 24-26 24H702c-14 0-26-10-26-24z" fill="url(#handle)" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2.5" />
+    <path d="M702 320h344c14 0 26 10 26 24v18H676v-18c0-14 12-24 26-24z" fill="url(#steel)" fill-opacity="0.55" />
+    <path d="M702 324h344c10 0 18 5 22 12H680c4-7 12-12 22-12z" fill="#ffffff" fill-opacity="0.3" />
+    <rect x="676" y="404" width="396" height="12" rx="6" fill="url(#rgb)" filter="url(#glow)" />
+    <rect x="676" y="404" width="396" height="12" rx="6" fill="url(#rgb)" />
+    <rect x="682" y="406" width="384" height="3" rx="1.5" fill="#ffffff" fill-opacity="0.45" />
+
+    <!-- alicate/ponta articulada -->
+    <g transform="rotate(24 1030 320)">
+      <path d="M1002 294l56-72c10-12 26-12 34 0l-50 82z" fill="url(#steel)" stroke="#e2e8f0" stroke-opacity="0.4" stroke-width="2" />
+      <path d="M1046 288l56-66c10-12 26-10 32 4l-56 72z" fill="url(#steel)" stroke="#e2e8f0" stroke-opacity="0.4" stroke-width="2" />
+      <circle cx="1036" cy="330" r="16" fill="#0a1018" stroke="url(#steel)" stroke-width="4" />
+      <circle cx="1036" cy="330" r="5" fill="#94a3b8" />
+    </g>
+
+    <!-- pontas de chave de fenda -->
+    <g transform="rotate(-14 932 300)">
+      <rect x="902" y="258" width="72" height="20" rx="10" fill="url(#gold)" stroke="#ffe6a6" stroke-opacity="0.5" stroke-width="1.5" />
+      <rect x="974" y="262" width="20" height="12" rx="3" fill="#cbd5e1" />
+      <path d="M994 264h16v8h-16z" fill="#e2e8f0" />
+      <rect x="902" y="284" width="72" height="18" rx="9" fill="url(#steel)" stroke="#e2e8f0" stroke-opacity="0.4" stroke-width="1.5" />
+      <path d="M974 288h18v10h-18z" fill="#94a3b8" />
+    </g>
+
+    <!-- textura antiderrapante e parafusos -->
+    <rect x="696" y="348" width="88" height="48" rx="8" fill="url(#grip)" />
+    <g fill="#0a1018" stroke="#cbd5e1" stroke-opacity="0.5" stroke-width="2">
+      <circle cx="710" cy="360" r="6" />
+      <circle cx="1058" cy="360" r="6" />
+      <circle cx="710" cy="386" r="6" />
+      <circle cx="1058" cy="386" r="6" />
+    </g>
+    <g stroke="#cbd5e1" stroke-opacity="0.5" stroke-width="1.5">
+      <path d="M707 360h6M1055 360h6M707 386h6M1055 386h6" />
+    </g>
+    <circle cx="856" cy="366" r="5" fill="#22d3ee" filter="url(#glow)" />
+  </g>
+</svg>

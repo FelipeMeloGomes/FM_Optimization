@@ -1,7 +1,7 @@
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import { AnimatedPrivacySecurity } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
 import { countSectionScripts, scriptsInSectionOrder } from '../lib/app-sections';
+import { HERO_ART } from '../lib/hero-art';
 import { PRIVACY_SECTIONS } from '../lib/privacy-sections';
 
 const HERO = {
@@ -10,7 +10,7 @@ const HERO = {
   title: 'Privacidade do Windows',
   description:
     'Desative telemetria e coleta de dados e bloqueie a instalação forçada de apps sugeridos pelo sistema. Estes ajustes não alteram o Windows Defender nem o Windows Update.',
-  visual: <AnimatedPrivacySecurity />,
+  ...HERO_ART['/privacidade-seguranca'],
 };
 
 const bySections = (scripts: ScriptEntry[]) => scriptsInSectionOrder(PRIVACY_SECTIONS, scripts);

@@ -3,8 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppxPackageInfo } from '../../electron/shared/ipc-types';
 import { ConfirmRemoveAppsDialog } from '../components/ConfirmRemoveAppsDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
-import { AnimatedDebloat } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
@@ -12,6 +11,7 @@ import { Button, Input, Tabs } from '../components/ui';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { useAppxInventory } from '../hooks/use-appx-inventory';
 import { useVirtualRows } from '../hooks/use-virtual-rows';
+import { HERO_ART } from '../lib/hero-art';
 import { cn } from '../lib/utils';
 
 const APP_ROW_HEIGHT = 69;
@@ -235,7 +235,7 @@ export default function DebloatPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner visual={<AnimatedDebloat />}>
+      <HeroBanner {...HERO_ART['/debloat']}>
         <div className="relative p-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -245,11 +245,7 @@ export default function DebloatPage() {
               </span>
             </div>
             <h2 className="text-lg font-bold text-foreground">Debloat de apps do Windows</h2>
-            <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-              Inventário dos apps Appx instalados e provisionados. A aba Todos mostra o que pode ser
-              removido; apps de sistema, frameworks e componentes com nome GUID ficam na aba
-              Protegidos.
-            </p>
+            <HeroDescription text="Inventário dos apps Appx instalados e provisionados. A aba Todos mostra o que pode ser removido; apps de sistema, frameworks e componentes com nome GUID ficam na aba Protegidos." />
           </div>
         </div>
       </HeroBanner>

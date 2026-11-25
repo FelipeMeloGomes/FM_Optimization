@@ -75,13 +75,15 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('SystemRepairPage', () => {
-  it('mostra o banner animado e o título da página', () => {
-    const { container } = renderPage();
+  it('mostra o banner ilustrado e o título da página', () => {
+    renderPage();
 
     expect(screen.getByText('Reparo do Sistema')).toBeDefined();
     expect(screen.getByTestId('tweaks-list')).toBeDefined();
     expect(screen.queryByText('Integridade do sistema')).toBeNull();
-    expect(container.querySelector('[data-hero-animation="repair"]')).not.toBeNull();
+    expect(
+      screen.getByRole('img', { name: 'Ilustração de ferro de solda e placa em bancada' })
+    ).toBeDefined();
   });
 
   it('marca um script de reparo e aplica só ele pelo botão de lote', () => {

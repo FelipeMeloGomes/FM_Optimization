@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="console" x1="650" y1="250" x2="1060" y2="400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3b4859" />
+      <stop offset="0.45" stop-color="#1a2431" />
+      <stop offset="1" stop-color="#070d15" />
+    </linearGradient>
+    <linearGradient id="deck" x1="670" y1="270" x2="1040" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#374352" />
+      <stop offset="0.5" stop-color="#1d2735" />
+      <stop offset="1" stop-color="#0a1018" />
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#f1f5f9" />
+      <stop offset="0.45" stop-color="#8492a2" />
+      <stop offset="1" stop-color="#3c4958" />
+    </linearGradient>
+    <linearGradient id="rgb" x1="640" y1="430" x2="1100" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="11" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+    <pattern id="vents" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect x="1" y="1" width="5" height="5" rx="1" fill="#03070d" fill-opacity="0.75" />
+    </pattern>
+  </defs>
+
+  <ellipse cx="875" cy="310" rx="300" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="880" cy="455" rx="280" ry="25" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <g transform="rotate(-5 880 330)">
+    <!-- console -->
+    <path d="M656 268h444c18 0 32 14 32 32v104c0 18-14 32-32 32H656c-18 0-32-14-32-32V300c0-18 14-32 32-32z" fill="url(#console)" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2.5" />
+    <path d="M656 268h444c18 0 32 14 32 32v14H624v-14c0-18 14-32 32-32z" fill="url(#metal)" fill-opacity="0.22" />
+    <rect x="640" y="290" width="476" height="112" rx="8" fill="url(#deck)" stroke="#64748b" stroke-opacity="0.5" stroke-width="2" />
+    <rect x="650" y="316" width="152" height="56" rx="5" fill="url(#vents)" />
+    <circle cx="884" cy="316" r="11" fill="#0a1018" stroke="url(#metal)" stroke-width="3" />
+    <circle cx="920" cy="316" r="11" fill="#0a1018" stroke="url(#metal)" stroke-width="3" />
+    <circle cx="884" cy="316" r="4" fill="#22d3ee" />
+    <circle cx="920" cy="316" r="4" fill="#a855f7" />
+    <rect x="850" y="344" width="118" height="8" rx="4" fill="#0a1018" stroke="#94a3b8" stroke-opacity="0.4" />
+    <rect x="994" y="308" width="96" height="48" rx="6" fill="#0a1018" stroke="#94a3b8" stroke-opacity="0.5" stroke-width="2" />
+    <text x="1042" y="338" fill="#67e8f9" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="2">16-BIT</text>
+    <text x="726" y="348" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="10" text-anchor="middle" letter-spacing="2">ENTERTAINMENT</text>
+    <g filter="url(#glow)">
+      <circle cx="884" cy="316" r="14" fill="#22d3ee" />
+      <circle cx="920" cy="316" r="14" fill="#a855f7" />
+    </g>
+    <rect x="640" y="406" width="476" height="7" rx="3.5" fill="url(#rgb)" fill-opacity="0.7" />
+    <g fill="#0a1018" stroke="url(#metal)" stroke-width="2">
+      <circle cx="640" cy="280" r="6" />
+      <circle cx="1100" cy="280" r="6" />
+      <circle cx="640" cy="404" r="6" />
+      <circle cx="1100" cy="404" r="6" />
+    </g>
+
+    <!-- controles -->
+    <g transform="translate(692 336) rotate(-8 60 30)">
+      <path d="M20 8h80c14 0 24 10 26 24l10 50c2 12-8 22-20 20-10-2-16-10-18-20l-6-26H30l-6 26c-2 10-8 18-18 20-12 2-22-8-20-20l10-50C-4 18 6 8 20 8z" fill="url(#console)" stroke="#cbd5e1" stroke-opacity="0.45" stroke-width="2.5" />
+      <path d="M20 8h80c14 0 24 10 26 24H-6C-4 18 6 8 20 8z" fill="#ffffff" fill-opacity="0.16" />
+      <circle cx="16" cy="52" r="7" fill="#0a1018" stroke="url(#metal)" stroke-width="2" />
+      <circle cx="104" cy="52" r="7" fill="#0a1018" stroke="url(#metal)" stroke-width="2" />
+      <g transform="translate(40 42)">
+        <path d="M0 10V0M-5 5h10" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round" />
+      </g>
+      <circle cx="90" cy="30" r="5" fill="#22d3ee" />
+      <circle cx="78" cy="40" r="5" fill="#a855f7" />
+      <circle cx="60" cy="30" r="5" fill="#4ade80" filter="url(#glow)" />
+    </g>
+    <g transform="translate(944 336) rotate(6 60 30)">
+      <path d="M20 8h80c14 0 24 10 26 24l10 50c2 12-8 22-20 20-10-2-16-10-18-20l-6-26H30l-6 26c-2 10-8 18-18 20-12 2-22-8-20-20l10-50C-4 18 6 8 20 8z" fill="url(#console)" stroke="#cbd5e1" stroke-opacity="0.45" stroke-width="2.5" />
+      <path d="M20 8h80c14 0 24 10 26 24H-6C-4 18 6 8 20 8z" fill="#ffffff" fill-opacity="0.16" />
+      <circle cx="16" cy="52" r="7" fill="#0a1018" stroke="url(#metal)" stroke-width="2" />
+      <circle cx="104" cy="52" r="7" fill="#0a1018" stroke="url(#metal)" stroke-width="2" />
+      <g transform="translate(82 42)">
+        <rect x="-5" y="-5" width="10" height="10" rx="1" fill="#cbd5e1" />
+        <rect x="-15" y="-5" width="10" height="10" rx="1" fill="#cbd5e1" />
+        <rect x="5" y="-5" width="10" height="10" rx="1" fill="#cbd5e1" />
+        <rect x="-5" y="5" width="10" height="10" rx="1" fill="#cbd5e1" />
+      </g>
+      <circle cx="30" cy="30" r="5" fill="#22d3ee" />
+      <circle cx="42" cy="40" r="5" fill="#a855f7" />
+      <circle cx="60" cy="30" r="5" fill="#4ade80" filter="url(#glow)" />
+    </g>
+  </g>
+</svg>

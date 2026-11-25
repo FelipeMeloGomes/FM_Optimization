@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="board" x1="640" y1="270" x2="1100" y2="440" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#17544f" />
+      <stop offset="0.55" stop-color="#0b3234" />
+      <stop offset="1" stop-color="#05191f" />
+    </linearGradient>
+    <linearGradient id="tool" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#f1f5f9" />
+      <stop offset="0.25" stop-color="#94a3b8" />
+      <stop offset="0.6" stop-color="#475569" />
+      <stop offset="1" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="grip" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#334155" />
+      <stop offset="0.5" stop-color="#1b2635" />
+      <stop offset="1" stop-color="#080e16" />
+    </linearGradient>
+    <linearGradient id="rgb" x1="660" y1="430" x2="1080" y2="390" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="11" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+    <pattern id="traces" width="26" height="26" patternUnits="userSpaceOnUse">
+      <path d="M0 13h9l5-5h12" stroke="#22d3ee" stroke-opacity="0.2" stroke-width="1.4" />
+      <circle cx="14" cy="8" r="1.5" fill="#67e8f9" fill-opacity="0.35" />
+    </pattern>
+  </defs>
+
+  <ellipse cx="875" cy="310" rx="300" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="880" cy="455" rx="280" ry="25" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <g transform="rotate(-5 880 320)">
+    <!-- placa-mãe sobre a bancada -->
+    <path d="M640 300h460c14 0 24 10 24 24v102c0 14-10 24-24 24H640c-14 0-24-10-24-24V324c0-14 10-24 24-24z" fill="url(#board)" stroke="#67e8f9" stroke-opacity="0.35" stroke-width="2.5" />
+    <rect x="628" y="310" width="484" height="128" rx="6" fill="url(#traces)" />
+    <g fill="#0a1018" stroke="#94a3b8" stroke-opacity="0.4">
+      <rect x="660" y="326" width="70" height="42" rx="4" />
+      <rect x="744" y="326" width="52" height="42" rx="4" />
+      <rect x="810" y="326" width="96" height="42" rx="4" />
+      <rect x="920" y="326" width="58" height="42" rx="4" />
+      <rect x="992" y="326" width="80" height="42" rx="4" />
+    </g>
+    <g stroke="#cbd5e1" stroke-opacity="0.25" stroke-width="1.5">
+      <path d="M668 334h54M668 340h54M668 346h54M818 334h80M818 340h80M818 346h80" />
+    </g>
+    <g fill="#c9a24c">
+      <circle cx="1020" cy="392" r="4" />
+      <circle cx="1034" cy="392" r="4" />
+      <circle cx="1048" cy="392" r="4" />
+    </g>
+
+    <!-- chaves de fenda cruzadas sobre a placa -->
+    <g transform="rotate(18 820 340)">
+      <rect x="654" y="316" width="184" height="22" rx="11" fill="url(#grip)" stroke="#94a3b8" stroke-opacity="0.4" />
+      <rect x="654" y="318" width="184" height="4" rx="2" fill="#ffffff" fill-opacity="0.2" />
+      <rect x="838" y="320" width="92" height="14" rx="7" fill="url(#tool)" stroke="#e2e8f0" stroke-opacity="0.4" />
+      <path d="M930 320h18v14h-18z" fill="#cbd5e1" />
+      <path d="M948 322h14v10h-14z" fill="#e2e8f0" />
+      <g stroke="#94a3b8" stroke-opacity="0.5" stroke-width="1.5">
+        <path d="M676 320v14M692 320v14M708 320v14M724 320v14M740 320v14" />
+      </g>
+    </g>
+    <g transform="rotate(-14 900 390)">
+      <rect x="776" y="378" width="160" height="20" rx="10" fill="url(#grip)" stroke="#94a3b8" stroke-opacity="0.4" />
+      <rect x="936" y="381" width="78" height="14" rx="7" fill="url(#tool)" stroke="#e2e8f0" stroke-opacity="0.4" />
+      <path d="M1014 381l20 7-20 7z" fill="#e2e8f0" />
+      <g stroke="#94a3b8" stroke-opacity="0.5" stroke-width="1.5">
+        <path d="M798 382v12M814 382v12M830 382v12M846 382v12M862 382v12" />
+      </g>
+    </g>
+
+    <!-- alicate -->
+    <g transform="rotate(-28 1000 300)">
+      <path d="M966 236l34 78-18 10-42-78z" fill="url(#tool)" stroke="#e2e8f0" stroke-opacity="0.4" stroke-width="1.5" />
+      <path d="M1010 230l-22 84 18 8 32-84z" fill="url(#tool)" stroke="#e2e8f0" stroke-opacity="0.4" stroke-width="1.5" />
+      <circle cx="992" cy="326" r="15" fill="#0a1018" stroke="url(#tool)" stroke-width="4" />
+      <path d="M984 342l-12 44h18l10-42z" fill="url(#grip)" stroke="#94a3b8" stroke-opacity="0.4" />
+      <path d="M1000 340l14 44h18l-14-46z" fill="url(#grip)" stroke="#94a3b8" stroke-opacity="0.4" />
+    </g>
+
+    <!-- bits espalhados -->
+    <g fill="url(#tool)" stroke="#e2e8f0" stroke-opacity="0.4" stroke-width="1.5">
+      <rect x="676" y="396" width="34" height="12" rx="3" />
+      <rect x="720" y="398" width="34" height="12" rx="3" />
+      <rect x="764" y="400" width="34" height="12" rx="3" />
+    </g>
+    <rect x="628" y="430" width="484" height="7" rx="3.5" fill="url(#rgb)" fill-opacity="0.6" />
+  </g>
+</svg>

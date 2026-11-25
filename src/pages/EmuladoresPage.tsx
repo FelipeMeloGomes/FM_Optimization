@@ -2,13 +2,13 @@ import { AlertCircle, FolderCog, Loader2, MonitorSmartphone } from 'lucide-react
 import { useCallback, useEffect, useState } from 'react';
 import bluestacksLogo from '../assets/bluestacks-logo.png';
 import { showEnhancedToast } from '../components/EnhancedToast';
-import { AnimatedEmuladores } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { Badge, Button, Card, CardContent, Switch } from '../components/ui';
 import { EmulatorProvider, useEmulatorContext } from '../contexts/EmulatorContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
+import { HERO_ART } from '../lib/hero-art';
 import { cn } from '../lib/utils';
 import type { EmulatorInstance } from '../types/emulator';
 import { AppListView } from './EmuladoresPage/AppListView';
@@ -251,7 +251,7 @@ function EmuladoresPageContent() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner visual={<AnimatedEmuladores />}>
+      <HeroBanner {...HERO_ART['/emuladores']}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
             <RouteIcon path="/emuladores" />
@@ -260,9 +260,7 @@ function EmuladoresPageContent() {
             </span>
           </div>
           <h2 className="text-lg font-bold text-foreground">Debloat de Apps Android</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Conecte-se a emuladores Android via ADB para remover apps indesejados
-          </p>
+          <HeroDescription text="Conecte-se a emuladores Android via ADB para remover apps indesejados" />
         </div>
       </HeroBanner>
 

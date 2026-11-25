@@ -2,8 +2,7 @@ import { Clock, Cpu, HardDrive, MemoryStick, Monitor, Shield, ShieldAlert } from
 import { useEffect, useMemo } from 'react';
 import { formatMemoryTotal } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
-import { AnimatedDashboard } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
@@ -12,6 +11,7 @@ import { useHistoryContext } from '../contexts/HistoryContext';
 import { useScriptContext } from '../contexts/ScriptContext';
 import { useSystemContext } from '../contexts/SystemContext';
 import { summarizeAppliedScripts } from '../lib/applied-scripts';
+import { HERO_ART } from '../lib/hero-art';
 import { cn } from '../lib/utils';
 
 const OPTIMIZED_RATIO_THRESHOLD = 0.5;
@@ -129,7 +129,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Hero Section */}
-      <HeroBanner visual={<AnimatedDashboard />}>
+      <HeroBanner {...HERO_ART['/']}>
         <div className="relative p-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -139,9 +139,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <h2 className="text-xl font-bold text-foreground">{data.os.name}</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Build {data.os.build} · {data.os.edition}
-            </p>
+            <HeroDescription text={`Build ${data.os.build} · ${data.os.edition}`} />
           </div>
         </div>
       </HeroBanner>

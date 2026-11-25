@@ -10,8 +10,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useRef } from 'react';
 import { EXIT_INTERRUPTED_SENTINEL } from '../../electron/shared/exit-codes';
-import { AnimatedHistory } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import {
@@ -26,6 +25,7 @@ import {
 } from '../components/ui';
 import { useHistoryContext } from '../contexts/HistoryContext';
 import { useVirtualRows } from '../hooks/use-virtual-rows';
+import { HERO_ART } from '../lib/hero-art';
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString('pt-BR');
@@ -165,7 +165,7 @@ export default function HistoryPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner visual={<AnimatedHistory />}>
+      <HeroBanner {...HERO_ART['/history']}>
         <div className="relative p-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -175,9 +175,7 @@ export default function HistoryPage() {
               </span>
             </div>
             <h2 className="text-lg font-bold text-foreground">Histórico de Execuções</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Acompanhe todas as execuções de tweaks realizadas no sistema.
-            </p>
+            <HeroDescription text="Acompanhe todas as execuções de tweaks realizadas no sistema." />
           </div>
         </div>
       </HeroBanner>

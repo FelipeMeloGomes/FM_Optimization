@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="boot" x1="700" y1="250" x2="900" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3b4959" />
+      <stop offset="0.5" stop-color="#18222f" />
+      <stop offset="1" stop-color="#080d15" />
+    </linearGradient>
+    <linearGradient id="plug" x1="760" y1="250" x2="920" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#cbd5e1" />
+      <stop offset="0.35" stop-color="#64748b" />
+      <stop offset="0.7" stop-color="#334155" />
+      <stop offset="1" stop-color="#94a3b8" />
+    </linearGradient>
+    <linearGradient id="gold" x1="840" y1="280" x2="900" y2="340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffe6a6" />
+      <stop offset="0.5" stop-color="#c99c46" />
+      <stop offset="1" stop-color="#765a26" />
+    </linearGradient>
+    <linearGradient id="cable" x1="600" y1="340" x2="820" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1e293b" />
+      <stop offset="0.5" stop-color="#0a1018" />
+      <stop offset="1" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="rgb" x1="700" y1="410" x2="1080" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="11" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+  </defs>
+
+  <ellipse cx="870" cy="310" rx="290" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="875" cy="445" rx="270" ry="24" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <g transform="rotate(-6 870 320)">
+    <!-- linhas de velocidade -->
+    <g stroke="#22d3ee" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round">
+      <path d="M950 258h150" />
+      <path d="M970 282h120" />
+      <path d="M948 306h150" />
+      <path d="M966 330h112" />
+    </g>
+    <g stroke="#a5f3fc" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round">
+      <path d="M1000 270h82" />
+      <path d="M1010 318h70" />
+    </g>
+
+    <!-- cabo -->
+    <path d="M620 330c58-26 122-30 184-12" stroke="#22d3ee" stroke-opacity="0.18" stroke-width="26" filter="url(#glow)" />
+    <path d="M620 330c58-26 122-30 184-12" stroke="url(#cable)" stroke-width="20" stroke-linecap="round" />
+    <path d="M620 330c58-26 122-30 184-12" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="2.5" stroke-dasharray="8 8" />
+    <path d="M628 322c54-22 112-26 168-10" stroke="#ffffff" stroke-opacity="0.12" stroke-width="4" stroke-linecap="round" />
+
+    <!-- capa de proteção do conector -->
+    <path d="M784 296l86-22c10-2 18 4 18 14v46c0 10-8 16-18 14l-86-22c-8-2-12-8-12-15s4-13 12-15z" fill="url(#boot)" stroke="#94a3b8" stroke-opacity="0.5" stroke-width="2" />
+    <path d="M792 296l78-18" stroke="#ffffff" stroke-opacity="0.25" stroke-width="4" stroke-linecap="round" />
+    <g stroke="#94a3b8" stroke-opacity="0.35" stroke-width="2">
+      <path d="M800 300v42M816 296v46M832 292v50M848 288v54" />
+    </g>
+
+    <!-- conector RJ45 -->
+    <path d="M888 274h96c10 0 18 8 18 18v44c0 10-8 18-18 18h-96c-8 0-14-6-14-14v-52c0-8 6-14 14-14z" fill="url(#plug)" stroke="#e2e8f0" stroke-opacity="0.45" stroke-width="2" />
+    <path d="M888 274h96c10 0 18 8 18 18v10H874v-14c0-8 6-14 14-14z" fill="#ffffff" fill-opacity="0.18" />
+    <g fill="url(#gold)">
+      <rect x="898" y="302" width="8" height="24" rx="2" />
+      <rect x="912" y="302" width="8" height="24" rx="2" />
+      <rect x="926" y="302" width="8" height="24" rx="2" />
+      <rect x="940" y="302" width="8" height="24" rx="2" />
+      <rect x="954" y="302" width="8" height="24" rx="2" />
+      <rect x="968" y="302" width="8" height="24" rx="2" />
+      <rect x="982" y="302" width="8" height="24" rx="2" />
+      <rect x="996" y="302" width="4" height="24" rx="2" />
+    </g>
+    <path d="M884 326h118" stroke="#22d3ee" stroke-opacity="0.4" stroke-width="3" filter="url(#glow)" />
+    <rect x="890" y="350" width="100" height="6" rx="3" fill="url(#rgb)" fill-opacity="0.7" />
+
+    <!-- detalhes do plug -->
+    <rect x="990" y="284" width="14" height="12" rx="2" fill="#0a1018" />
+    <circle cx="997" cy="290" r="3" fill="#22d3ee" />
+  </g>
+</svg>

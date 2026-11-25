@@ -59,11 +59,13 @@ beforeEach(() => {
 });
 
 describe('página Monitor', () => {
-  it('mostra a foto do monitor gamer e o painel de ajustes do Windows', async () => {
+  it('mostra a ilustração do monitor e o painel de ajustes do Windows', async () => {
     render(<MonitorPage />);
 
     expect(screen.getByRole('heading', { name: 'Monitor', level: 2 })).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'Monitor gamer' })).toBeTruthy();
+    expect(
+      screen.getByRole('img', { name: 'Ilustração de monitor gamer com iluminação RGB' })
+    ).toBeTruthy();
 
     await waitFor(() =>
       expect(screen.getAllByRole('combobox', { name: 'Resolução' })).toHaveLength(2)

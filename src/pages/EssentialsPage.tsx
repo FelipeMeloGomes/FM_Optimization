@@ -20,12 +20,12 @@ import type {
   EssentialInstallResult,
   EssentialListItem,
 } from '../../electron/shared/ipc-types';
-import { AnimatedEssentials } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { Badge, Button, Progress } from '../components/ui';
 import { useEssentials } from '../hooks/use-essentials';
+import { HERO_ART } from '../lib/hero-art';
 import { cn } from '../lib/utils';
 
 interface ProgramStyle {
@@ -253,7 +253,7 @@ export default function EssentialsPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner visual={<AnimatedEssentials />}>
+      <HeroBanner {...HERO_ART['/essenciais']}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
             <RouteIcon path="/essenciais" />
@@ -262,12 +262,7 @@ export default function EssentialsPage() {
             </span>
           </div>
           <h2 className="text-lg font-bold text-foreground">App Essenciais PC</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Utilitários para diagnosticar, monitorar, ajustar, compactar, navegar, baixar e
-            desinstalar programas no PC, além do runtime do DirectX para jogos antigos. Todos são
-            instalados pelo winget, que baixa do canal oficial do fornecedor e confere o hash do
-            manifesto antes de rodar.
-          </p>
+          <HeroDescription text="Utilitários para diagnosticar, monitorar, ajustar, compactar, navegar, baixar e desinstalar programas no PC, além do runtime do DirectX para jogos antigos. Todos são instalados pelo winget, que baixa do canal oficial do fornecedor e confere o hash do manifesto antes de rodar." />
         </div>
       </HeroBanner>
 

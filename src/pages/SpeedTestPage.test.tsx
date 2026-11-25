@@ -61,13 +61,16 @@ describe('SpeedTestPage', () => {
     expect(screen.getByRole('img', { name: 'Download: 0.0 Mbps' })).toBeDefined();
   });
 
-  it('usa o hero banner padrão das outras páginas', () => {
+  it('usa o hero banner ilustrado das outras páginas', () => {
     const { container } = render(<SpeedTestPage />);
     const hero = container.querySelector('.bg-gradient-to-br');
 
     expect(hero).not.toBeNull();
     expect(hero?.querySelector('h2')?.textContent).toBe('Teste de Velocidade');
     expect(hero?.textContent).toContain('Rede');
+    expect(
+      screen.getByRole('img', { name: 'Ilustração de cabo Ethernet com conector RJ45' })
+    ).toBeDefined();
   });
 
   it('mostra fase e progresso durante a medição', () => {

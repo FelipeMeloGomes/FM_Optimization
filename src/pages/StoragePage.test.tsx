@@ -135,18 +135,20 @@ describe('StoragePage', () => {
     expect(panel.compareDocumentPosition(toolbar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('mostra o hero com foto de HD/SSD no padrão das páginas de dispositivo', () => {
-    const { container } = renderPage();
+  it('mostra o hero com ilustração de SSD NVMe no padrão das páginas de dispositivo', () => {
+    renderPage();
 
     expect(screen.getByText('Armazenamento')).toBeDefined();
     expect(screen.getByTestId('tweaks-list')).toBeDefined();
-    const heroImage = screen.getByRole('img', { name: 'Unidades de armazenamento HD e SSD' });
+    const heroImage = screen.getByRole('img', {
+      name: 'Ilustração de SSD NVMe M.2 com chips e contatos dourados',
+    });
     const painel = screen.getByText('Ajustes do Windows');
     expect(
       heroImage.compareDocumentPosition(painel) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
-    expect(container.querySelector('[data-hero-animation="storage"]')).toBeNull();
-    expect(screen.queryByTestId('hero-visual')).toBeNull();
+    expect(heroImage.className).toContain('object-contain');
+    expect(heroImage.className).not.toContain('object-cover');
     expect((document.body.textContent ?? '').replace(/\s+/g, ' ')).toContain(
       'Libere espaço em disco, otimize o SSD e compacte os arquivos do sistema.'
     );

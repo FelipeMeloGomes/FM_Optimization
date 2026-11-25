@@ -172,14 +172,22 @@ describe('StartupPage — estados', () => {
 });
 
 describe('StartupPage — conteúdo', () => {
-  it('renderiza herói, estatísticas e abas', () => {
+  it('mostra a ilustração da fonte no hero, sem estatísticas', () => {
+    renderPage();
+
+    expect(
+      screen.getByRole('img', { name: 'Ilustração de fonte de alimentação com chave e cabos' })
+    ).toBeDefined();
+    const hero = document.querySelector('.bg-gradient-to-br');
+    expect(hero?.textContent).toContain('Controle o que abre com o Windows');
+    expect(hero?.textContent).not.toMatch(/apps ativos|tarefas ativas|serviços automáticos/);
+    expect(hero?.textContent).not.toMatch(/\d/);
+  });
+
+  it('renderiza herói e abas', () => {
     renderPage();
 
     expect(screen.getByText('Controle o que abre com o Windows')).toBeDefined();
-    expect(screen.getByText('apps ativos')).toBeDefined();
-    expect(screen.getAllByText('1/1').length).toBe(2);
-    expect(screen.getByText('tarefas ativas')).toBeDefined();
-    expect(screen.getByText('serviços automáticos')).toBeDefined();
     expect(screen.getByRole('tab', { name: /Inicialização/ })).toBeDefined();
     expect(screen.getAllByRole('tab').length).toBe(3);
   });

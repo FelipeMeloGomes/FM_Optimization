@@ -112,6 +112,14 @@ describe('DashboardWidget — status', () => {
     expect(html).toContain('hover:shadow-[0_0_20px_var(--color-selection)]');
   });
 
+  it('usa a cor de destaque do tema para o status accent', () => {
+    const html = render({ status: 'accent' });
+
+    expect(html).toContain('bg-primary/10');
+    expect(html).toContain('text-primary');
+    expect(html).toContain('hover:border-primary/30');
+  });
+
   it('usa verde para status bom', () => {
     const html = render({ status: 'good' });
 

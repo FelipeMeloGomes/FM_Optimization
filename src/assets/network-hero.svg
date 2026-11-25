@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="case" x1="620" y1="280" x2="1100" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2c3a4b" />
+      <stop offset="0.5" stop-color="#131d2a" />
+      <stop offset="1" stop-color="#070c14" />
+    </linearGradient>
+    <linearGradient id="top" x1="640" y1="250" x2="1080" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#46566a" />
+      <stop offset="0.5" stop-color="#253242" />
+      <stop offset="1" stop-color="#0f1722" />
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#94a3b8" />
+      <stop offset="0.5" stop-color="#e2e8f0" />
+      <stop offset="1" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="rgb" x1="640" y1="360" x2="1100" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="11" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+    <pattern id="vents" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect x="2" y="2" width="9" height="9" rx="2" fill="#02060c" fill-opacity="0.75" />
+    </pattern>
+  </defs>
+
+  <ellipse cx="870" cy="300" rx="300" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="875" cy="435" rx="270" ry="24" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <g transform="rotate(-6 870 320)">
+    <!-- antenas -->
+    <g stroke-linecap="round">
+      <rect x="690" y="126" width="16" height="150" rx="8" fill="#0a1018" transform="rotate(-16 698 201)" />
+      <rect x="692" y="130" width="5" height="140" rx="2.5" fill="url(#metal)" fill-opacity="0.35" transform="rotate(-16 698 201)" />
+      <rect x="864" y="100" width="16" height="176" rx="8" fill="#0a1018" transform="rotate(2 872 188)" />
+      <rect x="866" y="104" width="5" height="166" rx="2.5" fill="url(#metal)" fill-opacity="0.35" transform="rotate(2 872 188)" />
+      <rect x="1032" y="126" width="16" height="150" rx="8" fill="#0a1018" transform="rotate(16 1040 201)" />
+      <rect x="1034" y="130" width="5" height="140" rx="2.5" fill="url(#metal)" fill-opacity="0.35" transform="rotate(16 1040 201)" />
+    </g>
+    <g fill="#22d3ee" fill-opacity="0.6">
+      <circle cx="674" cy="132" r="5" />
+      <circle cx="878" cy="102" r="5" />
+      <circle cx="1054" cy="132" r="5" />
+    </g>
+
+    <!-- corpo -->
+    <path d="M630 276c0-16 12-28 28-28h424c16 0 28 12 28 28v104c0 14-10 24-24 26l-430 32c-16 2-26-8-26-24z" fill="url(#case)" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="2.5" />
+    <path d="M658 248h424c16 0 28 12 28 28v22H630v-22c0-16 12-28 28-28z" fill="url(#top)" />
+    <path d="M658 252h416c12 0 20 6 24 16H634c4-10 12-16 24-16z" fill="#ffffff" fill-opacity="0.12" />
+    <rect x="646" y="306" width="448" height="66" rx="6" fill="url(#vents)" opacity="0.7" />
+
+    <!-- face frontal e LEDs -->
+    <path d="M630 372l430-32c14 0 24 10 24 24v18c0 16-10 26-26 28l-428 32c-16 2-26-8-26-24v-20c0-12 10-24 26-26z" fill="#0b131d" stroke="#64748b" stroke-opacity="0.4" stroke-width="2" />
+    <rect x="642" y="392" width="412" height="8" rx="4" fill="url(#rgb)" filter="url(#glow)" />
+    <rect x="642" y="392" width="412" height="8" rx="4" fill="url(#rgb)" />
+    <g>
+      <circle cx="668" cy="414" r="5" fill="#4ade80" />
+      <circle cx="694" cy="412" r="5" fill="#4ade80" />
+      <circle cx="720" cy="409" r="5" fill="#22d3ee" />
+      <circle cx="746" cy="407" r="5" fill="#22d3ee" />
+      <circle cx="772" cy="404" r="5" fill="#a3e635" />
+      <circle cx="798" cy="402" r="5" fill="#a3e635" />
+    </g>
+    <g fill="#22d3ee" filter="url(#glow)">
+      <circle cx="720" cy="409" r="9" />
+      <circle cx="746" cy="407" r="9" />
+    </g>
+
+    <!-- portas traseiras -->
+    <g transform="translate(1050 278)">
+      <rect x="0" y="0" width="34" height="60" rx="4" fill="#050a12" stroke="#64748b" stroke-opacity="0.5" />
+      <rect x="5" y="7" width="24" height="12" rx="2" fill="#1e293b" stroke="#c9a24c" stroke-opacity="0.6" />
+      <rect x="5" y="24" width="24" height="12" rx="2" fill="#1e293b" stroke="#c9a24c" stroke-opacity="0.6" />
+      <circle cx="17" cy="46" r="4" fill="#22d3ee" fill-opacity="0.5" />
+    </g>
+
+    <!-- logotipo discreto -->
+    <path d="M870 278l14 26h-28z" fill="#22d3ee" fill-opacity="0.5" />
+    <circle cx="870" cy="296" r="4" fill="#22d3ee" fill-opacity="0.7" />
+  </g>
+</svg>

@@ -40,16 +40,16 @@ describe('páginas de dispositivo', () => {
   });
 });
 
-describe('fotos reais dos banners', () => {
-  it('usa o PRO X SuperLight 2 preto no banner do Mouse', () => {
-    expect(MOUSE_PAGE.heroImage).toContain('mouse-superlight2-black');
-    expect(MOUSE_PAGE.heroImageAlt).toBe('Mouse gamer Logitech PRO X SuperLight 2 Black');
+describe('ilustrações SVG dos banners', () => {
+  it('usa um mouse gamer ilustrado no banner do Mouse', () => {
+    expect(MOUSE_PAGE.heroImage).toMatch(/(^data:image\/svg\+xml,|\.svg($|\?))/);
+    expect(MOUSE_PAGE.heroImageAlt).toBe('Ilustração de mouse gamer com iluminação RGB');
   });
 
-  it('usa fotos de teclado e monitor gamer nos banners', () => {
-    expect(TECLADO_PAGE.heroImage).toContain('keyboard-gamer');
-    expect(TECLADO_PAGE.heroImageAlt).toBe('Teclado gamer Razer Ornata Chroma');
-    expect(MONITOR_PAGE.heroImage).toContain('monitor-gamer');
-    expect(MONITOR_PAGE.heroImageAlt).toBe('Monitor gamer');
+  it('usa teclado e monitor gamers ilustrados nos banners', () => {
+    expect(TECLADO_PAGE.heroImage).toMatch(/(^data:image\/svg\+xml,|\.svg($|\?))/);
+    expect(TECLADO_PAGE.heroImageAlt).toBe('Ilustração de teclado gamer com iluminação RGB');
+    expect(MONITOR_PAGE.heroImage).toMatch(/(^data:image\/svg\+xml,|\.svg($|\?))/);
+    expect(MONITOR_PAGE.heroImageAlt).toBe('Ilustração de monitor gamer com iluminação RGB');
   });
 });

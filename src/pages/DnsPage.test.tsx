@@ -69,10 +69,18 @@ beforeEach(() => dns());
 afterEach(() => vi.restoreAllMocks());
 
 describe('DnsPage', () => {
+  it('mostra a ilustração do servidor rack no banner', () => {
+    renderPage();
+
+    expect(
+      screen.getByRole('img', { name: 'Ilustração de servidor rack com portas e LEDs' })
+    ).toBeDefined();
+  });
+
   it('renderiza o cabeçalho e todos os provedores', () => {
     renderPage();
 
-    expect(screen.getByText('DNS')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'DNS' })).toBeDefined();
     expect(
       screen.getByText('Configure seu DNS para melhor velocidade e privacidade')
     ).toBeDefined();
@@ -120,7 +128,7 @@ describe('DnsPage', () => {
     expect(container.querySelectorAll('[data-skeleton="dns-provider"]')).toHaveLength(
       DNS_PROVIDERS.length
     );
-    expect(screen.getByText('DNS')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'DNS' })).toBeDefined();
     expect(screen.queryByText('Carregando…')).toBeNull();
   });
 

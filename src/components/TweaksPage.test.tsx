@@ -59,7 +59,8 @@ const HERO: TweaksPageHero = {
   badge: ' Desempenho '.trim(),
   title: 'Página de teste',
   description: 'Descrição da página de teste',
-  visual: <span data-testid="hero-visual" />,
+  image: '/cpu.svg',
+  imageAlt: 'Ilustração de processador em soquete com dissipador',
 };
 
 const CATALOG = [script('a', 'Alpha'), script('b', 'Beta'), script('c', 'Gamma')];
@@ -137,7 +138,11 @@ describe('TweaksPage — estados', () => {
     const painel = screen.getByText('Painel de ajustes');
     expect(hero.compareDocumentPosition(painel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.queryByText('Página de teste')).toBeNull();
-    expect(screen.queryByTestId('hero-visual')).toBeNull();
+    expect(
+      screen.queryByRole('img', {
+        name: 'Ilustração de processador em soquete com dissipador',
+      })
+    ).toBeNull();
   });
 
   it('renderiza beforeContent mesmo durante loading e erro', () => {
@@ -161,7 +166,9 @@ describe('TweaksPage — layout e seleção', () => {
     expect(screen.getByText('Página de teste')).toBeDefined();
     expect(screen.getByText('Desempenho')).toBeDefined();
     expect(screen.getByText('Descrição da página de teste')).toBeDefined();
-    expect(screen.getByTestId('hero-visual')).toBeDefined();
+    expect(
+      screen.getByRole('img', { name: 'Ilustração de processador em soquete com dissipador' })
+    ).toBeDefined();
   });
 
   it('renderiza a lista virtualizada com uma linha por tweak', async () => {

@@ -110,11 +110,11 @@ describe('DevicePage', () => {
     expect(text).not.toContain('Otimizações do Registro');
   });
 
-  it('mostra a foto real do produto no banner', () => {
+  it('mostra a ilustração do produto no banner', () => {
     render(<DevicePage config={MOUSE_PAGE} />);
 
     expect(
-      screen.getByRole('img', { name: 'Mouse gamer Logitech PRO X SuperLight 2 Black' })
+      screen.getByRole('img', { name: 'Ilustração de mouse gamer com iluminação RGB' })
     ).toBeTruthy();
   });
 

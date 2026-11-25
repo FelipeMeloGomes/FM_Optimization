@@ -1,7 +1,7 @@
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
-import { AnimatedNetwork } from '../components/hero/AnimatedHero';
 import { TweaksPage } from '../components/TweaksPage';
 import { countSectionScripts, scriptsInSectionOrder } from '../lib/app-sections';
+import { HERO_ART } from '../lib/hero-art';
 import { NETWORK_SECTIONS } from '../lib/network-sections';
 
 /**
@@ -15,7 +15,7 @@ const HERO = {
   title: 'Internet',
   description:
     'Scripts para otimizar sua conexão de internet e corrigir problemas de rede. Para escolher e aplicar um provedor DNS, use a página DNS.',
-  visual: <AnimatedNetwork />,
+  ...HERO_ART['/rede'],
 };
 
 /** Ids fora das seções não entram na lista nem na seleção. */

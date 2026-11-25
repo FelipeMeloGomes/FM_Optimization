@@ -1,13 +1,13 @@
 import { AlertCircle, ArrowDown, Check, Loader2, Settings, Trophy, Wifi, Zap } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
-import { AnimatedDns } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Badge, Button, Card, CardContent } from '../components/ui';
 import { DnsProvider, useDnsContext } from '../contexts/DnsContext';
 import { DNS_PROVIDERS } from '../lib/dns-providers';
+import { HERO_ART } from '../lib/hero-art';
 import { cn } from '../lib/utils';
 
 function getLatencyColor(ms: number): string {
@@ -43,7 +43,7 @@ export default function DnsPage() {
 
 function DnsHero() {
   return (
-    <HeroBanner visual={<AnimatedDns />}>
+    <HeroBanner {...HERO_ART['/dns']}>
       <div className="relative p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -54,9 +54,7 @@ function DnsHero() {
               </span>
             </div>
             <h2 className="text-lg font-bold text-foreground">DNS</h2>
-            <p className="mt-1 max-w-lg text-sm text-muted-foreground">
-              Configure seu DNS para melhor velocidade e privacidade
-            </p>
+            <HeroDescription text="Configure seu DNS para melhor velocidade e privacidade" />
           </div>
         </div>
       </div>

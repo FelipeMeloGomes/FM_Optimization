@@ -1,11 +1,11 @@
 import { AlertCircle, Play, RotateCcw, Square, Wifi } from 'lucide-react';
 import type { SpeedTestPhase } from '../../electron/shared/ipc-types';
-import { AnimatedSpeedTest } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { SpeedGauge } from '../components/SpeedGauge';
 import { Button, Card, CardContent, Progress } from '../components/ui';
 import { SpeedProvider, useSpeedContext } from '../contexts/SpeedContext';
+import { HERO_ART } from '../lib/hero-art';
 
 const PHASE_LABEL: Record<SpeedTestPhase, string> = {
   latency: 'Medindo latência…',
@@ -51,7 +51,7 @@ function SpeedTestPageContent() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner visual={<AnimatedSpeedTest />}>
+      <HeroBanner {...HERO_ART['/velocidade']}>
         <div className="relative p-6">
           <div className="mb-2 flex items-center gap-2">
             <RouteIcon path="/velocidade" />
@@ -60,9 +60,7 @@ function SpeedTestPageContent() {
             </span>
           </div>
           <h2 className="text-lg font-bold text-foreground">Teste de Velocidade</h2>
-          <p className="mt-1 max-w-lg text-sm text-muted-foreground">
-            Meça download, upload, ping e jitter da sua conexão
-          </p>
+          <HeroDescription text="Meça download, upload, ping e jitter da sua conexão" />
         </div>
       </HeroBanner>
 

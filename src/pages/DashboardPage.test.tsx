@@ -211,14 +211,15 @@ describe('DashboardPage — dados do sistema', () => {
     expect(html).toContain('Saúde: Saudável');
   });
 
-  it('deixa o canto do hero livre para a animação', () => {
+  it('mostra a ilustração no canto do hero, separada do estado do sistema', () => {
     store.system = { status: 'success', data: dashboard() };
     store.cache = true;
 
-    const { container } = renderDom(<DashboardPage />);
-    const hero = container
-      .querySelector('[data-hero-animation="scan"]')
-      ?.closest('.bg-gradient-to-br');
+    renderDom(<DashboardPage />);
+    const heroImage = screen.getByRole('img', {
+      name: 'Ilustração de painel de instrumentos com mostradores e LEDs',
+    });
+    const hero = heroImage.closest('.bg-gradient-to-br');
 
     expect(hero).not.toBeNull();
     expect(hero?.contains(screen.getByText(/Saúde:/))).toBe(false);

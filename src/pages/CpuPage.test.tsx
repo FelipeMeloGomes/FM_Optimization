@@ -136,15 +136,6 @@ function heroShell(html: string): string {
   return match[1];
 }
 
-/** Classes do SVG animado dentro do hero (o ícone que deve seguir o tema). */
-function heroIconClass(html: string): string {
-  const start = html.indexOf('data-hero-animation');
-  if (start < 0) throw new Error('ícone do hero não encontrado');
-  const svg = html.slice(start).match(/<svg[^>]*class="([^"]+)"/);
-  if (!svg) throw new Error('ícone do hero não encontrado');
-  return svg[1];
-}
-
 /** Texto do hero, isolado do aviso de fabricante e da lista que vêm depois. */
 function heroText(html: string): string {
   return text(html).split(/Scripts Disponíveis|Processador não identificado/)[0];
@@ -324,19 +315,11 @@ describe('CpuPage — hero banner', () => {
     expect(hero).not.toMatch(/\d+\s+tweaks/);
   });
 
-  it.each(['amd', 'intel', 'unknown'] as const)(
-    'usa a cor do tema no ícone do hero com o fabricante %s',
-    (vendor) => {
-      store.vendor = vendor;
-
-      const iconClass = heroIconClass(renderStatic());
-
-      expect(iconClass).toContain('text-primary');
-      expect(iconClass).not.toContain('text-destructive');
-      expect(iconClass).not.toContain('text-info');
-      expect(iconClass).not.toContain('text-warning');
-    }
-  );
+  it('mostra o processador ilustrado no banner', () => {
+    const html = renderStatic();
+    expect(html).toContain('alt="Ilustração de processador em soquete com dissipador"');
+    expect(html).not.toContain('data-hero-animation');
+  });
 });
 
 describe('CpuPage — espaçamento da lista', () => {

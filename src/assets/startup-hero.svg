@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="case" x1="650" y1="210" x2="1080" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3a4656" />
+      <stop offset="0.45" stop-color="#182231" />
+      <stop offset="1" stop-color="#070d15" />
+    </linearGradient>
+    <linearGradient id="face" x1="670" y1="240" x2="1060" y2="400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2b3848" />
+      <stop offset="0.5" stop-color="#141e2a" />
+      <stop offset="1" stop-color="#080e16" />
+    </linearGradient>
+    <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#f1f5f9" />
+      <stop offset="0.45" stop-color="#8492a2" />
+      <stop offset="1" stop-color="#3c4958" />
+    </linearGradient>
+    <linearGradient id="rgb" x1="650" y1="420" x2="1080" y2="390" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="11" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+    <pattern id="mesh" width="12" height="12" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="2.2" fill="#050a11" />
+      <circle cx="9" cy="9" r="2.2" fill="#050a11" />
+    </pattern>
+  </defs>
+
+  <ellipse cx="875" cy="310" rx="300" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="880" cy="450" rx="280" ry="25" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <g transform="rotate(-5 880 320)">
+    <!-- cabos de alimentação -->
+    <path d="M1064 302c66-26 86 20 74 74" stroke="#22d3ee" stroke-opacity="0.18" stroke-width="20" filter="url(#glow)" />
+    <path d="M1064 302c66-26 86 20 74 74" stroke="#0a1018" stroke-width="15" stroke-linecap="round" />
+    <path d="M1064 302c66-26 86 20 74 74" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="6 6" />
+    <path d="M1068 336c58-14 76 22 66 68" stroke="#0a1018" stroke-width="12" stroke-linecap="round" />
+    <path d="M1068 336c58-14 76 22 66 68" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="6 6" />
+
+    <!-- gabinete da fonte -->
+    <path d="M650 218h404c16 0 28 12 28 28v160c0 16-12 28-28 28H650c-16 0-28-12-28-28V246c0-16 12-28 28-28z" fill="url(#case)" stroke="#94a3b8" stroke-opacity="0.4" stroke-width="2.5" />
+    <path d="M650 218h404c16 0 28 12 28 28v20H622v-20c0-16 12-28 28-28z" fill="url(#chrome)" fill-opacity="0.25" />
+    <rect x="632" y="250" width="440" height="166" rx="8" fill="url(#face)" stroke="#64748b" stroke-opacity="0.5" stroke-width="2" />
+
+    <!-- grelha da ventoinha -->
+    <circle cx="770" cy="332" r="88" fill="#0a1018" stroke="url(#chrome)" stroke-width="4" />
+    <circle cx="770" cy="332" r="76" fill="url(#mesh)" />
+    <circle cx="770" cy="332" r="30" fill="#111b27" stroke="#94a3b8" stroke-opacity="0.5" stroke-width="2" />
+    <g stroke="#94a3b8" stroke-opacity="0.35" stroke-width="3">
+      <path d="M770 256v152M694 332h152M716 278l108 108M824 278L716 386" />
+    </g>
+    <circle cx="770" cy="332" r="88" stroke="#22d3ee" stroke-opacity="0.3" stroke-width="2" />
+
+    <!-- tomada AC -->
+    <g transform="translate(940 292)">
+      <rect x="0" y="0" width="88" height="66" rx="8" fill="#0a1018" stroke="url(#chrome)" stroke-width="3" />
+      <rect x="16" y="14" width="56" height="38" rx="5" fill="#1b2635" stroke="#94a3b8" stroke-opacity="0.5" />
+      <rect x="26" y="22" width="9" height="14" rx="2" fill="#e2e8f0" />
+      <rect x="53" y="22" width="9" height="14" rx="2" fill="#e2e8f0" />
+      <circle cx="44" cy="44" r="4" fill="#22d3ee" />
+    </g>
+
+    <!-- chave liga/desliga -->
+    <g transform="translate(900 382)">
+      <rect x="0" y="0" width="64" height="28" rx="6" fill="#0a1018" stroke="#94a3b8" stroke-opacity="0.6" stroke-width="2" />
+      <path d="M8 8h24c8 0 12 12 4 12H8z" fill="url(#chrome)" />
+      <text x="52" y="20" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="10" text-anchor="middle">I/O</text>
+    </g>
+
+    <!-- conectores e LED -->
+    <g fill="#0a1018" stroke="#94a3b8" stroke-opacity="0.5" stroke-width="1.5">
+      <rect x="1036" y="292" width="24" height="18" rx="3" />
+      <rect x="1036" y="318" width="24" height="18" rx="3" />
+      <rect x="1036" y="344" width="24" height="18" rx="3" />
+      <rect x="1036" y="370" width="24" height="18" rx="3" />
+    </g>
+    <circle cx="1024" cy="270" r="6" fill="#22d3ee" filter="url(#glow)" />
+    <circle cx="1024" cy="270" r="3" fill="#a5f3fc" />
+    <rect x="650" y="418" width="400" height="7" rx="3.5" fill="url(#rgb)" fill-opacity="0.6" />
+    <text x="880" y="270" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="10" text-anchor="middle" letter-spacing="3">ATX POWER SUPPLY</text>
+
+    <!-- parafusos -->
+    <g fill="#0a1018" stroke="url(#chrome)" stroke-width="2">
+      <circle cx="642" cy="262" r="6" />
+      <circle cx="1062" cy="262" r="6" />
+      <circle cx="642" cy="404" r="6" />
+      <circle cx="1062" cy="404" r="6" />
+    </g>
+  </g>
+</svg>

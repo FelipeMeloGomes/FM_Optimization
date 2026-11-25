@@ -38,6 +38,7 @@ interface ConsolidatedWmiData {
   physicalDisk?: { mediaType: string }[];
   diskMap?: string;
   motherboard?: { Manufacturer: string; Product: string; Version: string };
+  bios?: string;
   caches?: { Level: number; MaxCacheSize: number }[];
   memorySlots?: string;
   memoryUsed?: string;
@@ -50,6 +51,7 @@ $cache = Get-CimInstance Win32_CacheMemory -ErrorAction SilentlyContinue | Selec
 $gpu = Get-CimInstance Win32_VideoController -Property Name,DriverVersion,PNPDeviceID | ConvertTo-Json -Depth 3
 $mem = Get-CimInstance Win32_PhysicalMemory -Property SMBIOSMemoryType,Speed | ConvertTo-Json -Depth 3
 $board = Get-CimInstance Win32_BaseBoard -ErrorAction SilentlyContinue | Select-Object -First 1 | Select-Object Manufacturer,Product,Version | ConvertTo-Json
+$bios = Get-CimInstance Win32_BIOS -ErrorAction SilentlyContinue | Select-Object @{N="Version";E={$_.SMBIOSBIOSVersion}},@{N="ReleaseDate";E={$_.ReleaseDate.ToString('dd/MM/yyyy')}} | ConvertTo-Json
 $slots = (Get-CimInstance Win32_PhysicalMemoryArray -ErrorAction SilentlyContinue | Measure-Object -Property MemoryDevices -Sum).Sum
 $memCount = (Get-CimInstance Win32_PhysicalMemory -ErrorAction SilentlyContinue | Measure-Object).Count
 $os = Get-CimInstance Win32_OperatingSystem -Property Caption,Version,BuildNumber,InstallDate | ConvertTo-Json
@@ -57,11 +59,13 @@ $drives = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -Property Devi
 $physical = Get-PhysicalDisk | Select-Object DeviceId,MediaType,BusType
 $disk = $physical | Select-Object MediaType | ConvertTo-Json -Depth 3
 $diskMap = Get-Partition -ErrorAction SilentlyContinue | Where-Object DriveLetter | ForEach-Object { $p = $_; $pd = $physical | Where-Object { [int]$_.DeviceId -eq $p.DiskNumber } | Select-Object -First 1; [pscustomobject]@{ DriveLetter = $p.DriveLetter; MediaType = $pd.MediaType; BusType = $pd.BusType } } | ConvertTo-Json -Depth 3
-@{ cpu=$cpu; gpu=$gpu; memory=$mem; motherboard=$board; memorySlots=$slots; memoryUsed=$memCount; caches=$cache; os=$os; drives=$drives; physicalDisk=$disk; diskMap=$diskMap } | ConvertTo-Json -Depth 5
+@{ cpu=$cpu; gpu=$gpu; memory=$mem; motherboard=$board; bios=$bios; memorySlots=$slots; memoryUsed=$memCount; caches=$cache; os=$os; drives=$drives; physicalDisk=$disk; diskMap=$diskMap } | ConvertTo-Json -Depth 5
 `;
 
 const WMI_CPU_QUERY =
   'Get-CimInstance Win32_Processor -Property Name,Manufacturer,Description,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed | Select-Object -First 1 | ConvertTo-Json';
+
+const BIOS_QUERY = `Get-CimInstance Win32_BIOS | Select-Object @{N="Version";E={$_.SMBIOSBIOSVersion}},@{N="ReleaseDate";E={$_.ReleaseDate.ToString('dd/MM/yyyy')}} | ConvertTo-Json`;
 
 interface WmiProcessor {
   name?: string;
@@ -331,7 +335,11 @@ export async function getCpuInfo(): Promise<CpuInfo> {
 
   // Try to get WMI data from consolidated cache first
   const wmiData = await fetchConsolidatedWmi();
-  const cpuDetail = wmiData.cpu ? JSON.stringify(wmiData.cpu) : '';
+  // O script consolidado já serializa cada seção com ConvertTo-Json: `cpu`
+  // chega como string. Re-serializá-la transformaria o JSON em uma string
+  // literal e o parser devolveria um objeto vazio, descartando WMI.
+  const cpuDetail =
+    typeof wmiData.cpu === 'string' ? wmiData.cpu : wmiData.cpu ? JSON.stringify(wmiData.cpu) : '';
 
   // If no WMI data, fall back to individual query
   let finalCpuDetail = cpuDetail;
@@ -523,18 +531,28 @@ export async function getOsInfo(): Promise<OsInfo> {
   }
 
   let name = `${type()} ${release()}`;
+  let versionFromWmi = release();
   let build = release();
   let edition = version();
   let installDate = '';
 
   if (osInfo) {
-    if (osInfo.caption) name = osInfo.caption;
+    if (osInfo.caption) {
+      name = osInfo.caption;
+      // "Microsoft Windows 11 Pro" → "Pro": o campo `version` já traz
+      // "10.0.26100", então repeti-lo como edição não informa nada.
+      const fromCaption = osInfo.caption
+        .replace(/^(?:Microsoft\s+)?Windows\s*/i, '')
+        .replace(/^\d+(?:\.\d+)?\s*/, '')
+        .trim();
+      if (fromCaption) edition = fromCaption;
+    }
     if (osInfo.buildNumber) build = osInfo.buildNumber;
-    if (osInfo.version) edition = osInfo.version;
+    if (osInfo.version) versionFromWmi = osInfo.version;
     if (osInfo.installDate) installDate = osInfo.installDate;
   }
 
-  return { name, version: release(), build, edition, installDate };
+  return { name, version: versionFromWmi, build, edition, installDate };
 }
 
 interface RawDriveInfo {
@@ -613,14 +631,32 @@ function formatCacheSize(kb?: number): string | undefined {
   return kb >= 1024 ? `${Math.round((kb / 1024) * 100) / 100} MB` : `${kb} KB`;
 }
 
+function parseBios(raw?: string): { version: string; releaseDate: string } | undefined {
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw) as { Version?: string; ReleaseDate?: string };
+    return { version: parsed.Version || '', releaseDate: parsed.ReleaseDate || '' };
+  } catch {
+    return undefined;
+  }
+}
+
+async function fetchBiosInfo(): Promise<{ version: string; releaseDate: string } | undefined> {
+  const output = await execPowerShell(BIOS_QUERY).catch(() => '');
+  return parseBios(output);
+}
+
 export async function getMotherboardInfo(): Promise<MotherboardInfo> {
   const wmi = await fetchConsolidatedWmi();
+  const bios = parseBios(wmi.bios) ?? (await fetchBiosInfo());
   const board = wmi.motherboard;
   if (board && typeof board === 'object' && 'Manufacturer' in board) {
     return {
       manufacturer: board.Manufacturer || '—',
       product: board.Product || '—',
       version: (board.Version || '').trim() || '—',
+      biosVersion: bios?.version || '',
+      biosReleaseDate: bios?.releaseDate || '',
     };
   }
 
@@ -637,9 +673,11 @@ export async function getMotherboardInfo(): Promise<MotherboardInfo> {
       manufacturer: parsed.Manufacturer || '—',
       product: parsed.Product || '—',
       version: (parsed.Version || '').trim() || '—',
+      biosVersion: bios?.version || '',
+      biosReleaseDate: bios?.releaseDate || '',
     };
   } catch {
-    return { manufacturer: '—', product: '—', version: '—' };
+    return { manufacturer: '—', product: '—', version: '—', biosVersion: '', biosReleaseDate: '' };
   }
 }
 

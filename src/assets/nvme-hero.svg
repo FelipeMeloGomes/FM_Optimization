@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="pcb" x1="600" y1="220" x2="1120" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123a3c" />
+      <stop offset="0.5" stop-color="#0c2a2d" />
+      <stop offset="1" stop-color="#07171f" />
+    </linearGradient>
+    <linearGradient id="gold" x1="1075" y1="230" x2="1110" y2="370" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f5d98b" />
+      <stop offset="0.5" stop-color="#c9a24c" />
+      <stop offset="1" stop-color="#8a6a2c" />
+    </linearGradient>
+    <linearGradient id="chip" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#2b3b53" />
+      <stop offset="1" stop-color="#0b1526" />
+    </linearGradient>
+    <linearGradient id="rgb" x1="600" y1="380" x2="1100" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="10" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="28" />
+    </filter>
+    <pattern id="circuit" width="26" height="26" patternUnits="userSpaceOnUse">
+      <path d="M0 13h10l5-5h11" stroke="#22d3ee" stroke-opacity="0.16" stroke-width="1.5" />
+      <circle cx="15" cy="8" r="1.6" fill="#22d3ee" fill-opacity="0.25" />
+    </pattern>
+  </defs>
+
+  <ellipse cx="865" cy="300" rx="290" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="870" cy="430" rx="265" ry="24" fill="#000814" fill-opacity="0.8" filter="url(#ambient)" />
+
+  <g transform="rotate(-8 860 300)">
+    <rect x="594" y="214" width="532" height="172" rx="8" fill="url(#rgb)" fill-opacity="0.28" filter="url(#glow)" />
+    <rect x="600" y="220" width="520" height="160" rx="6" fill="url(#pcb)" stroke="#22d3ee" stroke-opacity="0.3" stroke-width="2.5" />
+    <rect x="612" y="232" width="496" height="136" rx="4" fill="url(#circuit)" />
+
+    <rect x="1076" y="232" width="32" height="136" rx="3" fill="url(#gold)" />
+    <g stroke="#6d5423" stroke-opacity="0.7" stroke-width="1.5">
+      <path d="M1084 238v24M1092 238v24M1100 238v24M1084 286v16M1092 286v16M1100 286v16M1084 326v38M1092 326v38M1100 326v38" />
+    </g>
+    <path d="M1076 282h32v18h-32z" fill="#0b1a20" fill-opacity="0.95" />
+    <rect x="1076" y="232" width="5" height="136" fill="#f5d98b" fill-opacity="0.35" />
+
+    <circle cx="628" cy="300" r="13" fill="#07131a" stroke="#c9a24c" stroke-opacity="0.7" stroke-width="3" />
+    <circle cx="628" cy="300" r="5" fill="#000814" />
+    <circle cx="660" cy="300" r="6" fill="#07131a" stroke="#22d3ee" stroke-opacity="0.4" stroke-width="1.5" />
+
+    <rect x="682" y="252" width="76" height="96" rx="5" fill="url(#chip)" stroke="#22d3ee" stroke-opacity="0.3" stroke-width="2" />
+    <rect x="690" y="260" width="60" height="20" rx="3" fill="#d4dae5" fill-opacity="0.07" />
+    <g stroke="#22d3ee" stroke-opacity="0.18" stroke-width="1.5">
+      <path d="M690 292h60M690 300h60M690 308h60M690 316h60M690 324h60" />
+    </g>
+
+    <rect x="784" y="244" width="104" height="112" rx="7" fill="#0d1828" stroke="#22d3ee" stroke-opacity="0.45" stroke-width="2.5" />
+    <rect x="792" y="252" width="88" height="96" rx="5" fill="url(#chip)" />
+    <rect x="800" y="260" width="72" height="18" rx="3" fill="#d4dae5" fill-opacity="0.08" />
+    <circle cx="836" cy="300" r="24" fill="#22d3ee" fill-opacity="0.1" filter="url(#glow)" />
+    <circle cx="836" cy="300" r="17" stroke="#22d3ee" stroke-opacity="0.4" stroke-width="1.5" />
+    <path d="M826 300h20M836 290v20" stroke="#22d3ee" stroke-opacity="0.5" stroke-width="1.5" />
+    <g stroke="#22d3ee" stroke-opacity="0.22" stroke-width="1.5">
+      <path d="M792 330h88M792 338h88" />
+    </g>
+
+    <g fill="url(#chip)" stroke="#22d3ee" stroke-opacity="0.26" stroke-width="1.5">
+      <rect x="912" y="244" width="66" height="48" rx="4" />
+      <rect x="990" y="244" width="66" height="48" rx="4" />
+      <rect x="912" y="308" width="66" height="48" rx="4" />
+      <rect x="990" y="308" width="66" height="48" rx="4" />
+    </g>
+    <g fill="#d4dae5" fill-opacity="0.07">
+      <rect x="918" y="250" width="54" height="12" rx="2" />
+      <rect x="996" y="250" width="54" height="12" rx="2" />
+      <rect x="918" y="314" width="54" height="12" rx="2" />
+      <rect x="996" y="314" width="54" height="12" rx="2" />
+    </g>
+
+    <g fill="#c9a24c" fill-opacity="0.55">
+      <rect x="700" y="358" width="10" height="5" rx="1" />
+      <rect x="718" y="358" width="10" height="5" rx="1" />
+      <rect x="748" y="358" width="10" height="5" rx="1" />
+      <rect x="768" y="358" width="10" height="5" rx="1" />
+      <rect x="928" y="358" width="10" height="5" rx="1" />
+      <rect x="948" y="358" width="10" height="5" rx="1" />
+    </g>
+    <g stroke="#22d3ee" stroke-opacity="0.22" stroke-width="2" stroke-linecap="round">
+      <path d="M704 364h45l18 12h30" />
+      <path d="M932 364h45l18 12h30" />
+      <path d="M776 236h90l16-10" />
+    </g>
+
+    <path d="M604 224 L1108 224" stroke="#d4dae5" stroke-opacity="0.14" stroke-width="3" stroke-linecap="round" />
+    <path d="M604 376 L1108 376" stroke="url(#rgb)" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" filter="url(#glow)" />
+    <path d="M604 376 L1108 376" stroke="url(#rgb)" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" />
+  </g>
+</svg>

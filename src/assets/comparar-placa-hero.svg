@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="gpu" x1="620" y1="240" x2="1100" y2="400" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#394658" />
+      <stop offset="0.45" stop-color="#1a2533" />
+      <stop offset="1" stop-color="#080e16" />
+    </linearGradient>
+    <linearGradient id="shroud" x1="650" y1="250" x2="1020" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#455468" />
+      <stop offset="0.5" stop-color="#253242" />
+      <stop offset="1" stop-color="#0d1520" />
+    </linearGradient>
+    <radialGradient id="fan" cx="0" cy="0" r="1" gradientTransform="translate(0 0) scale(80)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#334155" />
+      <stop offset="0.7" stop-color="#111b27" />
+      <stop offset="1" stop-color="#050a11" />
+    </radialGradient>
+    <linearGradient id="rgb" x1="640" y1="410" x2="1100" y2="370" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#a855f7" />
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#f1f5f9" />
+      <stop offset="0.45" stop-color="#8492a2" />
+      <stop offset="1" stop-color="#3c4958" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="11" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+    <pattern id="fins" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect x="1" y="0" width="4" height="10" fill="#64748b" fill-opacity="0.5" />
+    </pattern>
+  </defs>
+
+  <ellipse cx="870" cy="310" rx="300" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="875" cy="455" rx="280" ry="25" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <!-- placa de trás -->
+  <g transform="rotate(4 1010 330)">
+    <rect x="884" y="246" width="234" height="146" rx="8" fill="url(#gpu)" stroke="#94a3b8" stroke-opacity="0.4" stroke-width="2.5" />
+    <rect x="896" y="258" width="210" height="104" rx="6" fill="url(#shroud)" stroke="#64748b" stroke-opacity="0.5" />
+    <rect x="906" y="268" width="80" height="84" rx="4" fill="url(#fins)" />
+    <rect x="996" y="268" width="100" height="84" rx="4" fill="#0a1018" />
+    <circle cx="1046" cy="310" r="34" fill="url(#fan)" stroke="#94a3b8" stroke-opacity="0.4" stroke-width="2" />
+    <g fill="#1e293b" stroke="#64748b" stroke-opacity="0.4">
+      <path d="M1042 302c-18-18-16-36 0-44 12 6 16 18 12 34z" />
+      <path d="M1050 304c20-14 36-10 42 4-8 10-22 12-38 6z" />
+      <path d="M1048 316c14 20 10 36-4 42-10-8-12-22-6-38z" />
+      <path d="M1038 314c-20 14-36 10-42-4 8-10 22-12 38-6z" />
+    </g>
+    <circle cx="1046" cy="310" r="9" fill="#0a1018" stroke="#94a3b8" stroke-width="2" />
+    <rect x="884" y="366" width="234" height="6" rx="3" fill="url(#rgb)" fill-opacity="0.7" />
+    <g fill="#c9a24c">
+      <rect x="900" y="378" width="50" height="8" rx="2" />
+      <rect x="960" y="378" width="50" height="8" rx="2" />
+    </g>
+  </g>
+
+  <!-- placa da frente -->
+  <g transform="rotate(-5 790 330)">
+    <rect x="620" y="238" width="274" height="166" rx="9" fill="url(#gpu)" stroke="#cbd5e1" stroke-opacity="0.45" stroke-width="3" />
+    <rect x="632" y="250" width="250" height="124" rx="7" fill="url(#shroud)" stroke="#94a3b8" stroke-opacity="0.5" stroke-width="2" />
+    <path d="M632 250h250c6 0 10 4 10 10v8H622v-8c0-6 4-10 10-10z" fill="#ffffff" fill-opacity="0.16" />
+    <g>
+      <circle cx="704" cy="312" r="48" fill="url(#rgb)" fill-opacity="0.22" filter="url(#glow)" />
+      <circle cx="704" cy="312" r="46" fill="url(#fan)" stroke="url(#rgb)" stroke-width="3" />
+      <g fill="#1e293b" stroke="#64748b" stroke-opacity="0.4">
+        <path d="M700 302c-22-22-20-46 0-56 16 8 20 24 14 44z" />
+        <path d="M710 306c26-18 46-12 54 4-10 14-28 16-48 8z" />
+        <path d="M708 320c18 26 12 46-4 54-14-10-16-28-8-48z" />
+        <path d="M696 318c-26 18-46 12-54-4 10-14 28-16 48-8z" />
+        <path d="M702 304c10-26 24-34 42-28 6 16-4 32-22 44z" />
+        <path d="M708 308c26 10 34 24 28 42-16 6-32-4-44-22z" />
+        <path d="M706 320c-10 26-24 34-42 28-6-16 4-32 22-44z" />
+        <path d="M700 316c-26-10-34-24-28-42 16-6 32 4 44 22z" />
+      </g>
+      <circle cx="704" cy="312" r="14" fill="#0a1018" stroke="url(#metal)" stroke-width="3" />
+      <circle cx="704" cy="312" r="5" fill="#22d3ee" />
+      <circle cx="846" cy="312" r="48" fill="url(#rgb)" fill-opacity="0.2" filter="url(#glow)" />
+      <circle cx="846" cy="312" r="46" fill="url(#fan)" stroke="url(#rgb)" stroke-width="3" />
+      <g fill="#1e293b" stroke="#64748b" stroke-opacity="0.4">
+        <path d="M842 302c-22-22-20-46 0-56 16 8 20 24 14 44z" />
+        <path d="M852 306c26-18 46-12 54 4-10 14-28 16-48 8z" />
+        <path d="M850 320c18 26 12 46-4 54-14-10-16-28-8-48z" />
+        <path d="M838 318c-26 18-46 12-54-4 10-14 28-16 48-8z" />
+        <path d="M844 304c10-26 24-34 42-28 6 16-4 32-22 44z" />
+        <path d="M850 308c26 10 34 24 28 42-16 6-32-4-44-22z" />
+      </g>
+      <circle cx="846" cy="312" r="14" fill="#0a1018" stroke="url(#metal)" stroke-width="3" />
+      <circle cx="846" cy="312" r="5" fill="#a855f7" />
+    </g>
+    <rect x="632" y="374" width="250" height="7" rx="3.5" fill="url(#rgb)" />
+    <rect x="632" y="388" width="250" height="14" rx="3" fill="#0a1018" stroke="#94a3b8" stroke-opacity="0.4" />
+    <g fill="#c9a24c">
+      <rect x="648" y="392" width="60" height="6" rx="2" />
+      <rect x="718" y="392" width="60" height="6" rx="2" />
+    </g>
+    <path d="M894 250h18v140h-18z" fill="url(#metal)" fill-opacity="0.7" />
+  </g>
+</svg>

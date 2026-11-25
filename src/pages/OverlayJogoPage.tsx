@@ -20,8 +20,7 @@ import {
   DEFAULT_OVERLAY_SETTINGS,
   isValidOverlayHotkey,
 } from '../../electron/shared/overlay-types';
-import { AnimatedHero } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import {
@@ -35,6 +34,7 @@ import {
   Label,
   Switch,
 } from '../components/ui';
+import { HERO_ART } from '../lib/hero-art';
 import { cn } from '../lib/utils';
 
 const POSITIONS: Array<{ value: OverlayPosition; label: string }> = [
@@ -577,7 +577,7 @@ export default function OverlayJogoPage() {
 
   return (
     <div className="space-y-6">
-      <HeroBanner visual={<AnimatedHero path="/overlay-jogo" animation="pulse" />}>
+      <HeroBanner {...HERO_ART['/overlay-jogo']}>
         <PageContent>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -600,9 +600,10 @@ export default function OverlayJogoPage() {
                   <Settings2 className="size-4" />
                 </Button>
               </div>
-              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                Cadastre seus jogos. O overlay sobe sozinho quando um deles abre em borderless.
-              </p>
+              <HeroDescription
+                className="max-w-2xl"
+                text="Cadastre seus jogos. O overlay sobe sozinho quando um deles abre em borderless."
+              />
             </div>
           </div>
         </PageContent>

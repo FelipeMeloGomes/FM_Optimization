@@ -51,10 +51,6 @@ vi.mock('../contexts/SettingsContext', () => ({
   }),
 }));
 
-vi.mock('../components/hero/AnimatedHero', () => ({
-  AnimatedSettings: () => <div data-testid="animated-settings" />,
-}));
-
 const api = {
   getAppVersion: () => Promise.resolve('2.20.0'),
   isPackaged: () => Promise.resolve(false),
@@ -76,10 +72,12 @@ describe('SettingsPage', () => {
     const html = renderToStaticMarkup(<SettingsPage />);
 
     expect(html).toContain('<div class="space-y-6">');
-    expect(html).not.toContain('max-w-lg');
+    expect(html).toContain('alt="Ilustração de console de ajustes com botões e LEDs"');
+    // O limite de largura existe só na descrição animada do hero; os cards não usam max-w.
+    expect(html.match(/max-w-lg/g)?.length).toBe(1);
     expect(html).not.toContain('lg:grid-cols-2');
 
-    // O numero da versão não pode ficar no hero: ele cobre o visual animado.
+    // O numero da versão não pode ficar no hero: ele cobre a ilustração.
     // No SSR a versão ainda não carregou, então o badge antigo renderiza "v…".
     expect(html).not.toContain('>v…<');
     expect(html).toContain('Versao atual');

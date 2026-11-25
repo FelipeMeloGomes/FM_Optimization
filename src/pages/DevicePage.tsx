@@ -1,7 +1,7 @@
 import { ChevronDown, Play, Square } from 'lucide-react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { DeviceHero } from '../components/hero/DeviceHero';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { ScriptBadge } from '../components/ScriptBadge';
 import { Button } from '../components/ui';
@@ -61,8 +61,8 @@ export default function DevicePage({ config, beforeContent }: DevicePageProps) {
 
   return (
     <div className="space-y-6">
-      {/* Hero Banner: foto real do periférico com brilho e texto animados */}
-      <DeviceHero
+      {/* Hero Banner: ilustração real do periférico com brilho e texto animados */}
+      <HeroBanner
         badge="Sistema"
         path={config.path}
         title={config.name}

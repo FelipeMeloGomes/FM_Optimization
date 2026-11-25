@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="fin" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#e2e8f0" />
+      <stop offset="0.25" stop-color="#8d9aa9" />
+      <stop offset="0.6" stop-color="#475569" />
+      <stop offset="1" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="body" x1="690" y1="210" x2="1080" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3c4959" />
+      <stop offset="0.5" stop-color="#1a2431" />
+      <stop offset="1" stop-color="#070d15" />
+    </linearGradient>
+    <radialGradient id="fan" cx="0" cy="0" r="1" gradientTransform="translate(880 320) rotate(70) scale(112)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#334155" />
+      <stop offset="0.7" stop-color="#111b27" />
+      <stop offset="1" stop-color="#050a11" />
+    </radialGradient>
+    <linearGradient id="rgb" x1="740" y1="400" x2="1060" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#f1f5f9" />
+      <stop offset="0.45" stop-color="#8492a2" />
+      <stop offset="1" stop-color="#3c4958" />
+    </linearGradient>
+    <linearGradient id="pipe" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#f1f5f9" />
+      <stop offset="0.5" stop-color="#94a3b8" />
+      <stop offset="1" stop-color="#475569" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="12" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+  </defs>
+
+  <ellipse cx="875" cy="310" rx="290" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="880" cy="450" rx="270" ry="25" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <g transform="rotate(-5 880 320)">
+    <!-- heat pipes -->
+    <g stroke="url(#pipe)" stroke-width="11" stroke-linecap="round" fill="none">
+      <path d="M726 236h300c22 0 36 14 36 36v96" />
+      <path d="M744 220h286c24 0 38 14 38 38v96" />
+      <path d="M762 204h270c26 0 40 14 40 40v92" />
+    </g>
+    <g stroke="#22d3ee" stroke-opacity="0.25" stroke-width="2" fill="none">
+      <path d="M726 232h300c22 0 36 14 36 36v96" />
+      <path d="M762 200h270c26 0 40 14 40 40v92" />
+    </g>
+
+    <!-- aletas do dissipador -->
+    <g fill="url(#fin)" stroke="#e2e8f0" stroke-opacity="0.3">
+      <rect x="700" y="244" width="10" height="164" rx="2" />
+      <rect x="718" y="240" width="10" height="172" rx="2" />
+      <rect x="736" y="236" width="10" height="180" rx="2" />
+      <rect x="754" y="232" width="10" height="188" rx="2" />
+      <rect x="772" y="228" width="10" height="196" rx="2" />
+      <rect x="790" y="224" width="10" height="204" rx="2" />
+      <rect x="808" y="222" width="10" height="208" rx="2" />
+      <rect x="826" y="220" width="10" height="212" rx="2" />
+      <rect x="844" y="220" width="10" height="212" rx="2" />
+      <rect x="862" y="222" width="10" height="208" rx="2" />
+      <rect x="880" y="224" width="10" height="204" rx="2" />
+      <rect x="898" y="228" width="10" height="196" rx="2" />
+      <rect x="916" y="232" width="10" height="188" rx="2" />
+      <rect x="934" y="236" width="10" height="180" rx="2" />
+      <rect x="952" y="240" width="10" height="172" rx="2" />
+      <rect x="970" y="244" width="10" height="164" rx="2" />
+    </g>
+
+    <!-- ventoinha frontal -->
+    <circle cx="880" cy="320" r="116" fill="url(#rgb)" fill-opacity="0.22" filter="url(#glow)" />
+    <circle cx="880" cy="320" r="112" fill="url(#body)" stroke="url(#rgb)" stroke-width="4" />
+    <circle cx="880" cy="320" r="96" fill="url(#fan)" stroke="#94a3b8" stroke-opacity="0.4" stroke-width="2" />
+    <g fill="#1b2635" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="1.5">
+      <path d="M872 310c-30-30-30-62-8-78 20 6 32 26 30 56z" />
+      <path d="M890 312c34-24 62-20 76 2-12 18-36 24-64 14z" />
+      <path d="M886 330c24 34 20 62-2 76-18-12-24-36-14-64z" />
+      <path d="M868 326c-34 24-62 20-76-2 12-18 36-24 64-14z" />
+      <path d="M876 312c8-34 26-50 50-46 8 20 0 42-24 58z" />
+      <path d="M886 316c34 8 50 26 46 50-20 8-42 0-58-24z" />
+      <path d="M884 328c-8 34-26 50-50 46-8-20 0-42 24-58z" />
+      <path d="M874 324c-34-8-50-26-46-50 20-8 42 0 58 24z" />
+    </g>
+    <circle cx="880" cy="320" r="30" fill="#0a1018" stroke="url(#chrome)" stroke-width="4" />
+    <circle cx="880" cy="320" r="10" fill="#22d3ee" fill-opacity="0.7" />
+    <circle cx="880" cy="320" r="112" stroke="url(#rgb)" stroke-width="6" stroke-dasharray="44 18" stroke-linecap="round" fill="none" />
+
+    <!-- base e parafusos -->
+    <path d="M700 408h360v22H700z" fill="url(#body)" stroke="#94a3b8" stroke-opacity="0.35" />
+    <rect x="704" y="428" width="352" height="6" rx="3" fill="url(#rgb)" fill-opacity="0.6" />
+    <g fill="#0a1018" stroke="#cbd5e1" stroke-opacity="0.5" stroke-width="2">
+      <circle cx="770" cy="420" r="6" />
+      <circle cx="990" cy="420" r="6" />
+    </g>
+    <g stroke="#cbd5e1" stroke-opacity="0.5" stroke-width="1.5">
+      <path d="M767 420h6M987 420h6" />
+    </g>
+  </g>
+</svg>

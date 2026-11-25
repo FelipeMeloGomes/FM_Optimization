@@ -17,8 +17,7 @@ import type {
   OptimizationTweakStatus,
 } from '../../electron/shared/ipc-types';
 import { showEnhancedToast } from '../components/EnhancedToast';
-import { AnimatedHero } from '../components/hero/AnimatedHero';
-import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
 import { RouteIcon } from '../components/hero/RouteIcon';
 import { PageSkeleton } from '../components/PageSkeleton';
 import BlurText from '../components/react-bits/BlurText';
@@ -42,6 +41,7 @@ import {
   Switch,
 } from '../components/ui';
 import { useSettingsContext } from '../contexts/SettingsContext';
+import { HERO_ART } from '../lib/hero-art';
 
 const STATUS_LABELS: Record<OptimizationTweakStatus['status'], string> = {
   applied: 'Aplicado',
@@ -175,7 +175,7 @@ export default function OptimizePcPage() {
 
   return (
     <div className="space-y-6">
-      <HeroBanner visual={<AnimatedHero path="/otimizar-pc" animation="scan" />}>
+      <HeroBanner {...HERO_ART['/otimizar-pc']}>
         <div className="relative p-6">
           <div className="flex items-center gap-2 mb-2">
             <RouteIcon path="/otimizar-pc" />
@@ -184,10 +184,7 @@ export default function OptimizePcPage() {
             </span>
           </div>
           <h2 className="text-lg font-bold text-foreground">Otimize seu PC em um clique</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Comparamos o estado atual do Windows com 16 ajustes persistentes conhecidos. Você vê o
-            que já está aplicado, o que falta e aplica tudo de uma vez com um ponto de restauração.
-          </p>
+          <HeroDescription text="Comparamos o estado atual do Windows com 16 ajustes persistentes conhecidos. Você vê o que já está aplicado, o que falta e aplica tudo de uma vez com um ponto de restauração." />
         </div>
       </HeroBanner>
 

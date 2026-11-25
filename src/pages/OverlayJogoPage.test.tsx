@@ -87,6 +87,20 @@ afterEach(() => {
 });
 
 describe('OverlayJogoPage', () => {
+  it('mostra o headset ilustrado e mantém a engrenagem de configurações no banner', async () => {
+    installApi();
+    render(<OverlayJogoPage />);
+
+    expect(
+      await screen.findByRole('img', { name: 'Ilustração de headset gamer com microfone' })
+    ).toBeTruthy();
+    const settings = screen.getByRole('button', { name: 'Configurações do overlay' });
+    expect(settings).toBeTruthy();
+
+    fireEvent.click(settings);
+    expect(await screen.findByLabelText('FPS alvo')).toBeTruthy();
+  });
+
   it('mostra cards de jogo no esqueleto enquanto a lista carrega', () => {
     installApi();
 
@@ -258,7 +272,7 @@ describe('OverlayJogoPage', () => {
     const api = installApi({ games: [covered], coverUrl: 'data:image/jpeg;base64,Y2FwYQ==' });
     render(<OverlayJogoPage />);
 
-    expect(await screen.findByRole('img')).toBeTruthy();
+    expect(await screen.findByRole('img', { name: 'Capa de Counter-Strike 2' })).toBeTruthy();
     expect(api.getOverlayCover).toHaveBeenCalledWith('730.jpg');
     expect(screen.queryByText('CS')).toBeNull();
   });

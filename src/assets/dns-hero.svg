@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" fill="none">
+  <defs>
+    <linearGradient id="rack" x1="660" y1="190" x2="1090" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#344150" />
+      <stop offset="0.45" stop-color="#151f2b" />
+      <stop offset="1" stop-color="#060b12" />
+    </linearGradient>
+    <linearGradient id="unit" x1="700" y1="220" x2="1050" y2="390" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2b3848" />
+      <stop offset="0.5" stop-color="#131d29" />
+      <stop offset="1" stop-color="#080e16" />
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#e2e8f0" />
+      <stop offset="0.45" stop-color="#8492a2" />
+      <stop offset="1" stop-color="#3c4958" />
+    </linearGradient>
+    <linearGradient id="rgb" x1="660" y1="420" x2="1080" y2="390" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" />
+      <stop offset="0.5" stop-color="#06b6d4" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="10" />
+    </filter>
+    <filter id="ambient" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+    <pattern id="vents" width="12" height="12" patternUnits="userSpaceOnUse">
+      <rect x="1" y="1" width="7" height="7" rx="1.5" fill="#03070d" fill-opacity="0.8" />
+    </pattern>
+  </defs>
+
+  <ellipse cx="875" cy="310" rx="300" ry="120" fill="#22d3ee" fill-opacity="0.06" filter="url(#ambient)" />
+  <ellipse cx="880" cy="450" rx="280" ry="25" fill="#000814" fill-opacity="0.85" filter="url(#ambient)" />
+
+  <g transform="rotate(-5 880 320)">
+    <!-- estrutura do rack -->
+    <path d="M672 190h404c14 0 24 10 24 24v200c0 14-10 24-24 24H672c-14 0-24-10-24-24V214c0-14 10-24 24-24z" fill="url(#rack)" stroke="#94a3b8" stroke-opacity="0.4" stroke-width="2.5" />
+    <rect x="660" y="202" width="12" height="214" rx="4" fill="url(#metal)" fill-opacity="0.6" />
+    <rect x="1076" y="202" width="12" height="214" rx="4" fill="url(#metal)" fill-opacity="0.6" />
+    <g fill="#0a1018" stroke="#cbd5e1" stroke-opacity="0.5" stroke-width="1.5">
+      <circle cx="666" cy="216" r="4" />
+      <circle cx="1082" cy="216" r="4" />
+      <circle cx="666" cy="402" r="4" />
+      <circle cx="1082" cy="402" r="4" />
+    </g>
+
+    <!-- unidades -->
+    <g>
+      <rect x="688" y="212" width="372" height="56" rx="5" fill="url(#unit)" stroke="#64748b" stroke-opacity="0.5" />
+      <rect x="688" y="212" width="372" height="6" rx="3" fill="#ffffff" fill-opacity="0.13" />
+      <rect x="700" y="226" width="176" height="32" rx="3" fill="url(#vents)" />
+      <g fill="#94a3b8">
+        <rect x="894" y="228" width="26" height="12" rx="2" />
+        <rect x="928" y="228" width="26" height="12" rx="2" />
+        <rect x="962" y="228" width="26" height="12" rx="2" />
+      </g>
+      <circle cx="1034" cy="234" r="4" fill="#4ade80" />
+      <circle cx="1048" cy="234" r="4" fill="#22d3ee" />
+
+      <rect x="688" y="276" width="372" height="56" rx="5" fill="url(#unit)" stroke="#64748b" stroke-opacity="0.5" />
+      <rect x="688" y="276" width="372" height="6" rx="3" fill="#ffffff" fill-opacity="0.13" />
+      <rect x="700" y="290" width="176" height="32" rx="3" fill="url(#vents)" />
+      <g fill="#94a3b8">
+        <rect x="894" y="292" width="26" height="12" rx="2" />
+        <rect x="928" y="292" width="26" height="12" rx="2" />
+        <rect x="962" y="292" width="26" height="12" rx="2" />
+      </g>
+      <circle cx="1034" cy="298" r="4" fill="#4ade80" />
+      <circle cx="1048" cy="298" r="4" fill="#a3e635" />
+
+      <rect x="688" y="340" width="372" height="56" rx="5" fill="url(#unit)" stroke="#64748b" stroke-opacity="0.5" />
+      <rect x="688" y="340" width="372" height="6" rx="3" fill="#ffffff" fill-opacity="0.13" />
+      <rect x="700" y="354" width="176" height="32" rx="3" fill="url(#vents)" />
+      <g fill="#c9a24c">
+        <rect x="894" y="356" width="22" height="12" rx="2" />
+        <rect x="922" y="356" width="22" height="12" rx="2" />
+      </g>
+      <rect x="956" y="356" width="34" height="12" rx="2" fill="#1b2635" stroke="#22d3ee" stroke-opacity="0.5" />
+      <circle cx="1034" cy="362" r="4" fill="#22d3ee" />
+      <circle cx="1048" cy="362" r="4" fill="#8b5cf6" />
+    </g>
+
+    <!-- LEDs com brilho -->
+    <g filter="url(#glow)">
+      <circle cx="1034" cy="234" r="8" fill="#4ade80" />
+      <circle cx="1048" cy="298" r="8" fill="#a3e635" />
+      <circle cx="1034" cy="362" r="8" fill="#22d3ee" />
+      <circle cx="1048" cy="362" r="8" fill="#8b5cf6" />
+    </g>
+    <rect x="688" y="400" width="372" height="7" rx="3.5" fill="url(#rgb)" fill-opacity="0.7" />
+    <text x="874" y="392" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="9" text-anchor="middle" letter-spacing="3">DNS / RACK 01</text>
+  </g>
+</svg>

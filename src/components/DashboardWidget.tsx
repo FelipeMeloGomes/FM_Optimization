@@ -11,7 +11,7 @@ interface DashboardWidgetProps {
   value: string;
   detail?: string;
   progress?: number;
-  status?: 'default' | 'good' | 'warning' | 'danger';
+  status?: 'default' | 'accent' | 'good' | 'warning' | 'danger';
   className?: string;
 }
 
@@ -19,6 +19,11 @@ const STATUS_STYLES = {
   default: {
     iconBg: 'bg-muted',
     iconColor: 'text-muted-foreground',
+    border: 'hover:border-primary/30',
+  },
+  accent: {
+    iconBg: 'bg-primary/10',
+    iconColor: 'text-primary',
     border: 'hover:border-primary/30',
   },
   good: {
