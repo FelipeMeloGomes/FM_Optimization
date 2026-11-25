@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { CommandPalette } from '../components/CommandPalette';
@@ -6,17 +5,14 @@ import { useSettingsContext } from '../contexts/SettingsContext';
 import { useCommandPalette } from '../hooks/use-command-palette';
 import { useKeyboardShortcuts } from '../hooks/use-keyboard-shortcuts';
 import { useScriptExecutionToast } from '../hooks/use-script-execution-toast';
-import { useSmoothScroll } from '../hooks/use-smooth-scroll';
 import { useUpdateToast } from '../hooks/use-update-toast';
 import { getThemeById } from '../lib/theme-config';
 import { Sidebar } from './Sidebar';
 import { TitleBar } from './TitleBar';
 
 export function AppLayout() {
-  const mainRef = useRef<HTMLDivElement>(null);
   const { settings } = useSettingsContext();
   const { isOpen, open, close } = useCommandPalette();
-  useSmoothScroll(mainRef);
   useUpdateToast();
   useScriptExecutionToast();
   useKeyboardShortcuts();
@@ -47,11 +43,7 @@ export function AppLayout() {
       <div className="relative flex flex-1 overflow-hidden">
         <Sidebar openCommandPalette={open} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <main
-            ref={mainRef}
-            id="main-content"
-            className="flex-1 overflow-y-auto overscroll-contain p-6"
-          >
+          <main id="main-content" className="flex-1 overflow-y-auto overscroll-contain p-6">
             <Outlet />
           </main>
         </div>

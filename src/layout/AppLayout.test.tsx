@@ -1,11 +1,27 @@
 // @vitest-environment jsdom
 
+import { render } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import type { AppSettings } from '../../electron/shared/ipc-types';
 
-const { mockTheme } = vi.hoisted(() => ({
+const { mockTheme, lenisState } = vi.hoisted(() => ({
   mockTheme: { value: 'dark' as AppSettings['theme'] },
+  lenisState: { instances: 0 },
+}));
+
+/**
+ * A rolagem da página precisa ser a nativa do navegador: o Lenis interceptava a
+ * roda e travava antes do fim em listas virtualizadas (Tarefas agendadas).
+ */
+vi.mock('lenis', () => ({
+  default: class {
+    dimensions = { resize: () => {} };
+    constructor() {
+      lenisState.instances++;
+    }
+    destroy() {}
+  },
 }));
 
 /**
@@ -21,7 +37,6 @@ vi.mock('../hooks/use-command-palette', () => ({
   useCommandPalette: () => ({ isOpen: false, open: () => {}, close: () => {} }),
 }));
 vi.mock('../hooks/use-keyboard-shortcuts', () => ({ useKeyboardShortcuts: () => {} }));
-vi.mock('../hooks/use-smooth-scroll', () => ({ useSmoothScroll: () => {} }));
 vi.mock('../hooks/use-update-toast', () => ({ useUpdateToast: () => {} }));
 vi.mock('../hooks/use-script-execution-toast', () => ({ useScriptExecutionToast: () => {} }));
 vi.mock('sonner', () => ({
@@ -35,6 +50,15 @@ vi.mock('react-router-dom', () => ({ Outlet: () => <main>conteudo</main> }));
 import { AppLayout } from './AppLayout';
 
 describe('AppLayout', () => {
+  it('usa a rolagem nativa, sem instanciar Lenis', () => {
+    lenisState.instances = 0;
+
+    render(<AppLayout />);
+
+    expect(lenisState.instances).toBe(0);
+    expect(document.getElementById('main-content')?.className).toContain('overflow-y-auto');
+  });
+
   it('renderiza o conteudo sem fundo animado', () => {
     const html = renderToStaticMarkup(<AppLayout />);
 
