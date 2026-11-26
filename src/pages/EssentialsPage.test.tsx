@@ -111,6 +111,12 @@ describe('EssentialsPage — conteúdo', () => {
     expect(screen.getByText(/Informações detalhadas do processador/)).toBeDefined();
   });
 
+  it('inclui a personalização na descrição do banner', () => {
+    render(<EssentialsPage />);
+
+    expect(screen.getByText(/Utilitários para diagnosticar.*personalizar/)).toBeDefined();
+  });
+
   it('usa o ícone de fallback para programas desconhecidos', () => {
     essentials({
       state: {

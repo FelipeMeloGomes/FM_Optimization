@@ -44,7 +44,7 @@ As oito páginas de tweaks (Input Lag, Otimização do sistema, Personalização
 ### Formatação
 
 - **Debloat** — inventário dos apps Appx instalados e provisionados, um por linha, com busca, abas (Todos, Recomendados e Protegidos), atalho “Selecionar recomendados”, seleção individual ou em lote e remoção confirmada. A aba Todos lista apenas os apps removíveis; apps de sistema, frameworks, drivers de placa de vídeo (AMD, Intel e NVIDIA), componentes marcados como não removíveis e pacotes com nome GUID ficam só na aba Protegidos, com cadeado, e são recusados pelo main mesmo que a interface insista. A lista é virtualizada e acompanha a rolagem da página. Os nomes vêm do manifesto do Windows; componentes de sistema com nome GUID são identificados pelo caminho de instalação, em vez de aparecerem como texto quebrado. Sem administrador é possível selecionar itens para consulta, mas a remoção fica bloqueada e a página oferece reiniciar como admin.
-- **Essenciais PC** — instalação via winget de CPU-Z, HWMonitor, MSI Afterburner, 7-Zip, WinRAR, Brave, qBittorrent, DirectX (runtime legado) e BCUninstaller, com progresso na própria página. O winget baixa do canal oficial e confere o hash do manifesto antes de rodar o instalador.
+- **Essenciais PC** — instalação via winget de CPU-Z, HWMonitor, MSI Afterburner, 7-Zip, WinRAR, Brave, qBittorrent, DirectX (runtime legado), BCUninstaller e Windhawk (mods de personalização), com progresso na própria página. O winget baixa do canal oficial e confere o hash do manifesto antes de rodar o instalador.
 - **Personalização** — barra de tarefas e menu Iniciar limpos, menu de contexto clássico, animações, transparência e efeitos visuais. Inclui os mods de Discord (Equicord + FakeNitro) e Spotify (Spicetify), cada um com o selo de reverter.
 
 ### Rede e DNS
@@ -126,6 +126,8 @@ Para gerar a build de produção em `out/`:
 ```bash
 bun run build
 ```
+
+A build também grava `renderer-stats.html` na raiz do projeto com o relatório de tamanho dos bundles. Ele não abre o navegador automaticamente: abra o arquivo quando quiser inspecionar.
 
 ### Instalador
 

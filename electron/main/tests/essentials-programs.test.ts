@@ -31,6 +31,22 @@ describe('catalogo de programas essenciais', () => {
     expect(getEssentialProgram('qbittorrent')?.pageUrl).toBe('https://www.qbittorrent.org/');
   });
 
+  it('inclui o Windhawk com o id oficial do winget e a pagina do projeto', () => {
+    const windhawk = getEssentialProgram('windhawk');
+
+    expect(windhawk?.name).toBe('Windhawk');
+    expect(windhawk?.packageId).toBe('RamenSoftware.Windhawk');
+    expect(windhawk?.pageUrl).toBe('https://windhawk.net/');
+    expect(windhawk?.description).toMatch(/personaliza/i);
+  });
+
+  it('avisa que os mods do Windhawk executam codigo de terceiros', () => {
+    const warning = getEssentialProgram('windhawk')?.warning ?? '';
+
+    expect(warning).toMatch(/mods/i);
+    expect(warning).toMatch(/código/i);
+  });
+
   it('mantem o 7-Zip no catalogo', () => {
     expect(getEssentialProgram('7-zip')?.packageId).toBe('7zip.7zip');
   });

@@ -262,7 +262,7 @@ export default function EssentialsPage() {
             </span>
           </div>
           <h2 className="text-lg font-bold text-foreground">App Essenciais PC</h2>
-          <HeroDescription text="Utilitários para diagnosticar, monitorar, ajustar, compactar, navegar, baixar e desinstalar programas no PC, além do runtime do DirectX para jogos antigos. Todos são instalados pelo winget, que baixa do canal oficial do fornecedor e confere o hash do manifesto antes de rodar." />
+          <HeroDescription text="Utilitários para diagnosticar, monitorar, ajustar, personalizar, compactar, navegar, baixar e desinstalar programas no PC, além do runtime do DirectX para jogos antigos. Todos são instalados pelo winget, que baixa do canal oficial do fornecedor e confere o hash do manifesto antes de rodar." />
         </div>
       </HeroBanner>
 

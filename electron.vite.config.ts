@@ -75,7 +75,8 @@ export default defineConfig({
       }
     },
     plugins: [react(), tailwindcss(), visualizer({
-      open: true,
+      // O relatório é gravado em renderer-stats.html; abrir sozinho rouba o foco do navegador.
+      open: false,
       gzipSize: true,
       brotliSize: true,
       filename: 'renderer-stats.html',

@@ -94,6 +94,16 @@ export const ESSENTIAL_PROGRAMS: EssentialProgram[] = [
     warning:
       'É um desinstalador de verdade: revise a lista antes de confirmar e não remova componentes do próprio Windows.',
   },
+  {
+    id: 'windhawk',
+    name: 'Windhawk',
+    description:
+      'Personaliza o Windows e outros programas com mods da comunidade para a barra de tarefas, o Explorer e a aparência do sistema, com ajustes fáceis de ativar e desativar.',
+    pageUrl: 'https://windhawk.net/',
+    packageId: 'RamenSoftware.Windhawk',
+    warning:
+      'Os mods da comunidade executam código dentro de outros programas. Ative apenas os que você confia e desative se algo ficar instável.',
+  },
 ];
 
 export function getEssentialProgram(id: string): EssentialProgram | undefined {
