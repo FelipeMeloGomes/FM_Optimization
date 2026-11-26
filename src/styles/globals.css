@@ -22,6 +22,7 @@
   --color-border: #1e2a42;
   --color-input: #1a2540;
   --color-ring: #22d3ee;
+  --color-overlay: #050810;
   --color-sidebar-background: #0a0f1c;
   --color-sidebar-foreground: #d4dae5;
   --color-sidebar-primary: #22d3ee;
@@ -276,6 +277,7 @@
   --color-border: #d5dbe5;
   --color-input: #e2e6ee;
   --color-ring: #0d9488;
+  --color-overlay: #050810;
   --color-sidebar-background: #e8ecf2;
   --color-sidebar-foreground: #1a1d28;
   --color-sidebar-primary: #0d9488;
@@ -309,6 +311,7 @@
   --color-warning: color-mix(in srgb, var(--color-primary) 80%, var(--color-foreground));
   --color-info: color-mix(in srgb, var(--color-primary) 60%, var(--color-foreground));
   --color-selection: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  --color-overlay: #050810;
 }
 
 /* ─── Dark Theme: "Terminal" ─── */
@@ -331,6 +334,7 @@
   --color-border: #1e2a42;
   --color-input: #1a2540;
   --color-ring: #22d3ee;
+  --color-overlay: #050810;
   --color-sidebar-background: #0a0f1c;
   --color-sidebar-foreground: #d4dae5;
   --color-sidebar-primary: #22d3ee;
@@ -370,6 +374,7 @@
   --color-border: #1e1e42;
   --color-input: #16163a;
   --color-ring: #a78bfa;
+  --color-overlay: #050810;
   --color-sidebar-background: #08081a;
   --color-sidebar-foreground: #c8c8d8;
   --color-sidebar-primary: #a78bfa;
@@ -409,6 +414,7 @@
   --color-border: #362e24;
   --color-input: #2a221a;
   --color-ring: #fbbf24;
+  --color-overlay: #050810;
   --color-sidebar-background: #14100c;
   --color-sidebar-foreground: #e8e0d4;
   --color-sidebar-primary: #fbbf24;
@@ -448,6 +454,7 @@
   --color-border: #1c4030;
   --color-input: #142e24;
   --color-ring: #34d399;
+  --color-overlay: #050810;
   --color-sidebar-background: #081610;
   --color-sidebar-foreground: #d0f0e0;
   --color-sidebar-primary: #34d399;
@@ -489,6 +496,7 @@
   --color-border: #28283e;
   --color-input: #18182a;
   --color-ring: #d4a017;
+  --color-overlay: #050810;
   --color-sidebar-background: #06060c;
   --color-sidebar-foreground: #e0dcd4;
   --color-sidebar-primary: #d4a017;

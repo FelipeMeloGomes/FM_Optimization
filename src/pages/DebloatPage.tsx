@@ -393,8 +393,16 @@ export default function DebloatPage() {
                       />
                     )}
 
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <Package className="size-4 text-muted-foreground" aria-hidden="true" />
+                    <span
+                      className={cn(
+                        'flex size-8 shrink-0 items-center justify-center rounded-lg',
+                        locked ? 'bg-muted' : 'bg-primary/10'
+                      )}
+                    >
+                      <Package
+                        className={cn('size-4', locked ? 'text-muted-foreground' : 'text-primary')}
+                        aria-hidden="true"
+                      />
                     </span>
 
                     <div className="min-w-0 flex-1">

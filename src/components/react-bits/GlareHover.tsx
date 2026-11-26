@@ -88,7 +88,7 @@ const GlareHover = ({
   borderRadius = '10px',
   borderColor = 'transparent',
   children,
-  glareColor = '#ffffff',
+  glareColor = 'var(--color-primary)',
   glareOpacity = 0.5,
   glareAngle = -45,
   glareSize = 30,
@@ -119,7 +119,9 @@ const GlareHover = ({
     const glare = glareRef.current;
     if (!root || !glare) return;
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // O Electron pode reportar "reduce" no primeiro frame e corrigir depois;
+    // consultar no evento evita congelar o brilho com o valor da montagem.
+    const prefersReduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const geometry = { band: 0, reach: 0, ux: 0, uy: -1, angle: 0 };
     const state = {
       pos: 0,
@@ -199,7 +201,7 @@ const GlareHover = ({
     };
 
     const sweep = (sign: number) => {
-      if (reduced || !geometry.reach) return;
+      if (prefersReduced() || !geometry.reach) return;
       const end = sign * geometry.reach;
       const from = state.sweep || Math.abs(state.pos) < geometry.reach ? state.pos : -end;
       if (from === end) return;
@@ -232,7 +234,7 @@ const GlareHover = ({
           state.pos = Math.max(-geometry.reach, Math.min(geometry.reach, along(event)));
           state.velocity = 0;
         }
-        state.presenceTarget = reduced ? 0 : 1;
+        state.presenceTarget = prefersReduced() ? 0 : 1;
         follow(event);
       }
     };
@@ -260,7 +262,7 @@ const GlareHover = ({
 
     const schedule = () => {
       window.clearTimeout(timer);
-      if (mode !== 'loop' || reduced) return;
+      if (mode !== 'loop' || prefersReduced()) return;
       timer = window.setTimeout(() => {
         if (state.visible && !document.hidden) sweep(1);
         schedule();

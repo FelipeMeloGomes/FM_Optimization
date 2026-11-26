@@ -5,7 +5,13 @@ import { useScriptExecutionContext } from '../contexts/ScriptExecutionContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
 
 export function useScriptPage(categories: string | string[]) {
-  const { state, filteredScripts, setCategoryFilter, setSubcategoryFilter } = useScriptContext();
+  const {
+    state,
+    filteredScripts,
+    setCategoryFilter,
+    setSubcategoryFilter,
+    retry: reloadScripts,
+  } = useScriptContext();
   const { activeExecution, execute, cancel, batch, executeBatch } = useScriptExecutionContext();
   const { settings } = useSettingsContext();
   const [confirmScript, setConfirmScript] = useState<ScriptEntry | null>(null);
@@ -106,5 +112,6 @@ export function useScriptPage(categories: string | string[]) {
     setConfirmBulkScripts,
     handleConfirmBulk,
     clearFailures,
+    reloadScripts,
   };
 }

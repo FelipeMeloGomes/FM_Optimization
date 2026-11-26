@@ -31,13 +31,13 @@ export function ScriptBadge({ script }: ScriptBadgeProps) {
           variant="outline"
           className="gap-1 font-mono text-[10px] px-1.5 py-0 shrink-0 border-success/50 text-success"
         >
-          <Check className="size-3" />
+          <Check className="size-3" aria-hidden="true" />
           Aplicado
         </Badge>
       )}
       {script.requiresAdmin && (
         <Badge variant="destructive" className="gap-1 font-mono text-[10px] px-1.5 py-0 shrink-0">
-          <Shield className="size-3" />
+          <Shield className="size-3" aria-hidden="true" />
           Admin
         </Badge>
       )}
@@ -46,7 +46,7 @@ export function ScriptBadge({ script }: ScriptBadgeProps) {
           variant="outline"
           className="gap-1 font-mono text-[10px] px-1.5 py-0 shrink-0 border-warning/50 text-warning"
         >
-          <RotateCcw className="size-3" />
+          <RotateCcw className="size-3" aria-hidden="true" />
           Reiniciar
         </Badge>
       )}

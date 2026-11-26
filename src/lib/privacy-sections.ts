@@ -12,9 +12,9 @@ export const PRIVACY_SECTIONS: AppSection[] = [
     description:
       'Desative a telemetria e a coleta de dados do Windows e bloqueie a instalacao forcada de apps sugeridos.',
     icon: 'shield',
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/20',
     scriptIds: ['apps-1', 'apps-2'],
   },
 ];

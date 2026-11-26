@@ -16,9 +16,9 @@ export const PERSONALIZATION_SECTIONS: AppSection[] = [
     description:
       'Deixe a barra de tarefas e o menu Iniciar mais limpos e recupere o menu de contexto clássico do Windows 10.',
     icon: 'palette',
-    color: 'text-cyan-400',
-    bgColor: 'bg-cyan-500/10',
-    borderColor: 'border-cyan-500/20',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    borderColor: 'border-primary/20',
     scriptIds: ['tweaks-1', 'builtin-86'],
   },
   {
@@ -27,9 +27,9 @@ export const PERSONALIZATION_SECTIONS: AppSection[] = [
     description:
       'Desligue animações, transparência e outros efeitos para deixar a interface mais leve. Reduz o uso de CPU e GPU na área de trabalho.',
     icon: 'monitor',
-    color: 'text-violet-400',
-    bgColor: 'bg-violet-500/10',
-    borderColor: 'border-violet-500/20',
+    color: 'text-accent',
+    bgColor: 'bg-accent/10',
+    borderColor: 'border-accent/20',
     scriptIds: ['tweaks-2', 'builtin-32'],
   },
   {
@@ -38,9 +38,9 @@ export const PERSONALIZATION_SECTIONS: AppSection[] = [
     description:
       'Instale o Equicord com o plugin FakeNitro para desbloquear emotes, stickers e uploads maiores. Inclui opção de reverter.',
     icon: 'discord',
-    color: 'text-violet-400',
-    bgColor: 'bg-violet-500/10',
-    borderColor: 'border-violet-500/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/20',
     scriptIds: ['apps-4', 'apps-5'],
   },
   {
@@ -49,9 +49,9 @@ export const PERSONALIZATION_SECTIONS: AppSection[] = [
     description:
       'Debloat do Spotify com Spicetify: bloqueador de anúncios, Marketplace de temas e customização completa. Inclui opção de reverter.',
     icon: 'music',
-    color: 'text-green-400',
-    bgColor: 'bg-green-500/10',
-    borderColor: 'border-green-500/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/20',
     scriptIds: ['apps-6', 'apps-7'],
     warning: 'Não funciona com o Spotify da Microsoft Store. Instale a versão desktop.',
   },

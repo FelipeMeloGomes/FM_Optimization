@@ -7,9 +7,9 @@ export const REPAIR_SECTIONS: AppSection[] = [
     name: 'Integridade do sistema',
     description: 'Verifique e repare arquivos corrompidos do Windows e erros no disco.',
     icon: 'shield',
-    color: 'text-emerald-400',
-    bgColor: 'bg-emerald-500/10',
-    borderColor: 'border-emerald-500/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/20',
     scriptIds: ['builtin-87', 'builtin-40', 'builtin-64'],
   },
 ];

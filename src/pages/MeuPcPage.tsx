@@ -481,18 +481,21 @@ export default function MeuPcPage() {
             label="Memória"
             value={formatMemoryTotal(memory.total)}
             detail={`${memory.type} · ${memory.frequency} · ${memory.slotsUsed ?? memory.slots} de ${memory.slotsTotal ?? memory.slots} slots`}
+            status="accent"
           />
           <DashboardWidget
             icon={HardDrive}
             label="Armazenamento"
             value={`${drives.length} ${drives.length === 1 ? 'unidade' : 'unidades'}`}
             detail={storageDetail || 'Nenhuma unidade detectada'}
+            status="accent"
           />
           <DashboardWidget
             icon={Layers3}
             label="Caches"
             value={cacheValues}
             detail={`L1 / L2 / L3 · ${cpu.model}`}
+            status="accent"
           />
         </div>
       </div>

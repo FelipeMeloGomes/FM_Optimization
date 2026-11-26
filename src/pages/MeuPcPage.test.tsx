@@ -345,10 +345,17 @@ describe('MeuPcPage', () => {
     expect(itens.queryByText('—')).toBeNull();
   });
 
-  it('usa as cores do tema nos ícones dos widgets de Componentes', () => {
+  it('usa as cores do tema nos ícones de todos os widgets', () => {
     const { container } = render(<MeuPcPage />);
 
-    for (const label of ['Processador', 'Placa de vídeo', 'Placa-mãe']) {
+    for (const label of [
+      'Processador',
+      'Placa de vídeo',
+      'Placa-mãe',
+      'Memória',
+      'Armazenamento',
+      'Caches',
+    ]) {
       const icone = iconDoWidget(container, label);
       expect(icone.parentElement?.className).toContain('bg-primary/10');
       expect(icone.getAttribute('class')).toContain('text-primary');

@@ -45,6 +45,7 @@ function Probe() {
     subcategories,
     setCategoryFilter,
     setSubcategoryFilter,
+    retry,
   } = useScriptContext();
   return (
     <div>
@@ -68,6 +69,9 @@ function Probe() {
       </button>
       <button type="button" onClick={() => setSubcategoryFilter('')}>
         limpar subcategoria
+      </button>
+      <button type="button" onClick={retry}>
+        tentar novamente
       </button>
     </div>
   );
@@ -116,6 +120,23 @@ describe('ScriptProvider', () => {
 
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('error'));
     expect(screen.getByTestId('error').textContent).toBe('falha crua');
+  });
+
+  it('recarrega o catálogo após uma falha quando retry é chamado', async () => {
+    const api = installApi();
+    api.getScripts.mockRejectedValueOnce(new Error('catálogo indisponível'));
+    renderProvider();
+
+    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('error'));
+    expect(api.getScripts).toHaveBeenCalledTimes(1);
+
+    act(() => screen.getByRole('button', { name: 'tentar novamente' }).click());
+
+    expect(screen.getByTestId('status').textContent).toBe('loading');
+    await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+    expect(screen.getByTestId('error').textContent).toBe('');
+    expect(screen.getByTestId('filtered').textContent).toBe('dns,proxy,firewall,limpeza,ping');
+    expect(api.getScripts).toHaveBeenCalledTimes(2);
   });
 
   it('filtra por categoria e recalcula as subcategorias da categoria', async () => {

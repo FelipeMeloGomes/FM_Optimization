@@ -11,6 +11,7 @@ const store = vi.hoisted(() => ({
   activeExecution: null as string | null,
   handleCancel: vi.fn(),
   handleApply: vi.fn(),
+  reloadScripts: vi.fn(),
   page: vi.fn(),
 }));
 
@@ -29,6 +30,7 @@ vi.mock('../hooks/use-script-page', () => ({
       handleConfirmBulk: () => {},
       failedScripts: [],
       clearFailures: () => {},
+      reloadScripts: store.reloadScripts,
     };
   },
 }));
@@ -75,6 +77,7 @@ beforeEach(() => {
   store.activeExecution = null;
   store.handleCancel.mockClear();
   store.handleApply.mockClear();
+  store.reloadScripts.mockClear();
   store.page.mockClear();
 });
 
@@ -123,6 +126,17 @@ describe('TweaksPage — estados', () => {
 
     expect(bodyText()).toContain('Erro ao carregar tweaks');
     expect(bodyText()).toContain('catálogo indisponível');
+  });
+
+  it('oferece Tentar novamente no erro e recarrega o catálogo', () => {
+    store.state = { status: 'error', error: 'catálogo indisponível' };
+
+    render(<TweaksPage {...baseProps()} />);
+
+    const retry = screen.getByRole('button', { name: 'Tentar novamente' });
+    expect(retry.className).toContain('border-input');
+    fireEvent.click(retry);
+    expect(store.reloadScripts).toHaveBeenCalledTimes(1);
   });
 
   it('usa heroContent no lugar do HeroBanner e o coloca antes do beforeContent', () => {

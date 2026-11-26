@@ -5,13 +5,13 @@ import { describe, expect, it } from 'vitest';
 
 const SOURCE = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const HARDCODED_COLOR =
-  /\b(?:text|bg|border|from|via|to|ring|fill|stroke|shadow)-(?:amber|emerald|yellow|red|cyan|blue|violet|rose|orange|green|pink|indigo|sky|lime|teal|purple|fuchsia)-\d{3}/;
+  /\b(?:text|bg|border|from|via|to|ring|fill|stroke|shadow)-(?:(?:amber|emerald|yellow|red|cyan|blue|violet|rose|orange|green|pink|indigo|sky|lime|teal|purple|fuchsia|gray|slate|zinc|neutral|stone)-\d{3}|(?:white|black)(?:\/\d+)?)\b/;
 
-function listSources(directory: string): string[] {
+function listSources(directory: string, extension = '.tsx'): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) return listSources(path);
-    return entry.name.endsWith('.tsx') && !entry.name.endsWith('.test.tsx')
+    if (entry.isDirectory()) return listSources(path, extension);
+    return entry.name.endsWith(extension) && !entry.name.endsWith(`.test${extension}`)
       ? [path.slice(SOURCE.length + 1)]
       : [];
   });
@@ -26,11 +26,14 @@ const GUARDED_SOURCES = [
 
 /** Task 9: todo TSX não-teste, incluindo hooks e contextos. */
 const ALL_TSX = listSources(SOURCE).sort();
+/** Configs em `lib` também pintam cards; o guard cobre `.ts` não-teste. */
+const LIB_SOURCES = listSources(resolve(SOURCE, 'lib'), '.ts').sort();
 const ELLIPSIS_IN_STRING = /['"`][^'"`\n]*\.\.\.[^'"`\n]*['"`]/;
 
 const css = readFileSync(fileURLToPath(new URL('./globals.css', import.meta.url)), 'utf8');
 
 const THEME_BLOCKS = [
+  '@theme {',
   ':root {',
   ':root.dark {',
   ':root.midnight {',
@@ -40,17 +43,20 @@ const THEME_BLOCKS = [
 ];
 
 describe('tokens semânticos dos temas', () => {
-  it.each(['--color-success', '--color-warning', '--color-info', '--color-selection'])(
-    'define %s em todos os temas',
-    (token) => {
-      for (const block of THEME_BLOCKS) {
-        const start = css.indexOf(block);
-        expect(start, `bloco ${block} não encontrado`).toBeGreaterThan(-1);
-        const next = css.indexOf('\n}', start);
-        expect(css.slice(start, next), `${token} ausente em ${block}`).toContain(token);
-      }
+  it.each([
+    '--color-success',
+    '--color-warning',
+    '--color-info',
+    '--color-selection',
+    '--color-overlay',
+  ])('define %s em todos os temas', (token) => {
+    for (const block of THEME_BLOCKS) {
+      const start = css.indexOf(block);
+      expect(start, `bloco ${block} não encontrado`).toBeGreaterThan(-1);
+      const next = css.indexOf('\n}', start);
+      expect(css.slice(start, next), `${token} ausente em ${block}`).toContain(token);
     }
-  );
+  });
 
   it.each(['#5a6a85', '#5a5a7a', '#8a7e6e', '#5a8a70', '#5a5868'])(
     'remove muted-foreground ilegível %s',
@@ -83,6 +89,23 @@ describe('guard de cores fixas', () => {
     const match = source.match(HARDCODED_COLOR);
 
     expect(match, `cor fixa em ${file}: ${match?.join(', ')}`).toBeNull();
+  });
+
+  it.each(LIB_SOURCES)('%s usa apenas tokens de tema', (file) => {
+    const source = readFileSync(resolve(SOURCE, file), 'utf8');
+    const match = source.match(HARDCODED_COLOR);
+
+    expect(match, `cor fixa em ${file}: ${match?.join(', ')}`).toBeNull();
+  });
+
+  it.each([
+    ['components/ui/dialog.tsx', 'bg-overlay/80'],
+    ['components/CommandPalette.tsx', 'bg-overlay/50'],
+  ])('%s usa o token de overlay no scrim', (file, className) => {
+    const source = readFileSync(resolve(SOURCE, file), 'utf8');
+
+    expect(source).toContain(className);
+    expect(source).not.toContain('bg-black/');
   });
 
   it.each(GUARDED_SOURCES)('%s não usa glow RGB fixo', (file) => {

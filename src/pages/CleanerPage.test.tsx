@@ -219,6 +219,17 @@ describe('CleanerPage — lista de itens', () => {
     expect(screen.getByText('Nada para limpar')).not.toBeNull();
   });
 
+  it('usa as cores do tema no ícone dos itens sem erro', () => {
+    render(<CleanerPage />);
+
+    const caixa = screen
+      .getByText('Temp do Usuário')
+      .closest('label')
+      ?.querySelector('span.size-8');
+    expect(caixa?.className).toContain('bg-primary/10');
+    expect(caixa?.querySelector('svg')?.getAttribute('class')).toContain('text-primary');
+  });
+
   it('mostra o total de arquivos e o horário da última atualização', () => {
     render(<CleanerPage />);
 

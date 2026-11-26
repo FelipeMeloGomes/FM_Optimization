@@ -85,14 +85,11 @@ export function VirtualizedScriptList({
                 <span
                   className={cn(
                     'flex size-8 shrink-0 items-center justify-center rounded-lg',
-                    script.requiresAdmin ? 'bg-warning/10' : 'bg-muted'
+                    script.requiresAdmin ? 'bg-warning/10' : 'bg-primary/10'
                   )}
                 >
                   <Terminal
-                    className={cn(
-                      'size-4',
-                      script.requiresAdmin ? 'text-warning' : 'text-muted-foreground'
-                    )}
+                    className={cn('size-4', script.requiresAdmin ? 'text-warning' : 'text-primary')}
                     aria-hidden="true"
                   />
                 </span>

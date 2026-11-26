@@ -112,6 +112,14 @@ describe('VirtualizedScriptList — padrão da Limpeza', () => {
     expect(props.onToggle).toHaveBeenCalledWith('a');
   });
 
+  it('usa as cores do tema no ícone das linhas sem permissão administrativa', () => {
+    const { container } = renderList();
+
+    const caixa = container.querySelector('li[data-index] span.size-8');
+    expect(caixa?.className).toContain('bg-primary/10');
+    expect(caixa?.querySelector('svg')?.getAttribute('class')).toContain('text-primary');
+  });
+
   it('alterna a seleção ao clicar no nome da linha', () => {
     const props = renderList();
 

@@ -6,6 +6,7 @@ import { ConfirmBulkScriptDialog } from './ConfirmBulkScriptDialog';
 import { HeroBanner } from './hero/HeroBanner';
 import { PageSkeleton } from './PageSkeleton';
 import { ScriptSelectionToolbar } from './ScriptSelectionToolbar';
+import { Button } from './ui';
 import { VirtualizedScriptList } from './VirtualizedScriptList';
 
 export interface TweaksPageHero {
@@ -72,6 +73,7 @@ function TweaksPageImpl({
     handleConfirmBulk,
     failedScripts,
     clearFailures,
+    reloadScripts,
   } = useScriptPage(category);
 
   const visibleScripts = useMemo(
@@ -104,6 +106,9 @@ function TweaksPageImpl({
       <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
         <p className="text-sm">Erro ao carregar tweaks</p>
         <p className="text-xs text-destructive">{state.error}</p>
+        <Button variant="outline" size="sm" onClick={reloadScripts}>
+          Tentar novamente
+        </Button>
       </div>
     );
   }

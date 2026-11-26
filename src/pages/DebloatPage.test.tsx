@@ -192,6 +192,14 @@ describe('DebloatPage — inventário', () => {
     expect(screen.queryByText('Protegido')).toBeNull();
   });
 
+  it('usa as cores do tema no ícone dos aplicativos removíveis', () => {
+    render(<DebloatPage />);
+
+    const caixa = screen.getByText('Xbox Game Bar').closest('label')?.querySelector('span.size-8');
+    expect(caixa?.className).toContain('bg-primary/10');
+    expect(caixa?.querySelector('svg')?.getAttribute('class')).toContain('text-primary');
+  });
+
   it('mantém componentes protegidos com nome GUID apenas na aba Protegidos', () => {
     state.inventory = inventory([app(), ABRIR_COM, PROTECTED_STORE]);
     render(<DebloatPage />);

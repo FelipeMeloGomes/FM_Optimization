@@ -550,13 +550,13 @@ export default function CleanerPage() {
                     <span
                       className={cn(
                         'flex size-8 shrink-0 items-center justify-center rounded-lg',
-                        item.error ? 'bg-destructive/10' : 'bg-muted'
+                        item.error ? 'bg-destructive/10' : 'bg-primary/10'
                       )}
                     >
                       {isWorking ? (
                         <Loader2 className="size-4 animate-spin text-primary" aria-hidden="true" />
                       ) : (
-                        <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+                        <Icon className="size-4 text-primary" aria-hidden="true" />
                       )}
                     </span>
 

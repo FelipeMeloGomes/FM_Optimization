@@ -52,6 +52,7 @@ export function HeroBanner({
       borderRadius="0.75rem"
       borderColor="transparent"
       glareOpacity={0.3}
+      mode="follow"
       className={cn(DEFAULT_SHELL, className)}
     >
       <img

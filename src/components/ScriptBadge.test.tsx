@@ -125,6 +125,16 @@ describe('ScriptBadge — selos do catálogo', () => {
     expect(html).not.toContain('Completo');
   });
 
+  it('marca os ícones decorativos como escondidos de leitores de tela', () => {
+    store.applied.add('cpu-18');
+
+    const html = render(script({ requiresAdmin: true, requiresRestart: true }));
+    const icons = html.match(/<svg\b[^>]*>/g) ?? [];
+
+    expect(icons).toHaveLength(3);
+    expect(icons.every((icon) => icon.includes('aria-hidden="true"'))).toBe(true);
+  });
+
   it('mantém a ordem Aplicado, Admin, Reiniciar e risco', () => {
     store.applied.add('cpu-18');
 

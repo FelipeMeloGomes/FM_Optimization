@@ -38,6 +38,12 @@ A suíte do Vitest cobre `electron/main/**/*.test.ts` **e** `src/**/*.test.ts` (
 - Prefira testar o comportamento visível ao usuário/consome: texto renderizado, chamadas de API com os argumentos certos, estados de carregamento/erro/vazio, filtros e contadores. Evite asserções em mocks ou em estruturas internas.
 - Mantenha o gate verde antes de commitar: `bun run lint && bun run typecheck && bun run test`.
 
+## Tema e UI
+
+- **Sempre que criar uma página ou componente**, seguir o tema da aplicação: usar os tokens do tema (`bg-primary`, `text-primary`, `bg-background`, `border-border`, `text-muted-foreground`, `bg-success` etc.) e reutilizar os componentes e variantes já existentes em `src/components/ui` e `src/components`.
+- Não usar cores fixas (`#hex`, `white`, `black`, `gray-*` avulsos) nem estilos que fujam da paleta escura/ciano. Para estados e destaques, usar as variantes já definidas pelo componente — por exemplo, `status="accent"` nos cards de hardware, em vez de deixar o ícone no padrão cinza.
+- Todo componente ou página novo deve ter teste que verifique o uso do tema (classes de cor, variantes e estados), além do teste do comportamento funcional.
+
 # Commit
 
 - Verificar se `README.md` foi atualizado com as últimas mudanças.

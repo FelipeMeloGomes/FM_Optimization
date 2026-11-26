@@ -101,7 +101,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         type="button"
         aria-label="Fechar busca"
         onClick={onClose}
-        className="fixed inset-0 bg-black/50"
+        className="fixed inset-0 bg-overlay/50"
       />
       <div
         role="dialog"

@@ -1,3 +1,12 @@
+/* Janela independente: não carrega globals.css, então os tokens vivem aqui.
+   Os valores espelham o tema escuro/ciano do app. */
+:root {
+  --overlay-surface: rgba(6, 10, 20, 0.62);
+  --overlay-shadow: rgba(0, 0, 0, 0.35);
+  --overlay-success: #22d3ee;
+  --overlay-danger: #f87171;
+}
+
 html,
 body,
 #root {
@@ -43,8 +52,8 @@ body,
   margin: 0;
   padding: 6px 10px;
   border-radius: 6px;
-  background: rgba(6, 10, 20, 0.62);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  background: var(--overlay-surface);
+  box-shadow: 0 2px 12px var(--overlay-shadow);
   font-family: "JetBrains Mono Variable", ui-monospace, monospace;
   line-height: 1;
 }
@@ -62,10 +71,10 @@ body,
 
 .fps-value.good .fps-number,
 .fps-value.good .fps-label {
-  color: #7dffb2;
+  color: var(--overlay-success);
 }
 
 .fps-value.bad .fps-number,
 .fps-value.bad .fps-label {
-  color: #ff6b6b;
+  color: var(--overlay-danger);
 }
