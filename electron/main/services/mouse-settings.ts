@@ -5,6 +5,7 @@ import {
   MOUSE_POINTER_SPEED_MIN,
   type MouseSettings,
 } from '../../shared/mouse-settings';
+import { isIntegerInRange } from '../utils/numeric';
 import { parsePowerShellJson } from '../utils/powershell-json';
 import { execPowerShell } from './powershell';
 
@@ -54,11 +55,7 @@ export function validateMouseSettings(value: unknown): MouseSettings {
   const candidate = value as Record<string, unknown>;
   const { pointerSpeed, enhancedPrecision, doubleClickSpeed } = candidate;
 
-  if (
-    typeof pointerSpeed !== 'number' ||
-    !Number.isInteger(pointerSpeed) ||
-    !inRange(pointerSpeed, MOUSE_POINTER_SPEED_MIN, MOUSE_POINTER_SPEED_MAX)
-  ) {
+  if (!isIntegerInRange(pointerSpeed, MOUSE_POINTER_SPEED_MIN, MOUSE_POINTER_SPEED_MAX)) {
     throw new Error(
       `Velocidade do ponteiro deve estar entre ${MOUSE_POINTER_SPEED_MIN} e ${MOUSE_POINTER_SPEED_MAX}`
     );
@@ -66,21 +63,13 @@ export function validateMouseSettings(value: unknown): MouseSettings {
   if (typeof enhancedPrecision !== 'boolean') {
     throw new Error('Precisão do ponteiro deve ser verdadeira ou falsa');
   }
-  if (
-    typeof doubleClickSpeed !== 'number' ||
-    !Number.isInteger(doubleClickSpeed) ||
-    !inRange(doubleClickSpeed, MOUSE_DOUBLE_CLICK_MIN, MOUSE_DOUBLE_CLICK_MAX)
-  ) {
+  if (!isIntegerInRange(doubleClickSpeed, MOUSE_DOUBLE_CLICK_MIN, MOUSE_DOUBLE_CLICK_MAX)) {
     throw new Error(
       `Duplo clique deve estar entre ${MOUSE_DOUBLE_CLICK_MIN} e ${MOUSE_DOUBLE_CLICK_MAX} ms`
     );
   }
 
   return { pointerSpeed, enhancedPrecision, doubleClickSpeed };
-}
-
-function inRange(value: number, min: number, max: number): boolean {
-  return value >= min && value <= max;
 }
 
 export function parseMouseSettings(raw: string): MouseSettings {

@@ -7,6 +7,7 @@ import {
   type DisplayMonitor,
   type DisplaySettings,
 } from '../../shared/display-settings';
+import { isIntegerInRange } from '../utils/numeric';
 import { parsePowerShellJson } from '../utils/powershell-json';
 import { execPowerShell } from './powershell';
 
@@ -114,16 +115,11 @@ if ($monitors.Count -eq 0) { throw 'Nenhum monitor ativo encontrado' }
 `;
 
 function validDimension(value: unknown, min: number): value is number {
-  return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= 16384;
+  return isIntegerInRange(value, min, 16384);
 }
 
 function validFrequency(value: unknown): value is number {
-  return (
-    typeof value === 'number' &&
-    Number.isInteger(value) &&
-    value >= DISPLAY_MIN_FREQUENCY &&
-    value <= DISPLAY_MAX_FREQUENCY
-  );
+  return isIntegerInRange(value, DISPLAY_MIN_FREQUENCY, DISPLAY_MAX_FREQUENCY);
 }
 
 /** Aceita apenas nomes no formato \\.\DISPLAYn, para não interpolhar texto na query. */

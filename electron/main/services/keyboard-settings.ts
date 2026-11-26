@@ -7,6 +7,7 @@ import {
   KEYBOARD_REPEAT_RATE_MIN,
   type KeyboardSettings,
 } from '../../shared/keyboard-settings';
+import { isIntegerInRange } from '../utils/numeric';
 import { parsePowerShellJson } from '../utils/powershell-json';
 import { execPowerShell } from './powershell';
 
@@ -47,10 +48,6 @@ $blinkRate = [FmOptimizeKeyboard]::GetCaretBlinkTime()
 } | ConvertTo-Json -Compress
 `;
 
-function inRange(value: unknown, min: number, max: number): value is number {
-  return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max;
-}
-
 /** Valida tanto a resposta do Windows quanto o payload que veio do renderer. */
 export function validateKeyboardSettings(value: unknown): KeyboardSettings {
   if (typeof value !== 'object' || value === null) {
@@ -66,13 +63,13 @@ export function validateKeyboardSettings(value: unknown): KeyboardSettings {
   ) {
     throw new Error('Configurações do teclado inválidas');
   }
-  if (!inRange(repeatDelay, KEYBOARD_REPEAT_DELAY_MIN, KEYBOARD_REPEAT_DELAY_MAX)) {
+  if (!isIntegerInRange(repeatDelay, KEYBOARD_REPEAT_DELAY_MIN, KEYBOARD_REPEAT_DELAY_MAX)) {
     throw new Error('Atraso de repetição inválido');
   }
-  if (!inRange(repeatRate, KEYBOARD_REPEAT_RATE_MIN, KEYBOARD_REPEAT_RATE_MAX)) {
+  if (!isIntegerInRange(repeatRate, KEYBOARD_REPEAT_RATE_MIN, KEYBOARD_REPEAT_RATE_MAX)) {
     throw new Error('Repetição de tecla inválida');
   }
-  if (!inRange(caretBlinkRate, KEYBOARD_BLINK_MIN, KEYBOARD_BLINK_MAX)) {
+  if (!isIntegerInRange(caretBlinkRate, KEYBOARD_BLINK_MIN, KEYBOARD_BLINK_MAX)) {
     throw new Error('Piscagem do cursor inválida');
   }
 
