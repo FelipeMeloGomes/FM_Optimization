@@ -44,4 +44,18 @@ describe('AppListView — carregamento', () => {
     expect(container.querySelectorAll('[data-skeleton="card"]')).toHaveLength(6);
     expect(container.querySelector('[data-skeleton="grid"]')).not.toBeNull();
   });
+
+  it('mantém a busca como caixa de texto, sem o clear button nativo de search', () => {
+    render(
+      <AppListView
+        emulatorName="BlueStacks 5"
+        instance={{ id: 'instancia', name: 'Instância' } as never}
+        deviceSerial="serial"
+        onBack={() => {}}
+      />
+    );
+
+    expect(screen.getByRole('textbox', { name: 'Buscar apps' })).toBeTruthy();
+    expect(screen.queryByRole('searchbox', { name: 'Buscar apps' })).toBeNull();
+  });
 });

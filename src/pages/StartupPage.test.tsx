@@ -192,6 +192,13 @@ describe('StartupPage — conteúdo', () => {
     expect(screen.getAllByRole('tab').length).toBe(3);
   });
 
+  it('mantém a busca como caixa de texto, sem o clear button nativo de search', () => {
+    renderPage();
+
+    expect(screen.getByRole('textbox', { name: 'Buscar na lista' })).toBeDefined();
+    expect(screen.queryByRole('searchbox', { name: 'Buscar na lista' })).toBeNull();
+  });
+
   it('lista app na aba Inicialização', () => {
     renderPage();
 

@@ -185,6 +185,7 @@ O Biome cobre TypeScript, JSON, CSS e **Markdown**: os `.md` do repositório ent
 - [COMPONENTIZACAO.md](docs/COMPONENTIZACAO.md) — candidatos a extração de componentes/hooks/utils
 - [REFATORACAO-P1.md](docs/REFATORACAO-P1.md) — relatório das extrações do P1
 - [REFATORACAO-P2.md](docs/REFATORACAO-P2.md) — relatório das extrações do P2
+- [REFATORACAO-P3.md](docs/REFATORACAO-P3.md) — relatório das extrações do P3
 
 ## Licença
 

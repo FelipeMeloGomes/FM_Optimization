@@ -115,4 +115,10 @@ describe('SearchInput', () => {
     expect(input).toContain('bg-transparent');
     expect(input).toContain('focus-visible:ring-2');
   });
+
+  it('reserva espaço para o ícone no modo bare', () => {
+    const html = renderToStaticMarkup(<SearchInput ariaLabel="Buscar" bare />);
+
+    expect(inputTag(html)).toContain('pl-9');
+  });
 });

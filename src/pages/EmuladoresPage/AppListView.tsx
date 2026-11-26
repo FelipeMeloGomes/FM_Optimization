@@ -349,6 +349,7 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
       {/* Search */}
       <SearchInput
         ariaLabel="Buscar apps"
+        type="text"
         placeholder="Buscar apps…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}

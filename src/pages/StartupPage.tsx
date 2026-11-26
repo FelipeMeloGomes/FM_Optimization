@@ -280,6 +280,7 @@ export default function StartupPage() {
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <SearchInput
             ariaLabel="Buscar na lista"
+            type="text"
             compact
             wrapperClassName="w-full sm:w-56"
             value={query}

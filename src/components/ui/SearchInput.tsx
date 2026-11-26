@@ -46,7 +46,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       type,
       'aria-label': ariaLabel,
       ref: setInputRef,
-      className: bare ? cn('w-full', className) : cn('pl-9', compact && 'h-9 pl-8', className),
+      className: bare ? cn('w-full pl-9', className) : cn('pl-9', compact && 'h-9 pl-8', className),
     };
 
     return (
