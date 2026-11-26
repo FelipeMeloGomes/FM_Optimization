@@ -3,12 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppxPackageInfo } from '../../electron/shared/ipc-types';
 import { ConfirmRemoveAppsDialog } from '../components/ConfirmRemoveAppsDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
-import { Button, Input, Tabs } from '../components/ui';
+import { Button, ErrorPanel, Input, Tabs } from '../components/ui';
 import { useSettingsContext } from '../contexts/SettingsContext';
+import { useAdminStatus } from '../hooks/use-admin-status';
 import { useAppxInventory } from '../hooks/use-appx-inventory';
 import { useVirtualRows } from '../hooks/use-virtual-rows';
 import { HERO_ART } from '../lib/hero-art';
@@ -18,10 +18,7 @@ const APP_ROW_HEIGHT = 69;
 
 type TabId = 'all' | 'recommended' | 'protected';
 
-function errorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
+import { toErrorMessage } from '../../electron/shared/errors';
 
 function plural(count: number, singular: string, pluralForm: string): string {
   return `${count} ${count === 1 ? singular : pluralForm}`;
@@ -63,10 +60,12 @@ export default function DebloatPage() {
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [removing, setRemoving] = useState(false);
-  const [elevating, setElevating] = useState(false);
 
   const packages = inventory?.packages ?? [];
-  const isAdmin = inventory?.elevated ?? false;
+  const { isAdmin, elevating, relaunchAsAdmin } = useAdminStatus({
+    soundEnabled: settings.soundEnabled,
+    externalIsAdmin: inventory?.elevated ?? false,
+  });
 
   // Uma nova varredura pode remover um app da lista: não deixe uma seleção
   // órfã habilitar o botão de remover.
@@ -169,7 +168,7 @@ export default function DebloatPage() {
         showEnhancedToast({
           type: 'error',
           title: 'Falha ao remover apps',
-          description: errorMessage(e),
+          description: toErrorMessage(e),
           duration: 'long',
           sound: settings.soundEnabled,
         });
@@ -190,39 +189,20 @@ export default function DebloatPage() {
     void runRemove(families);
   }, [selectedApps, removing, isAdmin, settings.confirmOnExecute, runRemove]);
 
-  const relaunchAsAdmin = useCallback(async () => {
-    setElevating(true);
-    try {
-      await window.electronAPI.elevateApp(undefined, undefined, undefined, true);
-    } catch (e) {
-      showEnhancedToast({
-        type: 'error',
-        title: 'Não foi possível reiniciar como admin',
-        description: errorMessage(e),
-        duration: 'long',
-        sound: settings.soundEnabled,
-      });
-    } finally {
-      setElevating(false);
-    }
-  }, [settings.soundEnabled]);
-
   if (loading) {
     return <PageSkeleton layout="list" count={7} label="Carregando aplicativos…" />;
   }
 
   if (error && packages.length === 0) {
     return (
-      <div
-        className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground"
-        role="alert"
-      >
-        <p className="text-sm">Erro ao carregar o inventário de apps</p>
-        <p className="text-xs text-destructive">{error}</p>
-        <Button variant="outline" size="sm" onClick={() => void refresh()}>
-          Tentar de novo
-        </Button>
-      </div>
+      <ErrorPanel
+        title="Erro ao carregar o inventário de apps"
+        message={error}
+        className="gap-2 text-muted-foreground"
+        icon={false}
+        retryLabel="Tentar de novo"
+        onRetry={() => void refresh()}
+      />
     );
   }
 
@@ -235,20 +215,13 @@ export default function DebloatPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner {...HERO_ART['/debloat']}>
-        <div className="relative p-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <RouteIcon path="/debloat" />
-              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                Debloat
-              </span>
-            </div>
-            <h2 className="text-lg font-bold text-foreground">Debloat de apps do Windows</h2>
-            <HeroDescription text="Inventário dos apps Appx instalados e provisionados. A aba Todos mostra o que pode ser removido; apps de sistema, frameworks e componentes com nome GUID ficam na aba Protegidos." />
-          </div>
-        </div>
-      </HeroBanner>
+      <HeroBanner
+        {...HERO_ART['/debloat']}
+        badge="Debloat"
+        path="/debloat"
+        title="Debloat de apps do Windows"
+        description="Inventário dos apps Appx instalados e provisionados. A aba Todos mostra o que pode ser removido; apps de sistema, frameworks e componentes com nome GUID ficam na aba Protegidos."
+      />
 
       <PageRefreshBar
         onRefresh={() => void refresh()}
@@ -258,17 +231,19 @@ export default function DebloatPage() {
       />
 
       {error && packages.length > 0 && (
-        <div
-          role="alert"
-          className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2"
-        >
-          <p className="flex-1 text-xs text-destructive">
-            Não foi possível atualizar o inventário: {error}
-          </p>
-          <Button variant="ghost" size="sm" onClick={() => void refresh()}>
-            Tentar de novo
-          </Button>
-        </div>
+        <ErrorPanel
+          variant="inline"
+          title="Não foi possível atualizar o inventário"
+          message={error}
+          messageSeparator=": "
+          className="flex-wrap px-3 py-2"
+          titleClassName="text-xs"
+          messageClassName="text-xs"
+          icon={false}
+          retryLabel="Tentar de novo"
+          retryVariant="ghost"
+          onRetry={() => void refresh()}
+        />
       )}
 
       {!isAdmin && (

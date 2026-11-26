@@ -37,6 +37,9 @@ describe('parseMouseSettings', () => {
 
   it('rejects malformed output instead of returning defaults', () => {
     expect(() => parseMouseSettings('not json')).toThrow('resposta inválida');
+    expect(() => parseMouseSettings('  \n ')).toThrow(
+      'Não foi possível ler as configurações do mouse: resposta inválida'
+    );
   });
 });
 

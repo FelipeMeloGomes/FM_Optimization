@@ -1,7 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import type { AddOverlayGameInput, OverlayGame, OverlaySettings } from '../../shared/overlay-types';
 import { DEFAULT_OVERLAY_SETTINGS, isValidOverlayHotkey } from '../../shared/overlay-types';
+import { createJsonStore } from '../utils/json-store';
 import { getDataDir } from './data-service';
 
 export { DEFAULT_OVERLAY_SETTINGS };
@@ -23,26 +23,19 @@ const GENERIC_DIRS = new Set([
 ]);
 
 function filePath(name: string): string {
-  const dir = getDataDir();
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  return resolve(dir, name);
+  return resolve(getDataDir(), name);
+}
+
+function createStore<T>(name: string, fallback: T) {
+  return createJsonStore<T>({ path: filePath(name), fallback, pretty: true });
 }
 
 function readJson<T>(name: string, fallback: T): T {
-  const path = filePath(name);
-  if (!existsSync(path)) return fallback;
-  try {
-    return JSON.parse(readFileSync(path, 'utf-8')) as T;
-  } catch {
-    return fallback;
-  }
+  return createStore(name, fallback).read();
 }
 
-function writeJson(name: string, value: unknown): void {
-  const path = filePath(name);
-  const tmp = `${path}.tmp`;
-  writeFileSync(tmp, JSON.stringify(value, null, 2), 'utf-8');
-  renameSync(tmp, path);
+function writeJson<T>(name: string, value: T): void {
+  createStore(name, value).write(value);
 }
 
 /** ID estável, insensível a caixa e a barras, derivado do caminho do .exe. */

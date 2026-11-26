@@ -1,3 +1,5 @@
+import { parsePowerShellJson } from '../utils/powershell-json';
+
 export interface GpuController {
   name: string;
   driverVersion: string;
@@ -27,13 +29,11 @@ function asString(value: unknown): string {
 }
 
 export function parseVideoControllers(json: string): GpuController[] {
-  if (!json.trim()) return [];
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(json);
-  } catch {
-    return [];
-  }
+  const parsed = parsePowerShellJson(json, {
+    label: 'placas de vídeo',
+    emptyFallback: [],
+    onInvalid: () => [],
+  });
   const list = Array.isArray(parsed) ? parsed : [parsed];
   const result: GpuController[] = [];
   for (const item of list) {

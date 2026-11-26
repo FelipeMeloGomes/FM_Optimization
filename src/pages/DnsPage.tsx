@@ -1,7 +1,6 @@
 import { AlertCircle, ArrowDown, Check, Loader2, Settings, Trophy, Wifi, Zap } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import { Badge, Button, Card, CardContent } from '../components/ui';
@@ -43,22 +42,13 @@ export default function DnsPage() {
 
 function DnsHero() {
   return (
-    <HeroBanner {...HERO_ART['/dns']}>
-      <div className="relative p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="mb-2 flex items-center gap-2">
-              <RouteIcon path="/dns" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-                Rede
-              </span>
-            </div>
-            <h2 className="text-lg font-bold text-foreground">DNS</h2>
-            <HeroDescription text="Configure seu DNS para melhor velocidade e privacidade" />
-          </div>
-        </div>
-      </div>
-    </HeroBanner>
+    <HeroBanner
+      {...HERO_ART['/dns']}
+      badge="Rede"
+      path="/dns"
+      title="DNS"
+      description="Configure seu DNS para melhor velocidade e privacidade"
+    />
   );
 }
 

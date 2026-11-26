@@ -7,6 +7,7 @@ import {
   KEYBOARD_REPEAT_RATE_MIN,
   type KeyboardSettings,
 } from '../../shared/keyboard-settings';
+import { parsePowerShellJson } from '../utils/powershell-json';
 import { execPowerShell } from './powershell';
 
 type Executor = (script: string, timeout?: number) => Promise<string>;
@@ -79,12 +80,7 @@ export function validateKeyboardSettings(value: unknown): KeyboardSettings {
 }
 
 export function parseKeyboardSettings(raw: string): KeyboardSettings {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    throw new Error('Não foi possível ler as configurações do teclado: resposta inválida');
-  }
+  const parsed = parsePowerShellJson(raw, { label: 'configurações do teclado' });
   return validateKeyboardSettings(parsed);
 }
 

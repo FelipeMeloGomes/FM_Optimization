@@ -4,7 +4,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { ScriptBadge } from '../components/ScriptBadge';
-import { Button } from '../components/ui';
+import { Button, ErrorPanel } from '../components/ui';
 import { useIsScriptApplied } from '../hooks/use-is-script-applied';
 import { useScriptPage } from '../hooks/use-script-page';
 import type { DevicePageConfig } from '../lib/device-pages';
@@ -52,10 +52,12 @@ export default function DevicePage({ config, beforeContent }: DevicePageProps) {
 
   if (state.status === 'error') {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
-        <p className="text-sm">Erro ao carregar tweaks</p>
-        <p className="text-xs text-destructive">{state.error}</p>
-      </div>
+      <ErrorPanel
+        title="Erro ao carregar tweaks"
+        message={state.error}
+        className="gap-2 text-muted-foreground"
+        icon={false}
+      />
     );
   }
 

@@ -8,14 +8,15 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toErrorMessage } from '../../electron/shared/errors';
 import type {
   AsyncState,
   GpuCatalogEntry,
   GpuCatalogResult,
 } from '../../electron/shared/ipc-types';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBannerContent } from '../components/hero/HeroBannerContent';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import {
@@ -275,10 +276,6 @@ function ContenderCard({
   );
 }
 
-function PageContent({ children }: { children: ReactNode }) {
-  return <div className="relative p-6">{children}</div>;
-}
-
 export default function CompararPlacaPage() {
   const [state, setState] = useState<AsyncState<GpuCatalogResult>>({ status: 'loading' });
   const [leftId, setLeftId] = useState<string | null>(null);
@@ -350,7 +347,7 @@ export default function CompararPlacaPage() {
     } catch (error) {
       setState({
         status: 'error',
-        error: error instanceof Error ? error.message : String(error),
+        error: toErrorMessage(error),
       });
     }
   }, [applyUserGpu]);
@@ -390,29 +387,22 @@ export default function CompararPlacaPage() {
   return (
     <div className="space-y-6">
       <HeroBanner {...HERO_ART['/comparar-placa']}>
-        <PageContent>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="mb-2 flex items-center gap-2">
-                <RouteIcon path="/comparar-placa" />
-                <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-                  Ferramentas
-                </span>
-              </div>
-              <h2 className="text-2xl font-bold text-foreground">Comparar Placas</h2>
-              <HeroDescription
-                className="max-w-2xl"
-                text="Sua placa aparece primeiro. Busque outra para ver a diferença de desempenho e as especificações lado a lado."
-              />
-              {systemGpuName && (
-                <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                  <Sparkles className="size-3" />
-                  Detectada: {systemGpuName}
-                </p>
-              )}
-            </div>
-          </div>
-        </PageContent>
+        <HeroBannerContent
+          badge="Ferramentas"
+          path="/comparar-placa"
+          title="Comparar Placas"
+          description="Sua placa aparece primeiro. Busque outra para ver a diferença de desempenho e as especificações lado a lado."
+          size="lg"
+          descriptionClassName="max-w-2xl"
+          footer={
+            systemGpuName && (
+              <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                <Sparkles className="size-3" />
+                Detectada: {systemGpuName}
+              </p>
+            )
+          }
+        />
       </HeroBanner>
 
       {state.status === 'success' && (

@@ -37,6 +37,9 @@ describe('parseKeyboardSettings', () => {
 
   it('rejeita saída malformada', () => {
     expect(() => parseKeyboardSettings('not json')).toThrow('resposta inválida');
+    expect(() => parseKeyboardSettings('  \n ')).toThrow(
+      'Não foi possível ler as configurações do teclado: resposta inválida'
+    );
   });
 
   it('rejeita campos ausentes', () => {

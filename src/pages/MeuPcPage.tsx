@@ -20,7 +20,7 @@ import { DashboardWidget } from '../components/DashboardWidget';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
-import { Badge, Button } from '../components/ui';
+import { Badge, Button, ErrorPanel } from '../components/ui';
 import { useScriptExecutionContext } from '../contexts/ScriptExecutionContext';
 import { useSystemContext } from '../contexts/SystemContext';
 import { HERO_ART } from '../lib/hero-art';
@@ -185,13 +185,13 @@ export default function MeuPcPage() {
 
   if (state.status === 'error') {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
-        <p className="text-sm">Erro ao carregar as informacoes do computador</p>
-        <p className="text-xs text-destructive">{state.error}</p>
-        <Button variant="outline" size="sm" onClick={refresh}>
-          Tentar novamente
-        </Button>
-      </div>
+      <ErrorPanel
+        title="Erro ao carregar as informacoes do computador"
+        message={state.error}
+        className="gap-2 text-muted-foreground"
+        icon={false}
+        onRetry={refresh}
+      />
     );
   }
 

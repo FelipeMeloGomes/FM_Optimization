@@ -8,6 +8,7 @@ import {
   writeFileSync as fsWriteFileSync,
 } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { toErrorMessage } from '../../shared/errors';
 import { getDataDir } from './data-service';
 
 export const PRESENTMON_VERSION = '2.3.1';
@@ -124,7 +125,7 @@ export async function ensurePresentMon(
     rename(tmp, path);
     return { path };
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = toErrorMessage(error);
     return { error: `Não foi possível obter o PresentMon: ${message}` };
   }
 }
@@ -165,7 +166,7 @@ export function startCapture(
     // PresentMon escreve diagnóstico no stderr; o FPS vem do stdout.
   });
   child.on('error', (value: unknown) => {
-    deps.onError?.(value instanceof Error ? value.message : String(value));
+    deps.onError?.(toErrorMessage(value));
   });
 
   return () => {

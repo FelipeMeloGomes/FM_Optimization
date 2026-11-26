@@ -19,8 +19,7 @@ import type {
   StartupAppSource,
   StartupServiceEntry,
 } from '../../electron/shared/ipc-types';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import {
@@ -33,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
   EmptyState,
+  ErrorPanel,
   Input,
   Switch,
   Table,
@@ -172,15 +172,16 @@ export default function StartupPage() {
 
   if (state.status === 'error') {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-20 text-center text-muted-foreground">
-        <AlertTriangle className="size-8 text-warning" />
-        <p className="text-sm">Erro ao ler a inicialização do Windows</p>
-        <p className="max-w-md text-xs text-destructive">{state.error}</p>
-        <Button variant="outline" size="sm" onClick={reload} className="mt-2 gap-1.5">
-          <RefreshCw className="size-3.5" />
-          Tentar novamente
-        </Button>
-      </div>
+      <ErrorPanel
+        title="Erro ao ler a inicialização do Windows"
+        message={state.error}
+        className="gap-2 text-muted-foreground"
+        icon={<AlertTriangle className="size-8 text-warning" />}
+        messageClassName="max-w-md"
+        retryClassName="mt-2 gap-1.5"
+        retryIcon={<RefreshCw className="size-3.5" />}
+        onRetry={reload}
+      />
     );
   }
 
@@ -236,18 +237,13 @@ export default function StartupPage() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner {...HERO_ART['/inicializacao']}>
-        <div className="relative p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <RouteIcon path="/inicializacao" />
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-              Inicialização
-            </span>
-          </div>
-          <h2 className="text-lg font-bold text-foreground">Controle o que abre com o Windows</h2>
-          <HeroDescription text="Aplicativos, tarefas agendadas e serviços que iniciam junto com o sistema. Tudo é reversível: nada é desinstalado, e cada item pode voltar ao estado anterior." />
-        </div>
-      </HeroBanner>
+      <HeroBanner
+        {...HERO_ART['/inicializacao']}
+        badge="Inicialização"
+        path="/inicializacao"
+        title="Controle o que abre com o Windows"
+        description="Aplicativos, tarefas agendadas e serviços que iniciam junto com o sistema. Tudo é reversível: nada é desinstalado, e cada item pode voltar ao estado anterior."
+      />
 
       <PageRefreshBar onRefresh={reload} />
 

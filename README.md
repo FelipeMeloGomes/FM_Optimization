@@ -182,6 +182,8 @@ O Biome cobre TypeScript, JSON, CSS e **Markdown**: os `.md` do repositório ent
 - [DEVELOPMENT.md](docs/DEVELOPMENT.md) — setup, convenções e como adicionar handlers IPC
 - [OPTIMIZATION.md](docs/OPTIMIZATION.md) — redução do instalador (255,8 → 102,3 MB) e contrato de empacotamento
 - [RUNTIME.md](docs/RUNTIME.md) — consumo medido com a janela aberta e na bandeja
+- [COMPONENTIZACAO.md](docs/COMPONENTIZACAO.md) — candidatos a extração de componentes/hooks/utils
+- [REFATORACAO-P1.md](docs/REFATORACAO-P1.md) — relatório das extrações do P1
 
 ## Licença
 

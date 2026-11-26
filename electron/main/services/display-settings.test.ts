@@ -118,6 +118,9 @@ describe('parseDisplaySettings', () => {
 
   it('rejeita saída malformada', () => {
     expect(() => parseDisplaySettings('not json')).toThrow('resposta inválida');
+    expect(() => parseDisplaySettings('  \n ')).toThrow(
+      'Não foi possível ler as configurações do monitor: resposta inválida'
+    );
   });
 });
 

@@ -1,7 +1,6 @@
 import { AlertCircle, Play, RotateCcw, Square, Wifi } from 'lucide-react';
 import type { SpeedTestPhase } from '../../electron/shared/ipc-types';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { SpeedGauge } from '../components/SpeedGauge';
 import { Button, Card, CardContent, Progress } from '../components/ui';
 import { SpeedProvider, useSpeedContext } from '../contexts/SpeedContext';
@@ -51,18 +50,13 @@ function SpeedTestPageContent() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner {...HERO_ART['/velocidade']}>
-        <div className="relative p-6">
-          <div className="mb-2 flex items-center gap-2">
-            <RouteIcon path="/velocidade" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Rede
-            </span>
-          </div>
-          <h2 className="text-lg font-bold text-foreground">Teste de Velocidade</h2>
-          <HeroDescription text="Meça download, upload, ping e jitter da sua conexão" />
-        </div>
-      </HeroBanner>
+      <HeroBanner
+        {...HERO_ART['/velocidade']}
+        badge="Rede"
+        path="/velocidade"
+        title="Teste de Velocidade"
+        description="Meça download, upload, ping e jitter da sua conexão"
+      />
 
       <Card className="border-primary/20">
         <CardContent className="flex flex-col items-center gap-5 p-6 sm:p-8">

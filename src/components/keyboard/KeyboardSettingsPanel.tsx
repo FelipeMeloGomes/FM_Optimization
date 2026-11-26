@@ -9,7 +9,7 @@ import {
 } from '../../../electron/shared/keyboard-settings';
 import { useKeyboardSettings } from '../../hooks/use-keyboard-settings';
 import { PageSkeleton } from '../PageSkeleton';
-import { AnimatedNumber, Button, SettingsPreviewLayout } from '../ui';
+import { AnimatedNumber, Button, ErrorPanel, SettingsPreviewLayout } from '../ui';
 import { KeyboardPreview } from './KeyboardPreview';
 
 const REPEAT_DELAY_MS = [250, 500, 750, 1000];
@@ -20,12 +20,15 @@ export function KeyboardSettingsPanel() {
 
   if (state.status === 'error') {
     return (
-      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5">
-        <p className="text-sm font-semibold text-destructive">
-          Erro ao carregar ajustes do teclado
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">{state.error}</p>
-      </div>
+      <ErrorPanel
+        variant="card"
+        title="Erro ao carregar ajustes do teclado"
+        message={state.error}
+        className="gap-0 border-destructive/30 bg-destructive/5 p-5"
+        titleClassName="text-sm font-semibold text-destructive"
+        messageClassName="mt-1 text-xs text-muted-foreground"
+        icon={false}
+      />
     );
   }
 
@@ -72,9 +75,16 @@ export function KeyboardSettingsPanel() {
             </div>
             {appliedAt && <p className="mt-2 text-xs text-primary">Ajustes aplicados</p>}
             {applyError && (
-              <p className="mt-2 text-xs text-destructive">
-                Não foi possível aplicar os ajustes: {applyError}
-              </p>
+              <ErrorPanel
+                variant="inline"
+                title="Não foi possível aplicar os ajustes"
+                message={applyError}
+                messageSeparator=": "
+                className="mt-2 border-0 bg-transparent p-0"
+                titleClassName="text-xs text-destructive"
+                messageClassName="text-xs text-destructive"
+                icon={false}
+              />
             )}
           </>
         }

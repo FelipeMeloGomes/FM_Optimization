@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const files = new Map<string, string>();
 
 vi.mock('node:fs', () => ({
+  mkdirSync: vi.fn(),
   existsSync: vi.fn((path: string) => files.has(path)),
   readFileSync: vi.fn((path: string) => files.get(path) ?? ''),
   renameSync: vi.fn((from: string, to: string) => {

@@ -16,9 +16,7 @@ export interface UseMouseSettingsResult {
   reload: () => Promise<void>;
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
+import { toErrorMessage } from '../../electron/shared/errors';
 
 function sameSettings(a: MouseSettings, b: MouseSettings): boolean {
   return (
@@ -50,7 +48,7 @@ export function useMouseSettings(): UseMouseSettingsResult {
       setState({ status: 'success', data: settings });
       setDraft(settings);
     } catch (error) {
-      setState({ status: 'error', error: errorMessage(error) });
+      setState({ status: 'error', error: toErrorMessage(error) });
     }
   }, []);
 
@@ -78,7 +76,7 @@ export function useMouseSettings(): UseMouseSettingsResult {
         setDraft(saved);
         setAppliedAt(new Date().toISOString());
       } catch (error) {
-        setApplyError(errorMessage(error));
+        setApplyError(toErrorMessage(error));
       }
     },
     [draft]

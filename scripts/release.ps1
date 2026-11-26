@@ -1,5 +1,50 @@
 $ErrorActionPreference = "Stop"
 
+function Build-ReleaseBody {
+  param(
+    [Parameter(Mandatory = $true)][string]$Tag,
+    [Parameter(Mandatory = $true)][string]$Date,
+    [string]$Novidades,
+    [string]$Melhorias,
+    [string]$Correcoes,
+    [string]$Tecnico
+  )
+
+  $lines = [System.Collections.Generic.List[string]]::new()
+  $lines.Add("## $Tag - $Date")
+
+  $sections = @(
+    @{ Title = 'Novidades'; Text = $Novidades },
+    @{ Title = 'Melhorias'; Text = $Melhorias },
+    @{ Title = 'Correções'; Text = $Correcoes },
+    @{ Title = 'Técnico'; Text = $Tecnico }
+  )
+
+  foreach ($section in $sections) {
+    if (-not $section.Text) { continue }
+
+    $items = @(
+      $section.Text -split '\r?\n' |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -and $_ -ne '-' }
+    )
+    if ($items.Count -eq 0) { continue }
+
+    $lines.Add('')
+    $lines.Add("### $($section.Title)")
+    $lines.Add('')
+    foreach ($item in $items) {
+      if ($item -match '^[-*] ') {
+        $lines.Add($item)
+      } else {
+        $lines.Add("- $item")
+      }
+    }
+  }
+
+  return (($lines -join [string][char]10).TrimEnd()) + [string][char]10
+}
+
 # ─── Validações iniciais ───
 
 if (-not (Test-Path ".env.local")) {
@@ -69,19 +114,11 @@ Write-Output "Deixe em branco e pressione Enter para pular uma seção.`n"
 $novidades = Read-Host "Novidades"
 $melhorias = Read-Host "Melhorias"
 $correcoes = Read-Host "Correções"
+$tecnico = Read-Host "Técnico (opcional)"
 
-$body = @"
-## $tag - $(Get-Date -Format 'dd/MM/yyyy')
-
-### Novidades
-$novidades
-
-### Melhorias
-$melhorias
-
-### Correções
-$correcoes
-"@
+$body = Build-ReleaseBody -Tag $tag -Date (Get-Date -Format 'dd/MM/yyyy') `
+  -Novidades $novidades -Melhorias $melhorias `
+  -Correcoes $correcoes -Tecnico $tecnico
 
 # ─── Push ───
 

@@ -20,10 +20,9 @@ import type {
   EssentialInstallResult,
   EssentialListItem,
 } from '../../electron/shared/ipc-types';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
-import { Badge, Button, Progress } from '../components/ui';
+import { Badge, Button, ErrorPanel, Progress } from '../components/ui';
 import { useEssentials } from '../hooks/use-essentials';
 import { HERO_ART } from '../lib/hero-art';
 import { cn } from '../lib/utils';
@@ -192,10 +191,13 @@ function EssentialCard({
         )}
 
         {error && (
-          <div className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/10 bg-destructive/5 p-3">
-            <AlertTriangle className="size-3.5 text-destructive mt-0.5 shrink-0" />
-            <p className="text-[11px] text-destructive leading-relaxed">{error}</p>
-          </div>
+          <ErrorPanel
+            variant="card"
+            title={error}
+            className="mt-4 gap-0 border-destructive/10 p-3"
+            titleClassName="text-[11px] text-destructive leading-relaxed"
+            icon={<AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-destructive" />}
+          />
         )}
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -240,31 +242,27 @@ export default function EssentialsPage() {
 
   if (state.status === 'error') {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
-        <p className="text-sm">Erro ao carregar os programas essenciais</p>
-        <p className="text-xs text-destructive">{state.error}</p>
-        <Button variant="secondary" size="sm" onClick={reload}>
-          Tentar novamente
-        </Button>
-      </div>
+      <ErrorPanel
+        title="Erro ao carregar os programas essenciais"
+        message={state.error}
+        className="gap-3 text-muted-foreground"
+        icon={false}
+        retryVariant="secondary"
+        onRetry={reload}
+      />
     );
   }
 
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner {...HERO_ART['/essenciais']}>
-        <div className="relative p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <RouteIcon path="/essenciais" />
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-              Essenciais PC
-            </span>
-          </div>
-          <h2 className="text-lg font-bold text-foreground">App Essenciais PC</h2>
-          <HeroDescription text="Utilitários para diagnosticar, monitorar, ajustar, personalizar, compactar, navegar, baixar e desinstalar programas no PC, além do runtime do DirectX para jogos antigos. Todos são instalados pelo winget, que baixa do canal oficial do fornecedor e confere o hash do manifesto antes de rodar." />
-        </div>
-      </HeroBanner>
+      <HeroBanner
+        {...HERO_ART['/essenciais']}
+        badge="Essenciais PC"
+        path="/essenciais"
+        title="App Essenciais PC"
+        description="Utilitários para diagnosticar, monitorar, ajustar, personalizar, compactar, navegar, baixar e desinstalar programas no PC, além do runtime do DirectX para jogos antigos. Todos são instalados pelo winget, que baixa do canal oficial do fornecedor e confere o hash do manifesto antes de rodar."
+      />
 
       {/* Programas */}
       {state.data.map((item) => (

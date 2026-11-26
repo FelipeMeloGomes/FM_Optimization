@@ -8,7 +8,8 @@ import {
   ShieldAlert,
   Trash2,
 } from 'lucide-react';
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { toErrorMessage } from '../../electron/shared/errors';
 import type {
   GameDisplayModeInfo,
   OverlayGame,
@@ -20,8 +21,8 @@ import {
   DEFAULT_OVERLAY_SETTINGS,
   isValidOverlayHotkey,
 } from '../../electron/shared/overlay-types';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBannerContent } from '../components/hero/HeroBannerContent';
 import { PageSkeleton } from '../components/PageSkeleton';
 import {
   Badge,
@@ -460,10 +461,6 @@ function StatusLine({ status }: { status: OverlayStatus }) {
   );
 }
 
-function PageContent({ children }: { children: ReactNode }) {
-  return <div className="relative p-6">{children}</div>;
-}
-
 export default function OverlayJogoPage() {
   const [games, setGames] = useState<OverlayGame[]>([]);
   const [settings, setSettings] = useState<OverlaySettings>(DEFAULT_OVERLAY_SETTINGS);
@@ -497,7 +494,7 @@ export default function OverlayJogoPage() {
       setDisplayModes(Object.fromEntries(modes.map((entry) => [entry.id, entry.info])));
       setError(null);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar o overlay.');
+      setError(toErrorMessage(cause) || 'Não foi possível carregar o overlay.');
     } finally {
       setLoading(false);
     }
@@ -515,7 +512,7 @@ export default function OverlayJogoPage() {
       const created = await window.electronAPI.addOverlayGame(chosen);
       setGames((current) => [...current, created]);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível adicionar o jogo.');
+      setError(toErrorMessage(cause) || 'Não foi possível adicionar o jogo.');
     }
   };
 
@@ -550,9 +547,7 @@ export default function OverlayJogoPage() {
       setShowSettings(false);
       setError(null);
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : 'Não foi possível salvar as configurações.'
-      );
+      setError(toErrorMessage(cause) || 'Não foi possível salvar as configurações.');
     }
   };
 
@@ -561,7 +556,7 @@ export default function OverlayJogoPage() {
       await window.electronAPI.launchOverlayGame(game.id);
       setError(null);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível iniciar o jogo.');
+      setError(toErrorMessage(cause) || 'Não foi possível iniciar o jogo.');
     }
   };
 
@@ -571,42 +566,33 @@ export default function OverlayJogoPage() {
       setDisplayModes((current) => ({ ...current, [game.id]: result }));
       setError(null);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível ajustar o modo de tela.');
+      setError(toErrorMessage(cause) || 'Não foi possível ajustar o modo de tela.');
     }
   };
 
   return (
     <div className="space-y-6">
       <HeroBanner {...HERO_ART['/overlay-jogo']}>
-        <PageContent>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="mb-2 flex items-center gap-2">
-                <RouteIcon path="/overlay-jogo" />
-                <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-                  Ferramentas
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold text-foreground">Overlay de jogo</h2>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8"
-                  aria-label="Configurações do overlay"
-                  title="Configurações do overlay"
-                  onClick={() => setShowSettings((value) => !value)}
-                >
-                  <Settings2 className="size-4" />
-                </Button>
-              </div>
-              <HeroDescription
-                className="max-w-2xl"
-                text="Cadastre seus jogos. O overlay sobe sozinho quando um deles abre em borderless."
-              />
-            </div>
-          </div>
-        </PageContent>
+        <HeroBannerContent
+          badge="Ferramentas"
+          path="/overlay-jogo"
+          title="Overlay de jogo"
+          description="Cadastre seus jogos. O overlay sobe sozinho quando um deles abre em borderless."
+          size="lg"
+          descriptionClassName="max-w-2xl"
+          titleTrailing={
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8"
+              aria-label="Configurações do overlay"
+              title="Configurações do overlay"
+              onClick={() => setShowSettings((value) => !value)}
+            >
+              <Settings2 className="size-4" />
+            </Button>
+          }
+        />
       </HeroBanner>
 
       <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">

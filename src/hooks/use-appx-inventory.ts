@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { toErrorMessage } from '../../electron/shared/errors';
 import type { AppxInventory, AppxRemoveResult } from '../../electron/shared/ipc-types';
-
-function errorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
 
 /**
  * Inventário Appx da página Debloat.
@@ -32,7 +28,7 @@ export function useAppxInventory() {
         setLastRefreshed(Date.now());
       } catch (e) {
         if (cancelled) return;
-        setError(errorMessage(e));
+        setError(toErrorMessage(e));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -53,7 +49,7 @@ export function useAppxInventory() {
       setError(null);
       setLastRefreshed(Date.now());
     } catch (e) {
-      setError(errorMessage(e));
+      setError(toErrorMessage(e));
     } finally {
       setIsRefreshing(false);
     }
@@ -68,7 +64,7 @@ export function useAppxInventory() {
       setLastRefreshed(Date.now());
       return result;
     } catch (e) {
-      setError(errorMessage(e));
+      setError(toErrorMessage(e));
       throw e;
     }
   }, []);

@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { toErrorMessage } from '../../shared/errors';
 import type {
   OptimizationAreaSummary,
   OptimizationCheckResult,
@@ -252,7 +253,7 @@ export async function applyOptimization(
       summary.failed.push({
         id: tweak.id,
         name: tweak.name,
-        error: error instanceof Error ? error.message : String(error),
+        error: toErrorMessage(error),
       });
       onProgress?.({ ...progress, status: 'failed' });
     }

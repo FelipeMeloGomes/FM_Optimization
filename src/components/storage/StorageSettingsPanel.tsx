@@ -2,7 +2,7 @@ import type { StorageDrive } from '../../../electron/shared/ipc-types';
 import { useStorageDrives } from '../../hooks/use-storage-drives';
 import { cn } from '../../lib/utils';
 import { PageSkeleton } from '../PageSkeleton';
-import { AnimatedNumber, Badge, Button, Progress, SettingsPreviewLayout } from '../ui';
+import { AnimatedNumber, Badge, Button, ErrorPanel, Progress, SettingsPreviewLayout } from '../ui';
 
 const DRIVE_MEDIA_TYPES = new Set(['SSD NVMe', 'SSD', 'HD']);
 
@@ -86,7 +86,16 @@ function DiskCard({
               {applied && <span className="text-xs text-primary">Concluído</span>}
             </div>
             {error && (
-              <p className="mt-2 text-xs text-destructive">Não foi possível concluir: {error}</p>
+              <ErrorPanel
+                variant="inline"
+                title="Não foi possível concluir"
+                message={error}
+                messageSeparator=": "
+                className="mt-2 border-0 bg-transparent p-0"
+                titleClassName="text-xs text-destructive"
+                messageClassName="text-xs text-destructive"
+                icon={false}
+              />
             )}
           </>
         }
@@ -165,13 +174,17 @@ export function StorageSettingsPanel() {
 
   if (state.status === 'error') {
     return (
-      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5">
-        <p className="text-sm font-semibold text-destructive">Erro ao carregar unidades</p>
-        <p className="mt-1 text-xs text-muted-foreground">{state.error}</p>
-        <Button size="sm" className="mt-3" onClick={refresh}>
-          Tentar novamente
-        </Button>
-      </div>
+      <ErrorPanel
+        variant="card"
+        title="Erro ao carregar unidades"
+        message={state.error}
+        className="border-destructive/30 bg-destructive/5"
+        titleClassName="text-sm font-semibold text-destructive"
+        messageClassName="mt-1 text-xs text-muted-foreground"
+        retryClassName="mt-3"
+        icon={false}
+        onRetry={refresh}
+      />
     );
   }
 

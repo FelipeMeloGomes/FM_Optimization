@@ -17,8 +17,7 @@ import type {
   OptimizationTweakStatus,
 } from '../../electron/shared/ipc-types';
 import { showEnhancedToast } from '../components/EnhancedToast';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import BlurText from '../components/react-bits/BlurText';
 import GlareHover from '../components/react-bits/GlareHover';
@@ -37,10 +36,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  ErrorPanel,
   Progress,
   Switch,
 } from '../components/ui';
 import { useSettingsContext } from '../contexts/SettingsContext';
+import { useAdminStatus } from '../hooks/use-admin-status';
 import { HERO_ART } from '../lib/hero-art';
 
 const STATUS_LABELS: Record<OptimizationTweakStatus['status'], string> = {
@@ -49,9 +50,7 @@ const STATUS_LABELS: Record<OptimizationTweakStatus['status'], string> = {
   unknown: 'Não verificado',
 };
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
+import { toErrorMessage } from '../../electron/shared/errors';
 
 /**
  * Página "Otimizar PC": análise sob demanda do estado atual contra o plano
@@ -66,10 +65,11 @@ export default function OptimizePcPage() {
   const [report, setReport] = useState<OptimizationReport | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const { isAdmin, elevating, relaunchAsAdmin } = useAdminStatus({
+    soundEnabled: settings.soundEnabled,
+  });
   const [devMode, setDevMode] = useState(false);
   const [simulation, setSimulation] = useState(false);
-  const [elevating, setElevating] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [applying, setApplying] = useState(false);
   const [progress, setProgress] = useState<OptimizationProgress | null>(null);
@@ -78,14 +78,6 @@ export default function OptimizePcPage() {
 
   useEffect(() => {
     let cancelled = false;
-    window.electronAPI
-      .isAdmin()
-      .then((value) => {
-        if (!cancelled) setIsAdmin(value);
-      })
-      .catch(() => {
-        if (!cancelled) setIsAdmin(false);
-      });
     window.electronAPI
       .isPackaged()
       .then((value) => {
@@ -103,7 +95,7 @@ export default function OptimizePcPage() {
     try {
       setReport(await window.electronAPI.analyzeOptimization());
     } catch (error) {
-      const message = errorMessage(error);
+      const message = toErrorMessage(error);
       setAnalysisError(message);
       showEnhancedToast({
         type: 'error',
@@ -137,7 +129,7 @@ export default function OptimizePcPage() {
       });
       await analyze();
     } catch (error) {
-      const message = errorMessage(error);
+      const message = toErrorMessage(error);
       setApplyError(message);
       showEnhancedToast({
         type: 'error',
@@ -153,40 +145,18 @@ export default function OptimizePcPage() {
     }
   }, [analyze, settings.soundEnabled, simulation]);
 
-  const relaunchAsAdmin = useCallback(async () => {
-    setElevating(true);
-    try {
-      await window.electronAPI.elevateApp(undefined, undefined, undefined, true);
-    } catch (error) {
-      showEnhancedToast({
-        type: 'error',
-        title: 'Não foi possível reiniciar como admin',
-        description: errorMessage(error),
-        duration: 'long',
-        sound: settings.soundEnabled,
-      });
-    } finally {
-      setElevating(false);
-    }
-  }, [settings.soundEnabled]);
-
   const pending = report?.tweaks.filter((tweak) => tweak.status === 'pending') ?? [];
   const canAnalyze = !analyzing && !applying;
 
   return (
     <div className="space-y-6">
-      <HeroBanner {...HERO_ART['/otimizar-pc']}>
-        <div className="relative p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <RouteIcon path="/otimizar-pc" />
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-              Otimizar PC
-            </span>
-          </div>
-          <h2 className="text-lg font-bold text-foreground">Otimize seu PC em um clique</h2>
-          <HeroDescription text="Comparamos o estado atual do Windows com 16 ajustes persistentes conhecidos. Você vê o que já está aplicado, o que falta e aplica tudo de uma vez com um ponto de restauração." />
-        </div>
-      </HeroBanner>
+      <HeroBanner
+        {...HERO_ART['/otimizar-pc']}
+        badge="Otimizar PC"
+        path="/otimizar-pc"
+        title="Otimize seu PC em um clique"
+        description="Comparamos o estado atual do Windows com 16 ajustes persistentes conhecidos. Você vê o que já está aplicado, o que falta e aplica tudo de uma vez com um ponto de restauração."
+      />
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
         <p className="text-xs text-muted-foreground">
@@ -237,17 +207,18 @@ export default function OptimizePcPage() {
       )}
 
       {analysisError && (
-        <div
-          role="alert"
-          className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2"
-        >
-          <p className="flex-1 text-xs text-destructive">
-            Não foi possível analisar o PC: {analysisError}
-          </p>
-          <Button variant="outline" size="sm" onClick={() => void analyze()}>
-            Tentar de novo
-          </Button>
-        </div>
+        <ErrorPanel
+          variant="inline"
+          title="Não foi possível analisar o PC"
+          message={analysisError}
+          messageSeparator=": "
+          className="flex-wrap px-3 py-2"
+          titleClassName="text-xs"
+          messageClassName="text-xs"
+          icon={false}
+          retryLabel="Tentar de novo"
+          onRetry={() => void analyze()}
+        />
       )}
 
       {analyzing && !report && <PageSkeleton layout="analysis" label="Analisando o PC…" />}
@@ -421,12 +392,16 @@ export default function OptimizePcPage() {
             )}
 
             {applyError && (
-              <div
-                role="alert"
-                className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive"
-              >
-                Não foi possível aplicar as otimizações: {applyError}
-              </div>
+              <ErrorPanel
+                variant="inline"
+                title="Não foi possível aplicar as otimizações"
+                message={applyError}
+                messageSeparator=": "
+                className="px-3 py-2"
+                titleClassName="text-xs text-destructive"
+                messageClassName="text-xs text-destructive"
+                icon={false}
+              />
             )}
 
             {summary && (

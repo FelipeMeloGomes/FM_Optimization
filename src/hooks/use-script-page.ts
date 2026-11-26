@@ -3,6 +3,7 @@ import type { ScriptEntry } from '../../electron/shared/ipc-types';
 import { useScriptContext } from '../contexts/ScriptContext';
 import { useScriptExecutionContext } from '../contexts/ScriptExecutionContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
+import { useBatchApply } from './use-batch-apply';
 
 export function useScriptPage(categories: string | string[]) {
   const {
@@ -16,7 +17,7 @@ export function useScriptPage(categories: string | string[]) {
   const { settings } = useSettingsContext();
   const [confirmScript, setConfirmScript] = useState<ScriptEntry | null>(null);
   const [confirmBulkScripts, setConfirmBulkScripts] = useState<ScriptEntry[]>([]);
-  const [failedScripts, setFailedScripts] = useState<ScriptEntry[]>([]);
+  const { runBatch, failedScripts, clearFailures } = useBatchApply(executeBatch);
 
   // Keyed on the joined names rather than the array identity: a caller building
   // the list inline would otherwise change the reference every render and re-run
@@ -62,38 +63,16 @@ export function useScriptPage(categories: string | string[]) {
         setConfirmBulkScripts(scripts);
         return;
       }
-      void executeBatch(scripts).then(
-        ({ failedIds }) => {
-          setFailedScripts(scripts.filter((s) => failedIds.includes(s.id)));
-        },
-        (error) => {
-          setFailedScripts([...scripts]);
-          console.error('Falha ao aplicar o lote de scripts:', error);
-        }
-      );
+      runBatch(scripts);
     },
-    [settings.confirmOnExecute, executeBatch]
+    [settings.confirmOnExecute, runBatch]
   );
 
   const handleConfirmBulk = useCallback(() => {
     const scripts = confirmBulkScripts;
     setConfirmBulkScripts([]);
-    if (scripts.length > 0) {
-      void executeBatch(scripts).then(
-        ({ failedIds }) => {
-          setFailedScripts(scripts.filter((s) => failedIds.includes(s.id)));
-        },
-        (error) => {
-          setFailedScripts([...scripts]);
-          console.error('Falha ao aplicar o lote de scripts:', error);
-        }
-      );
-    }
-  }, [confirmBulkScripts, executeBatch]);
-
-  const clearFailures = useCallback(() => {
-    setFailedScripts([]);
-  }, []);
+    if (scripts.length > 0) runBatch(scripts);
+  }, [confirmBulkScripts, runBatch]);
 
   return {
     state,

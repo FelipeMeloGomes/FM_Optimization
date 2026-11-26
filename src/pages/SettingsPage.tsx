@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBannerContent } from '../components/hero/HeroBannerContent';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { DataSection } from '../components/settings/DataSection';
 import { NotificationsSection } from '../components/settings/NotificationsSection';
@@ -14,20 +14,13 @@ import { HERO_ART } from '../lib/hero-art';
 function SettingsHero() {
   return (
     <HeroBanner {...HERO_ART['/settings']}>
-      <div className="relative p-6">
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <RouteIcon path="/settings" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Configuracoes
-            </span>
-          </div>
-          <h2 className="text-balance text-lg font-bold text-foreground">
-            Preferencias do Sistema
-          </h2>
-          <HeroDescription text="Personalize o comportamento do FM Optimize." />
-        </div>
-      </div>
+      <HeroBannerContent
+        badge="Configuracoes"
+        path="/settings"
+        title="Preferencias do Sistema"
+        description="Personalize o comportamento do FM Optimize."
+        titleClassName="text-balance"
+      />
     </HeroBanner>
   );
 }

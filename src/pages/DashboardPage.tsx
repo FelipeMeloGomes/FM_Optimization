@@ -2,11 +2,11 @@ import { Clock, Cpu, HardDrive, MemoryStick, Monitor, Shield, ShieldAlert } from
 import { useEffect, useMemo } from 'react';
 import { formatMemoryTotal } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBannerContent } from '../components/hero/HeroBannerContent';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
-import { Badge, Button, Skeleton } from '../components/ui';
+import { Badge, ErrorPanel, Skeleton } from '../components/ui';
 import { useHistoryContext } from '../contexts/HistoryContext';
 import { useScriptContext } from '../contexts/ScriptContext';
 import { useSystemContext } from '../contexts/SystemContext';
@@ -94,13 +94,13 @@ export default function DashboardPage() {
 
   if (state.status === 'error') {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
-        <p className="text-sm">Erro ao carregar informações do sistema</p>
-        <p className="text-xs text-destructive">{state.error}</p>
-        <Button variant="outline" size="sm" onClick={refresh}>
-          Tentar novamente
-        </Button>
-      </div>
+      <ErrorPanel
+        title="Erro ao carregar informações do sistema"
+        message={state.error}
+        className="gap-2 text-muted-foreground"
+        icon={false}
+        onRetry={refresh}
+      />
     );
   }
 
@@ -130,18 +130,13 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Hero Section */}
       <HeroBanner {...HERO_ART['/']}>
-        <div className="relative p-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <RouteIcon path="/" />
-              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                Painel do Sistema
-              </span>
-            </div>
-            <h2 className="text-xl font-bold text-foreground">{data.os.name}</h2>
-            <HeroDescription text={`Build ${data.os.build} · ${data.os.edition}`} />
-          </div>
-        </div>
+        <HeroBannerContent
+          badge="Painel do Sistema"
+          path="/"
+          title={data.os.name}
+          description={`Build ${data.os.build} · ${data.os.edition}`}
+          titleClassName="text-xl"
+        />
       </HeroBanner>
 
       <PageRefreshBar onRefresh={refresh} refreshing={refreshing}>

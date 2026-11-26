@@ -18,9 +18,7 @@ export interface UseKeyboardSettingsResult {
   reload: () => Promise<void>;
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
+import { toErrorMessage } from '../../electron/shared/errors';
 
 function sameSettings(a: KeyboardSettings, b: KeyboardSettings): boolean {
   return (
@@ -49,7 +47,7 @@ export function useKeyboardSettings(): UseKeyboardSettingsResult {
       setState({ status: 'success', data: settings });
       setDraft(settings);
     } catch (error) {
-      setState({ status: 'error', error: errorMessage(error) });
+      setState({ status: 'error', error: toErrorMessage(error) });
     }
   }, []);
 
@@ -77,7 +75,7 @@ export function useKeyboardSettings(): UseKeyboardSettingsResult {
         setDraft(saved);
         setAppliedAt(new Date().toISOString());
       } catch (error) {
-        setApplyError(errorMessage(error));
+        setApplyError(toErrorMessage(error));
       }
     },
     [draft]

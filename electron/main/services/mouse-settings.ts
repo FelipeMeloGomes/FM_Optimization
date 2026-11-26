@@ -5,6 +5,7 @@ import {
   MOUSE_POINTER_SPEED_MIN,
   type MouseSettings,
 } from '../../shared/mouse-settings';
+import { parsePowerShellJson } from '../utils/powershell-json';
 import { execPowerShell } from './powershell';
 
 type Executor = (script: string, timeout?: number) => Promise<string>;
@@ -83,12 +84,7 @@ function inRange(value: number, min: number, max: number): boolean {
 }
 
 export function parseMouseSettings(raw: string): MouseSettings {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    throw new Error('Não foi possível ler as configurações do mouse: resposta inválida');
-  }
+  const parsed = parsePowerShellJson(raw, { label: 'configurações do mouse' });
   return validateMouseSettings(parsed);
 }
 

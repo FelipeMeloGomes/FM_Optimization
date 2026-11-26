@@ -2,8 +2,7 @@ import { AlertCircle, FolderCog, Loader2, MonitorSmartphone } from 'lucide-react
 import { useCallback, useEffect, useState } from 'react';
 import bluestacksLogo from '../assets/bluestacks-logo.png';
 import { showEnhancedToast } from '../components/EnhancedToast';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { Badge, Button, Card, CardContent, Switch } from '../components/ui';
 import { EmulatorProvider, useEmulatorContext } from '../contexts/EmulatorContext';
@@ -251,18 +250,13 @@ function EmuladoresPageContent() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner {...HERO_ART['/emuladores']}>
-        <div className="relative p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <RouteIcon path="/emuladores" />
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-              Emuladores
-            </span>
-          </div>
-          <h2 className="text-lg font-bold text-foreground">Debloat de Apps Android</h2>
-          <HeroDescription text="Conecte-se a emuladores Android via ADB para remover apps indesejados" />
-        </div>
-      </HeroBanner>
+      <HeroBanner
+        {...HERO_ART['/emuladores']}
+        badge="Emuladores"
+        path="/emuladores"
+        title="Debloat de Apps Android"
+        description="Conecte-se a emuladores Android via ADB para remover apps indesejados"
+      />
 
       {detecting ? (
         <PageSkeleton

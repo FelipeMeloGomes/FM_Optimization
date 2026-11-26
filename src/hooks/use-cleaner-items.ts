@@ -44,10 +44,7 @@ function saveCache(items: CleanerItemStats[]): void {
   }
 }
 
-function errorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
+import { toErrorMessage } from '../../electron/shared/errors';
 
 /**
  * Estatísticas por item da página de limpeza, com cache de 5 minutos para a
@@ -75,7 +72,7 @@ export function useCleanerItems() {
         setLastRefreshed(Date.now());
       } catch (e) {
         if (cancelled) return;
-        setError(errorMessage(e));
+        setError(toErrorMessage(e));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -97,7 +94,7 @@ export function useCleanerItems() {
       saveCache(fresh);
       setLastRefreshed(Date.now());
     } catch (e) {
-      setError(errorMessage(e));
+      setError(toErrorMessage(e));
     } finally {
       setIsRefreshing(false);
     }

@@ -22,9 +22,7 @@ export interface UseDisplaySettingsResult {
   reload: () => Promise<void>;
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
+import { toErrorMessage } from '../../electron/shared/errors';
 
 function currentMode(monitor: DisplayMonitor): DisplayMode {
   return { width: monitor.width, height: monitor.height, frequency: monitor.frequency };
@@ -62,7 +60,7 @@ export function useDisplaySettings(): UseDisplaySettingsResult {
       setState({ status: 'success', data: settings });
       setDrafts(draftsFrom(settings));
     } catch (error) {
-      setState({ status: 'error', error: errorMessage(error) });
+      setState({ status: 'error', error: toErrorMessage(error) });
     }
   }, []);
 
@@ -104,7 +102,7 @@ export function useDisplaySettings(): UseDisplaySettingsResult {
         setDrafts(draftsFrom(saved));
         setApplied((current) => ({ ...current, [deviceName]: true }));
       } catch (error) {
-        setErrors((current) => ({ ...current, [deviceName]: errorMessage(error) }));
+        setErrors((current) => ({ ...current, [deviceName]: toErrorMessage(error) }));
       }
     },
     [drafts]

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toErrorMessage } from '../../electron/shared/errors';
 import type {
   AsyncState,
   StartupSetEnabledPayload,
@@ -6,12 +7,6 @@ import type {
 } from '../../electron/shared/ipc-types';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { useSettingsContext } from '../contexts/SettingsContext';
-
-function errorMessage(error: unknown): string {
-  if (typeof error === 'string') return error;
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
 
 export function useStartup() {
   const { settings } = useSettingsContext();
@@ -28,7 +23,7 @@ export function useStartup() {
       if (requestId.current === current) setState({ status: 'success', data });
     } catch (error: unknown) {
       if (requestId.current === current) {
-        setState({ status: 'error', error: errorMessage(error) });
+        setState({ status: 'error', error: toErrorMessage(error) });
       }
     }
   }, []);
@@ -63,7 +58,7 @@ export function useStartup() {
         showEnhancedToast({
           type: 'error',
           title: 'Não foi possível alterar',
-          description: errorMessage(error),
+          description: toErrorMessage(error),
         });
         return false;
       } finally {
@@ -94,7 +89,7 @@ export function useStartup() {
         showEnhancedToast({
           type: 'error',
           title: 'Não foi possível parar o serviço',
-          description: errorMessage(error),
+          description: toErrorMessage(error),
         });
         return false;
       } finally {
@@ -115,7 +110,7 @@ export function useStartup() {
       showEnhancedToast({
         type: 'error',
         title: 'Não foi possível abrir o local',
-        description: errorMessage(error),
+        description: toErrorMessage(error),
       });
     }
   }, []);
@@ -125,7 +120,7 @@ export function useStartup() {
       showEnhancedToast({
         type: 'error',
         title: 'Falha ao reiniciar como administrador',
-        description: errorMessage(error),
+        description: toErrorMessage(error),
       })
     );
   }, []);

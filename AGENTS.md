@@ -75,6 +75,7 @@ Substituir `vX.Y.Z` pela tag que foi criada. Depois corrigir o problema e tentar
 O body deve conter apenas mudanças relevantes para o usuário final, em português.
 Agrupar em seções: **Novidades**, **Melhorias**, **Correções**.
 Commits técnicos (chore, bump, docs, refactor) ficam em uma seção "Técnico" no final ou são omitidos.
+**Se um campo estiver vazio, a seção não entra no corpo** — nada de cabeçalho órfão nem traço solto. O `scripts/release.ps1` aplica essa regra com `Build-ReleaseBody`.
 
 Template:
 

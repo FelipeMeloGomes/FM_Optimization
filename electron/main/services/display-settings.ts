@@ -7,6 +7,7 @@ import {
   type DisplayMonitor,
   type DisplaySettings,
 } from '../../shared/display-settings';
+import { parsePowerShellJson } from '../utils/powershell-json';
 import { execPowerShell } from './powershell';
 
 type Executor = (script: string, timeout?: number) => Promise<string>;
@@ -150,12 +151,7 @@ function parseMode(value: unknown): DisplayMode {
 }
 
 export function parseDisplaySettings(raw: string): DisplaySettings {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    throw new Error('Não foi possível ler as configurações do monitor: resposta inválida');
-  }
+  const parsed = parsePowerShellJson(raw, { label: 'configurações do monitor' });
 
   if (typeof parsed !== 'object' || parsed === null) {
     throw new Error('Configurações do monitor inválidas');

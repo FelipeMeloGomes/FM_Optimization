@@ -6,7 +6,7 @@ import { ConfirmBulkScriptDialog } from './ConfirmBulkScriptDialog';
 import { HeroBanner } from './hero/HeroBanner';
 import { PageSkeleton } from './PageSkeleton';
 import { ScriptSelectionToolbar } from './ScriptSelectionToolbar';
-import { Button } from './ui';
+import { ErrorPanel } from './ui';
 import { VirtualizedScriptList } from './VirtualizedScriptList';
 
 export interface TweaksPageHero {
@@ -103,13 +103,13 @@ function TweaksPageImpl({
 
   if (state.status === 'error') {
     return withBeforeContent(
-      <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
-        <p className="text-sm">Erro ao carregar tweaks</p>
-        <p className="text-xs text-destructive">{state.error}</p>
-        <Button variant="outline" size="sm" onClick={reloadScripts}>
-          Tentar novamente
-        </Button>
-      </div>
+      <ErrorPanel
+        title="Erro ao carregar tweaks"
+        message={state.error}
+        className="gap-2 text-muted-foreground"
+        icon={false}
+        onRetry={reloadScripts}
+      />
     );
   }
 

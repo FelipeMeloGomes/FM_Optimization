@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toErrorMessage } from '../../electron/shared/errors';
 import type {
   AsyncState,
   EssentialInstallProgress,
@@ -7,12 +8,6 @@ import type {
 } from '../../electron/shared/ipc-types';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { useSettingsContext } from '../contexts/SettingsContext';
-
-function errorMessage(error: unknown): string {
-  if (typeof error === 'string') return error;
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
 
 function withoutKey<T>(record: Record<string, T>, key: string): Record<string, T> {
   const next = { ...record };
@@ -40,7 +35,7 @@ export function useEssentials() {
       if (requestId.current === current) setState({ status: 'success', data });
     } catch (error: unknown) {
       if (requestId.current === current) {
-        setState({ status: 'error', error: errorMessage(error) });
+        setState({ status: 'error', error: toErrorMessage(error) });
       }
     }
   }, []);
@@ -87,7 +82,7 @@ export function useEssentials() {
           });
         }
       } catch (error: unknown) {
-        const message = errorMessage(error);
+        const message = toErrorMessage(error);
         if (message !== 'Instalação cancelada.') {
           setErrors((prev) => ({ ...prev, [item.id]: message }));
           showEnhancedToast({ type: 'error', title: 'Falha na instalação', description: message });

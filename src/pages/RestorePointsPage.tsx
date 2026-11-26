@@ -9,8 +9,8 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
+import { HeroBannerContent } from '../components/hero/HeroBannerContent';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { RefreshButton } from '../components/RefreshButton';
 import {
@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
   EmptyState,
+  ErrorPanel,
   Input,
   Table,
   TableBody,
@@ -101,13 +102,13 @@ export default function RestorePointsPage() {
       );
     }
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
-        <p className="text-sm">Erro ao carregar pontos de restauração</p>
-        <p className="text-xs text-destructive">{state.error}</p>
-        <Button variant="outline" size="sm" onClick={refresh}>
-          Tentar novamente
-        </Button>
-      </div>
+      <ErrorPanel
+        title="Erro ao carregar pontos de restauração"
+        message={state.error}
+        className="gap-2 text-muted-foreground"
+        icon={false}
+        onRetry={refresh}
+      />
     );
   }
 
@@ -115,25 +116,17 @@ export default function RestorePointsPage() {
     <div className="space-y-6">
       {/* Hero Banner */}
       <HeroBanner {...HERO_ART['/restore-points']}>
-        <div className="relative p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <RouteIcon path="/restore-points" />
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                  Restauração
-                </span>
-              </div>
-              <h2 className="text-lg font-bold text-foreground">
-                Pontos de Restauração do Sistema
-              </h2>
-              <HeroDescription text="Crie e gerencie pontos de restauração para reverter mudanças quando necessário." />
-            </div>
-            <Badge variant="secondary" className="text-xs px-3 py-1">
+        <HeroBannerContent
+          badge="Restauração"
+          path="/restore-points"
+          title="Pontos de Restauração do Sistema"
+          description="Crie e gerencie pontos de restauração para reverter mudanças quando necessário."
+          trailing={
+            <Badge variant="secondary" className="px-3 py-1 text-xs">
               {restorePoints.length} pontos
             </Badge>
-          </div>
-        </div>
+          }
+        />
       </HeroBanner>
 
       {/* Create Section */}

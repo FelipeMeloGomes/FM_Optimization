@@ -7,7 +7,7 @@ import {
 } from '../../../electron/shared/mouse-settings';
 import { useMouseSettings } from '../../hooks/use-mouse-settings';
 import { PageSkeleton } from '../PageSkeleton';
-import { AnimatedNumber, Button, SettingsPreviewLayout, Switch } from '../ui';
+import { AnimatedNumber, Button, ErrorPanel, SettingsPreviewLayout, Switch } from '../ui';
 import { MouseTrailPreview } from './MouseTrailPreview';
 
 export function MouseSettingsPanel() {
@@ -16,10 +16,15 @@ export function MouseSettingsPanel() {
 
   if (state.status === 'error') {
     return (
-      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5">
-        <p className="text-sm font-semibold text-destructive">Erro ao carregar ajustes do mouse</p>
-        <p className="mt-1 text-xs text-muted-foreground">{state.error}</p>
-      </div>
+      <ErrorPanel
+        variant="card"
+        title="Erro ao carregar ajustes do mouse"
+        message={state.error}
+        className="gap-0 border-destructive/30 bg-destructive/5 p-5"
+        titleClassName="text-sm font-semibold text-destructive"
+        messageClassName="mt-1 text-xs text-muted-foreground"
+        icon={false}
+      />
     );
   }
 
@@ -65,9 +70,16 @@ export function MouseSettingsPanel() {
             </div>
             {appliedAt && <p className="mt-2 text-xs text-primary">Ajustes aplicados</p>}
             {applyError && (
-              <p className="mt-2 text-xs text-destructive">
-                Não foi possível aplicar os ajustes: {applyError}
-              </p>
+              <ErrorPanel
+                variant="inline"
+                title="Não foi possível aplicar os ajustes"
+                message={applyError}
+                messageSeparator=": "
+                className="mt-2 border-0 bg-transparent p-0"
+                titleClassName="text-xs text-destructive"
+                messageClassName="text-xs text-destructive"
+                icon={false}
+              />
             )}
           </>
         }

@@ -18,11 +18,10 @@ import type { CleanerItemId } from '../../electron/shared/cleaner-items';
 import type { CleanerItemStats } from '../../electron/shared/ipc-types';
 import { ConfirmCleanDialog } from '../components/ConfirmCleanDialog';
 import { showEnhancedToast } from '../components/EnhancedToast';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
-import { Button } from '../components/ui';
+import { Button, ErrorPanel } from '../components/ui';
 import { useAutoCleanContext } from '../contexts/AutoCleanContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { useCleanerItems } from '../hooks/use-cleaner-items';
@@ -77,10 +76,7 @@ function formatTimeSince(timestamp: number): string {
   return `há ${diffD} dias`;
 }
 
-function errorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
+import { toErrorMessage } from '../../electron/shared/errors';
 
 export default function CleanerPage() {
   const { items, loading, error, isRefreshing, lastRefreshed, refresh, clean } = useCleanerItems();
@@ -258,7 +254,7 @@ export default function CleanerPage() {
         showEnhancedToast({
           type: 'error',
           title: 'Falha na limpeza',
-          description: errorMessage(e),
+          description: toErrorMessage(e),
           duration: 'long',
           sound: settings.soundEnabled,
         });
@@ -286,16 +282,14 @@ export default function CleanerPage() {
 
   if (error && items.length === 0) {
     return (
-      <div
-        className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground"
-        role="alert"
-      >
-        <p className="text-sm">Erro ao carregar itens de limpeza</p>
-        <p className="text-xs text-destructive">{error}</p>
-        <Button variant="outline" size="sm" onClick={() => void refresh()}>
-          Tentar de novo
-        </Button>
-      </div>
+      <ErrorPanel
+        title="Erro ao carregar itens de limpeza"
+        message={error}
+        className="gap-2 text-muted-foreground"
+        icon={false}
+        retryLabel="Tentar de novo"
+        onRetry={() => void refresh()}
+      />
     );
   }
 
@@ -371,22 +365,13 @@ export default function CleanerPage() {
       )}
 
       {/* Hero Banner */}
-      <HeroBanner {...HERO_ART['/cleaner']}>
-        <div className="relative p-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <RouteIcon path="/cleaner" />
-              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                Limpeza
-              </span>
-            </div>
-            <h2 className="text-lg font-bold text-foreground">
-              Mantenha seu Windows limpo e rápido
-            </h2>
-            <HeroDescription text="Escolha o que limpar, item por item, e libere espaço sem mexer no que você usa." />
-          </div>
-        </div>
-      </HeroBanner>
+      <HeroBanner
+        {...HERO_ART['/cleaner']}
+        badge="Limpeza"
+        path="/cleaner"
+        title="Mantenha seu Windows limpo e rápido"
+        description="Escolha o que limpar, item por item, e libere espaço sem mexer no que você usa."
+      />
 
       <PageRefreshBar
         onRefresh={() => void refresh()}
@@ -418,17 +403,19 @@ export default function CleanerPage() {
       </div>
 
       {error && items.length > 0 && (
-        <div
-          role="alert"
-          className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2"
-        >
-          <p className="flex-1 text-xs text-destructive">
-            Não foi possível atualizar as estatísticas: {error}
-          </p>
-          <Button variant="ghost" size="sm" onClick={() => void refresh()}>
-            Tentar de novo
-          </Button>
-        </div>
+        <ErrorPanel
+          variant="inline"
+          title="Não foi possível atualizar as estatísticas"
+          message={error}
+          messageSeparator=": "
+          className="flex-wrap px-3 py-2"
+          titleClassName="text-xs"
+          messageClassName="text-xs"
+          icon={false}
+          retryLabel="Tentar de novo"
+          retryVariant="ghost"
+          onRetry={() => void refresh()}
+        />
       )}
 
       {!isAdmin && items.some((item) => item.requiresAdmin) && (

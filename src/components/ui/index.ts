@@ -22,6 +22,8 @@ export {
   DialogTrigger,
 } from './dialog';
 export { EmptyState } from './EmptyState';
+export type { ErrorPanelProps, ErrorPanelVariant } from './ErrorPanel';
+export { ErrorPanel } from './ErrorPanel';
 export { Input } from './input';
 export { Label } from './label';
 export { Progress } from './progress';

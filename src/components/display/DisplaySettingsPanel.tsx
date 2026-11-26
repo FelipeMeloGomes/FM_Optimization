@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { DisplayMode, DisplayMonitor } from '../../../electron/shared/display-settings';
 import { useDisplaySettings } from '../../hooks/use-display-settings';
 import { PageSkeleton } from '../PageSkeleton';
-import { AnimatedNumber, Button, SettingsPreviewLayout } from '../ui';
+import { AnimatedNumber, Button, ErrorPanel, SettingsPreviewLayout } from '../ui';
 
 function resolutionKey(mode: DisplayMode): string {
   return `${mode.width}x${mode.height}`;
@@ -96,7 +96,16 @@ function MonitorCard({
             </div>
             {applied && <p className="mt-2 text-xs text-primary">Ajustes aplicados</p>}
             {error && (
-              <p className="mt-2 text-xs text-destructive">Não foi possível aplicar: {error}</p>
+              <ErrorPanel
+                variant="inline"
+                title="Não foi possível aplicar"
+                message={error}
+                messageSeparator=": "
+                className="mt-2 border-0 bg-transparent p-0"
+                titleClassName="text-xs text-destructive"
+                messageClassName="text-xs text-destructive"
+                icon={false}
+              />
             )}
           </>
         }
@@ -158,12 +167,15 @@ export function DisplaySettingsPanel() {
 
   if (state.status === 'error') {
     return (
-      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5">
-        <p className="text-sm font-semibold text-destructive">
-          Erro ao carregar ajustes do monitor
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">{state.error}</p>
-      </div>
+      <ErrorPanel
+        variant="card"
+        title="Erro ao carregar ajustes do monitor"
+        message={state.error}
+        className="gap-0 border-destructive/30 bg-destructive/5 p-5"
+        titleClassName="text-sm font-semibold text-destructive"
+        messageClassName="mt-1 text-xs text-muted-foreground"
+        icon={false}
+      />
     );
   }
 

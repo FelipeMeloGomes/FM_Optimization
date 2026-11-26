@@ -18,9 +18,7 @@ export interface UseStorageDrivesResult {
   cleanupSelected: () => Promise<void>;
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
+import { toErrorMessage } from '../../electron/shared/errors';
 
 function normalizeLetter(letter: string): string {
   return letter.toUpperCase();
@@ -85,7 +83,7 @@ export function useStorageDrives(): UseStorageDrivesResult {
         setApplied((prev) => ({ ...prev, [key]: true }));
         refresh();
       } catch (error) {
-        setErrors((prev) => ({ ...prev, [key]: errorMessage(error) }));
+        setErrors((prev) => ({ ...prev, [key]: toErrorMessage(error) }));
       } finally {
         setBusy((prev) => {
           const next = new Set(prev);

@@ -10,12 +10,12 @@ import {
 } from 'lucide-react';
 import { useMemo, useRef } from 'react';
 import { EXIT_INTERRUPTED_SENTINEL } from '../../electron/shared/exit-codes';
-import { HeroBanner, HeroDescription } from '../components/hero/HeroBanner';
-import { RouteIcon } from '../components/hero/RouteIcon';
+import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import {
   Badge,
   EmptyState,
+  ErrorPanel,
   Table,
   TableBody,
   TableCell,
@@ -155,30 +155,25 @@ export default function HistoryPage() {
 
   if (state.status === 'error') {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
-        <p className="text-sm">Erro ao carregar histórico</p>
-        <p className="text-xs text-destructive">{state.error}</p>
-      </div>
+      <ErrorPanel
+        title="Erro ao carregar histórico"
+        message={state.error}
+        className="gap-2 text-muted-foreground"
+        icon={false}
+      />
     );
   }
 
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <HeroBanner {...HERO_ART['/history']}>
-        <div className="relative p-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <RouteIcon path="/history" />
-              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                Histórico
-              </span>
-            </div>
-            <h2 className="text-lg font-bold text-foreground">Histórico de Execuções</h2>
-            <HeroDescription text="Acompanhe todas as execuções de tweaks realizadas no sistema." />
-          </div>
-        </div>
-      </HeroBanner>
+      <HeroBanner
+        {...HERO_ART['/history']}
+        badge="Histórico"
+        path="/history"
+        title="Histórico de Execuções"
+        description="Acompanhe todas as execuções de tweaks realizadas no sistema."
+      />
 
       {/* Stats Cards */}
       {stats && stats.total > 0 && (

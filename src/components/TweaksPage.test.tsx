@@ -124,7 +124,7 @@ describe('TweaksPage — estados', () => {
 
     render(<TweaksPage {...baseProps()} />);
 
-    expect(bodyText()).toContain('Erro ao carregar tweaks');
+    expect(screen.getByRole('alert').textContent).toContain('Erro ao carregar tweaks');
     expect(bodyText()).toContain('catálogo indisponível');
   });
 
