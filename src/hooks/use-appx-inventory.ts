@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toErrorMessage } from '../../electron/shared/errors';
 import type { AppxInventory, AppxRemoveResult } from '../../electron/shared/ipc-types';
+import { useLatestRequest } from './use-latest-request';
 
 /**
  * Inventário Appx da página Debloat.
@@ -15,59 +16,68 @@ export function useAppxInventory() {
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState(0);
+  const { next, isCurrent, invalidate } = useLatestRequest();
 
   useEffect(() => {
-    let cancelled = false;
+    const request = next();
 
     async function init() {
       try {
         const data = await window.electronAPI.getAppxInventory();
-        if (cancelled) return;
+        if (!isCurrent(request)) return;
         setInventory(data);
         setError(null);
         setLastRefreshed(Date.now());
       } catch (e) {
-        if (cancelled) return;
+        if (!isCurrent(request)) return;
         setError(toErrorMessage(e));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (isCurrent(request)) setLoading(false);
       }
     }
 
-    init();
+    void init();
 
     return () => {
-      cancelled = true;
+      invalidate();
     };
-  }, []);
+  }, [invalidate, isCurrent, next]);
 
   const refresh = useCallback(async () => {
+    const request = next();
     setIsRefreshing(true);
     try {
       const data = await window.electronAPI.getAppxInventory(true);
+      if (!isCurrent(request)) return;
       setInventory(data);
       setError(null);
       setLastRefreshed(Date.now());
     } catch (e) {
-      setError(toErrorMessage(e));
+      if (isCurrent(request)) setError(toErrorMessage(e));
     } finally {
-      setIsRefreshing(false);
+      if (isCurrent(request)) setIsRefreshing(false);
     }
-  }, []);
+  }, [isCurrent, next]);
 
-  const remove = useCallback(async (families: string[]): Promise<AppxRemoveResult> => {
-    try {
-      const result = await window.electronAPI.removeAppxPackages(families);
-      const data = await window.electronAPI.getAppxInventory(true);
-      setInventory(data);
-      setError(null);
-      setLastRefreshed(Date.now());
-      return result;
-    } catch (e) {
-      setError(toErrorMessage(e));
-      throw e;
-    }
-  }, []);
+  const remove = useCallback(
+    async (families: string[]): Promise<AppxRemoveResult> => {
+      const request = next();
+      try {
+        const result = await window.electronAPI.removeAppxPackages(families);
+        const data = await window.electronAPI.getAppxInventory(true);
+        if (isCurrent(request)) {
+          setInventory(data);
+          setError(null);
+          setLastRefreshed(Date.now());
+        }
+        return result;
+      } catch (e) {
+        if (isCurrent(request)) setError(toErrorMessage(e));
+        throw e;
+      }
+    },
+    [isCurrent, next]
+  );
 
   return { inventory, loading, error, isRefreshing, lastRefreshed, refresh, remove };
 }

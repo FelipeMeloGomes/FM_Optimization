@@ -1,6 +1,6 @@
 import { Clock, Cpu, HardDrive, MemoryStick, Monitor, Shield, ShieldAlert } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
-import { formatMemoryTotal } from '@/utils/format';
+import { formatMemoryTotal, formatUptimeCompact } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { HeroBannerContent } from '../components/hero/HeroBannerContent';
@@ -16,15 +16,6 @@ import { cn } from '../lib/utils';
 
 const OPTIMIZED_RATIO_THRESHOLD = 0.5;
 const DRIVE_MEDIA_TYPES = new Set(['SSD NVMe', 'SSD', 'HD']);
-
-function formatUptime(seconds: number): string {
-  const d = Math.floor(seconds / 86400);
-  const h = Math.floor((seconds % 86400) / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (d > 0) return `${d}d ${h}h ${m}m`;
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
-}
 
 function getCpuStatus(usage: number): 'good' | 'warning' | 'danger' {
   if (usage < 50) return 'good';
@@ -237,7 +228,9 @@ export default function DashboardPage() {
             <Clock className="size-4" />
             <span>
               Atividade:{' '}
-              <span className="font-medium text-foreground">{formatUptime(data.uptime)}</span>
+              <span className="font-medium text-foreground">
+                {formatUptimeCompact(data.uptime)}
+              </span>
             </span>
           </div>
         </div>

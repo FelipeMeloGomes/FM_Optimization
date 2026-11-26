@@ -2,6 +2,8 @@ import type { StorageDrive } from '../../../electron/shared/ipc-types';
 import { useStorageDrives } from '../../hooks/use-storage-drives';
 import { cn } from '../../lib/utils';
 import { PageSkeleton } from '../PageSkeleton';
+import { SettingsApplyFooter } from '../settings/SettingsApplyFooter';
+import { SettingsPanelShell } from '../settings/SettingsPanelShell';
 import { AnimatedNumber, Badge, Button, ErrorPanel, Progress, SettingsPreviewLayout } from '../ui';
 
 const DRIVE_MEDIA_TYPES = new Set(['SSD NVMe', 'SSD', 'HD']);
@@ -73,31 +75,21 @@ function DiskCard({
           </div>
         }
         footer={
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" disabled={busy} onClick={onCleanup}>
-                Limpeza de disco
+          <SettingsApplyFooter
+            isDirty={false}
+            appliedInline={applied ? 'Concluído' : undefined}
+            applyError={error}
+            applyErrorTitle="Não foi possível concluir"
+          >
+            <Button size="sm" disabled={busy} onClick={onCleanup}>
+              Limpeza de disco
+            </Button>
+            {isSolidState && (
+              <Button size="sm" variant="ghost" disabled={busy} onClick={onOptimize}>
+                Otimizar SSD
               </Button>
-              {isSolidState && (
-                <Button size="sm" variant="ghost" disabled={busy} onClick={onOptimize}>
-                  Otimizar SSD
-                </Button>
-              )}
-              {applied && <span className="text-xs text-primary">Concluído</span>}
-            </div>
-            {error && (
-              <ErrorPanel
-                variant="inline"
-                title="Não foi possível concluir"
-                message={error}
-                messageSeparator=": "
-                className="mt-2 border-0 bg-transparent p-0"
-                titleClassName="text-xs text-destructive"
-                messageClassName="text-xs text-destructive"
-                icon={false}
-              />
             )}
-          </>
+          </SettingsApplyFooter>
         }
       >
         <div className="flex flex-col gap-4">
@@ -200,14 +192,11 @@ export function StorageSettingsPanel() {
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-foreground">Ajustes do Windows</h3>
-        <span className="shrink-0 rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">
-          Por disco
-        </span>
-      </div>
-
+    <SettingsPanelShell
+      badge="Por disco"
+      className="gap-4"
+      note="A limpeza e a otimização abrem ferramentas do Windows e exigem privilégios de administrador"
+    >
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background/40 p-3">
         <p className="text-xs text-muted-foreground">
           {selected.size === 0
@@ -236,10 +225,6 @@ export function StorageSettingsPanel() {
           />
         ))}
       </div>
-
-      <p className="text-[10px] text-muted-foreground">
-        A limpeza e a otimização abrem ferramentas do Windows e exigem privilégios de administrador
-      </p>
-    </section>
+    </SettingsPanelShell>
   );
 }

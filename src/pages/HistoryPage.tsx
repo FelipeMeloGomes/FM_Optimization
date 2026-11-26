@@ -23,21 +23,11 @@ import {
   TableHeader,
   TableRow,
 } from '../components/ui';
+import { VirtualTableSpacer } from '../components/VirtualSpacer';
 import { useHistoryContext } from '../contexts/HistoryContext';
 import { useVirtualRows } from '../hooks/use-virtual-rows';
 import { HERO_ART } from '../lib/hero-art';
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('pt-BR');
-}
-
-function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
-  const s = Math.floor(ms / 1000);
-  if (s < 60) return `${s}s`;
-  const m = Math.floor(s / 60);
-  return `${m}m ${s % 60}s`;
-}
+import { formatDateTime, formatElapsedMs } from '../utils/format';
 
 const HISTORY_ROW_HEIGHT = 57;
 
@@ -75,11 +65,11 @@ function HistoryRow({
       <TableCell className="text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <Clock className="size-3" />
-          {formatDate(entry.startTime)}
+          {formatDateTime(entry.startTime)}
         </div>
       </TableCell>
       <TableCell className="text-muted-foreground">
-        {entry.wasCancelled ? '—' : formatDuration(entry.durationMs)}
+        {entry.wasCancelled ? '—' : formatElapsedMs(entry.durationMs)}
       </TableCell>
       <TableCell>
         {entry.wasCancelled && (
@@ -247,11 +237,7 @@ export default function HistoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody ref={listRef}>
-                {paddingTop > 0 && (
-                  <tr style={{ height: paddingTop }}>
-                    <td colSpan={5} />
-                  </tr>
-                )}
+                {paddingTop > 0 && <VirtualTableSpacer height={paddingTop} colSpan={5} />}
                 {virtualItems.map((virtualRow) => {
                   const entry = history[virtualRow.index];
                   return (
@@ -263,11 +249,7 @@ export default function HistoryPage() {
                     />
                   );
                 })}
-                {paddingBottom > 0 && (
-                  <tr style={{ height: paddingBottom }}>
-                    <td colSpan={5} />
-                  </tr>
-                )}
+                {paddingBottom > 0 && <VirtualTableSpacer height={paddingBottom} colSpan={5} />}
               </TableBody>
             </Table>
           </div>

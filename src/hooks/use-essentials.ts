@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toErrorMessage } from '../../electron/shared/errors';
 import type {
-  AsyncState,
   EssentialInstallProgress,
   EssentialInstallResult,
   EssentialListItem,
 } from '../../electron/shared/ipc-types';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { useSettingsContext } from '../contexts/SettingsContext';
+import { useAsyncData } from './use-async-data';
 
 function withoutKey<T>(record: Record<string, T>, key: string): Record<string, T> {
   const next = { ...record };
@@ -17,8 +17,7 @@ function withoutKey<T>(record: Record<string, T>, key: string): Record<string, T
 
 export function useEssentials() {
   const { settings } = useSettingsContext();
-  const [state, setState] = useState<AsyncState<EssentialListItem[]>>({ status: 'loading' });
-  const requestId = useRef(0);
+  const { state, reload } = useAsyncData(() => window.electronAPI.getEssentials());
   const [installProgress, setInstallProgress] = useState<Record<string, EssentialInstallProgress>>(
     {}
   );
@@ -26,36 +25,11 @@ export function useEssentials() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [running, setRunning] = useState<Record<string, boolean>>({});
 
-  const load = useCallback(async () => {
-    const current = ++requestId.current;
-    setState({ status: 'loading' });
-
-    try {
-      const data = await window.electronAPI.getEssentials();
-      if (requestId.current === current) setState({ status: 'success', data });
-    } catch (error: unknown) {
-      if (requestId.current === current) {
-        setState({ status: 'error', error: toErrorMessage(error) });
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-    return () => {
-      requestId.current += 1;
-    };
-  }, [load]);
-
   useEffect(() => {
     return window.electronAPI.onEssentialInstallProgress((data) => {
       setInstallProgress((prev) => ({ ...prev, [data.id]: data }));
     });
   }, []);
-
-  const reload = useCallback(() => {
-    void load();
-  }, [load]);
 
   const install = useCallback(
     async (item: EssentialListItem) => {

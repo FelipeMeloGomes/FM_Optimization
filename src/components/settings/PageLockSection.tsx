@@ -4,6 +4,7 @@ import { useSettingsContext } from '../../contexts/SettingsContext';
 import { ALWAYS_VISIBLE_ROUTES } from '../../lib/page-lock';
 import { ROUTES } from '../../routes/config';
 import { Input, Toggle } from '../ui';
+import { SettingsSectionShell } from './SettingsSectionShell';
 
 function PasswordField({
   value,
@@ -110,132 +111,126 @@ export function PageLockSection() {
   const revealButtonVisible = awaitingVerify && !pl.unlocked && pl.lockedPages.length > 0;
 
   return (
-    <div>
-      <div className="mb-4 flex items-center gap-2">
-        <div className="size-1.5 rounded-full bg-warning" />
-        <h3 className="text-sm font-semibold text-foreground">Bloqueio de Paginas</h3>
-      </div>
-      <div className="rounded-xl border border-border bg-card p-5">
-        <Toggle
-          id="page-lock-enabled"
-          label="Bloqueio de paginas"
-          description="Paginas bloqueadas ficam ocultas ate serem reveladas com a senha."
-          checked={pl.enabled}
-          onChange={(e) => update({ pageLock: { ...pl, enabled: e.target.checked } })}
-        />
+    <SettingsSectionShell title="Bloqueio de Paginas" tone="warning" variant="panel">
+      <Toggle
+        id="page-lock-enabled"
+        label="Bloqueio de paginas"
+        description="Paginas bloqueadas ficam ocultas ate serem reveladas com a senha."
+        checked={pl.enabled}
+        onChange={(e) => update({ pageLock: { ...pl, enabled: e.target.checked } })}
+      />
 
-        <div className="mt-5 space-y-4">
-          <div>
-            <p className="mb-2 text-sm font-medium text-foreground">
-              Paginas bloqueadas:{' '}
-              {pl.lockedPages.length > 0
-                ? pl.lockedPages.map((r) => r.replace('/', '')).join(', ')
-                : 'nenhuma'}
-            </p>
+      <div className="mt-5 space-y-4">
+        <div>
+          <p className="mb-2 text-sm font-medium text-foreground">
+            Paginas bloqueadas:{' '}
+            {pl.lockedPages.length > 0
+              ? pl.lockedPages.map((r) => r.replace('/', '')).join(', ')
+              : 'nenhuma'}
+          </p>
 
-            {!hasPassword && (
-              <div className="space-y-2 rounded-lg border border-border p-4">
-                <p className="text-sm text-muted-foreground">
-                  Cadastre uma senha para poder adicionar/remover paginas e revela-las.
-                </p>
-                <PasswordField
-                  placeholder="Nova senha"
-                  value={newPassword}
-                  onChange={setNewPassword}
-                />
-                <PasswordField
-                  placeholder="Confirmar senha"
-                  value={confirmPassword}
-                  onChange={setConfirmPassword}
-                />
+          {!hasPassword && (
+            <div className="space-y-2 rounded-lg border border-border p-4">
+              <p className="text-sm text-muted-foreground">
+                Cadastre uma senha para poder adicionar/remover paginas e revela-las.
+              </p>
+              <PasswordField
+                placeholder="Nova senha"
+                value={newPassword}
+                onChange={setNewPassword}
+              />
+              <PasswordField
+                placeholder="Confirmar senha"
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+              />
+              <button
+                type="button"
+                onClick={registerPassword}
+                className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                <KeyRound className="size-4" />
+                Cadastrar senha
+              </button>
+            </div>
+          )}
+
+          {hasPassword && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <PasswordField
+                    placeholder="Digite sua senha para gerenciar/revelar"
+                    value={password}
+                    onChange={setPassword}
+                  />
+                </div>
                 <button
                   type="button"
-                  onClick={registerPassword}
-                  className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  onClick={async () => {
+                    if (await verify()) {
+                      setAwaitingVerify(true);
+                      setPassword('');
+                    }
+                  }}
+                  className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
-                  <KeyRound className="size-4" />
-                  Cadastrar senha
+                  Entrar
                 </button>
               </div>
-            )}
 
-            {hasPassword && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <PasswordField
-                      placeholder="Digite sua senha para gerenciar/revelar"
-                      value={password}
-                      onChange={setPassword}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (await verify()) {
-                        setAwaitingVerify(true);
-                        setPassword('');
-                      }
-                    }}
-                    className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  >
-                    Entrar
-                  </button>
-                </div>
-
-                {awaitingVerify && (
-                  <div className="space-y-3 rounded-lg border border-border p-4">
-                    <p className="text-sm font-medium text-foreground">
-                      Escolha quais paginas ficam bloqueadas:
-                    </p>
-                    <div className="flex flex-col gap-1.5">
-                      {lockablePages.map((p) => (
-                        <label key={p.to} className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            checked={pl.lockedPages.includes(p.to)}
-                            onChange={() => togglePage(p.to)}
-                          />
-                          {p.label}
-                        </label>
-                      ))}
-                    </div>
-                    {revealButtonVisible && (
-                      <div className="flex gap-3 pt-2">
-                        <button
-                          type="button"
-                          onClick={unlockAll}
-                          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                        >
-                          <Unlock className="size-4" />
-                          Revelar paginas bloqueadas
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {pl.unlocked ? (
-                  <button
-                    type="button"
-                    onClick={lockAll}
-                    className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  >
-                    <Lock className="size-4" />
-                    Bloquear novamente
-                  </button>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Paginas bloqueadas estao ocultas. Use a senha para revela-las.
+              {awaitingVerify && (
+                <div className="space-y-3 rounded-lg border border-border p-4">
+                  <p className="text-sm font-medium text-foreground">
+                    Escolha quais paginas ficam bloqueadas:
                   </p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+                  <div className="flex flex-col gap-1.5">
+                    {lockablePages.map((p) => (
+                      <label key={p.to} className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={pl.lockedPages.includes(p.to)}
+                          onChange={() => togglePage(p.to)}
+                        />
+                        {p.label}
+                      </label>
+                    ))}
+                  </div>
+                  {revealButtonVisible && (
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={unlockAll}
+                        className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      >
+                        <Unlock className="size-4" />
+                        Revelar paginas bloqueadas
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
-        {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
+              {pl.unlocked ? (
+                <button
+                  type="button"
+                  onClick={lockAll}
+                  className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                >
+                  <Lock className="size-4" />
+                  Bloquear novamente
+                </button>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Paginas bloqueadas estao ocultas. Use a senha para revela-las.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
+    </SettingsSectionShell>
   );
 }

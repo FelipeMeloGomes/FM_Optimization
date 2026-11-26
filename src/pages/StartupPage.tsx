@@ -8,7 +8,6 @@ import {
   Rocket,
   Search,
   Server,
-  ShieldAlert,
   ShieldCheck,
   Square,
 } from 'lucide-react';
@@ -23,6 +22,7 @@ import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import {
+  AdminNotice,
   Badge,
   Button,
   Dialog,
@@ -43,6 +43,7 @@ import {
   TableRow,
   Tabs,
 } from '../components/ui';
+import { VirtualTableSpacer } from '../components/VirtualSpacer';
 import { useStartup } from '../hooks/use-startup';
 import { useVirtualRows } from '../hooks/use-virtual-rows';
 import { HERO_ART } from '../lib/hero-art';
@@ -249,20 +250,19 @@ export default function StartupPage() {
 
       {/* Admin notice */}
       {!data.isAdmin && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-warning/20 bg-warning/5 p-4">
-          <ShieldAlert className="size-5 shrink-0 text-warning" />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-warning">Sem permissão de administrador</p>
-            <p className="text-xs text-muted-foreground">
-              Itens do sistema (HKLM, pastas de todos os usuários, tarefas e serviços) aparecem, mas
-              não podem ser alterados. Reinicie o app elevado para controlá-los.
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={elevate} className="gap-1.5">
-            <ShieldCheck className="size-3.5" />
-            Reiniciar como admin
-          </Button>
-        </div>
+        <AdminNotice
+          relaunchVariant="outline"
+          message={
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-warning">Sem permissão de administrador</p>
+              <p className="text-xs text-muted-foreground">
+                Itens do sistema (HKLM, pastas de todos os usuários, tarefas e serviços) aparecem,
+                mas não podem ser alterados. Reinicie o app elevado para controlá-los.
+              </p>
+            </div>
+          }
+          onRelaunch={elevate}
+        />
       )}
 
       {/* Tabs + filters */}
@@ -325,9 +325,7 @@ export default function StartupPage() {
               </TableHeader>
               <TableBody ref={appsListRef}>
                 {appsV.paddingTop > 0 && (
-                  <tr style={{ height: appsV.paddingTop }}>
-                    <td colSpan={4} />
-                  </tr>
+                  <VirtualTableSpacer height={appsV.paddingTop} colSpan={4} />
                 )}
                 {appsV.virtualItems.map((virtualRow) => {
                   const app = apps[virtualRow.index];
@@ -396,9 +394,7 @@ export default function StartupPage() {
                   );
                 })}
                 {appsV.paddingBottom > 0 && (
-                  <tr style={{ height: appsV.paddingBottom }}>
-                    <td colSpan={4} />
-                  </tr>
+                  <VirtualTableSpacer height={appsV.paddingBottom} colSpan={4} />
                 )}
               </TableBody>
             </Table>
@@ -431,9 +427,7 @@ export default function StartupPage() {
               </TableHeader>
               <TableBody ref={tasksListRef}>
                 {tasksV.paddingTop > 0 && (
-                  <tr style={{ height: tasksV.paddingTop }}>
-                    <td colSpan={4} />
-                  </tr>
+                  <VirtualTableSpacer height={tasksV.paddingTop} colSpan={4} />
                 )}
                 {tasksV.virtualItems.map((virtualRow) => {
                   const task = tasks[virtualRow.index];
@@ -509,9 +503,7 @@ export default function StartupPage() {
                   );
                 })}
                 {tasksV.paddingBottom > 0 && (
-                  <tr style={{ height: tasksV.paddingBottom }}>
-                    <td colSpan={4} />
-                  </tr>
+                  <VirtualTableSpacer height={tasksV.paddingBottom} colSpan={4} />
                 )}
               </TableBody>
             </Table>
@@ -545,9 +537,7 @@ export default function StartupPage() {
               </TableHeader>
               <TableBody ref={servicesListRef}>
                 {servicesV.paddingTop > 0 && (
-                  <tr style={{ height: servicesV.paddingTop }}>
-                    <td colSpan={5} />
-                  </tr>
+                  <VirtualTableSpacer height={servicesV.paddingTop} colSpan={5} />
                 )}
                 {servicesV.virtualItems.map((virtualRow) => {
                   const service = services[virtualRow.index];
@@ -665,9 +655,7 @@ export default function StartupPage() {
                   );
                 })}
                 {servicesV.paddingBottom > 0 && (
-                  <tr style={{ height: servicesV.paddingBottom }}>
-                    <td colSpan={5} />
-                  </tr>
+                  <VirtualTableSpacer height={servicesV.paddingBottom} colSpan={5} />
                 )}
               </TableBody>
             </Table>

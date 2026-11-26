@@ -1,14 +1,6 @@
-import {
-  createContext,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, type ReactNode, useContext, useMemo, useState } from 'react';
 import type { AsyncState, ScriptEntry } from '../../electron/shared/ipc-types';
+import { useAsyncData } from '../hooks/use-async-data';
 
 interface ScriptContextValue {
   state: AsyncState<ScriptEntry[]>;
@@ -25,29 +17,9 @@ interface ScriptContextValue {
 const ScriptContext = createContext<ScriptContextValue | null>(null);
 
 export function ScriptProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AsyncState<ScriptEntry[]>>({ status: 'loading' });
+  const { state, reload } = useAsyncData(() => window.electronAPI.getScripts());
   const [categoryFilter, setCategoryFilter] = useState('');
   const [subcategoryFilter, setSubcategoryFilter] = useState('');
-  const requestRef = useRef(0);
-
-  const loadScripts = useCallback(() => {
-    const request = ++requestRef.current;
-    setState({ status: 'loading' });
-    window.electronAPI
-      .getScripts()
-      .then((scripts) => {
-        if (requestRef.current === request) setState({ status: 'success', data: scripts });
-      })
-      .catch((e) => {
-        if (requestRef.current === request) {
-          setState({ status: 'error', error: typeof e === 'string' ? e : (e as Error).message });
-        }
-      });
-  }, []);
-
-  useEffect(() => {
-    loadScripts();
-  }, [loadScripts]);
 
   const scripts = state.status === 'success' ? state.data : [];
 
@@ -80,9 +52,9 @@ export function ScriptProvider({ children }: { children: ReactNode }) {
       subcategories,
       setCategoryFilter,
       setSubcategoryFilter,
-      retry: loadScripts,
+      retry: reload,
     }),
-    [state, filteredScripts, categoryFilter, subcategoryFilter, subcategories, loadScripts]
+    [state, filteredScripts, categoryFilter, subcategoryFilter, subcategories, reload]
   );
 
   return <ScriptContext.Provider value={contextValue}>{children}</ScriptContext.Provider>;

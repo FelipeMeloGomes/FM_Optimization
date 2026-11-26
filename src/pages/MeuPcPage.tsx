@@ -15,7 +15,7 @@ import {
 import { MotionConfig, motion } from 'motion/react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
-import { formatMemoryTotal } from '@/utils/format';
+import { formatMemoryTotal, formatUptimeLong, plural } from '@/utils/format';
 import { DashboardWidget } from '../components/DashboardWidget';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
@@ -48,20 +48,6 @@ function formatBoolean(value?: boolean): string {
 function availableOr(value: string | undefined, fallback: string): string {
   const trimmed = value?.trim();
   return trimmed && trimmed !== UNAVAILABLE ? trimmed : fallback;
-}
-
-function formatUptime(seconds: number): string {
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
-  const parts = [
-    days > 0 && `${days} d`,
-    hours > 0 && `${hours} h`,
-    minutes > 0 && `${minutes} min`,
-    remainingSeconds > 0 && `${remainingSeconds} s`,
-  ].filter(Boolean);
-  return parts.join(' ') || '0 s';
 }
 
 function formatInstallDate(value?: string): string {
@@ -373,7 +359,7 @@ export default function MeuPcPage() {
       id: 'armazenamento',
       label: 'Armazenamento',
       icon: <HardDrive className="size-4" />,
-      summary: `${drives.length} ${drives.length === 1 ? 'unidade' : 'unidades'}`,
+      summary: plural(drives.length, 'unidade', 'unidades'),
       sections: storageSections,
     },
     {
@@ -387,7 +373,7 @@ export default function MeuPcPage() {
       id: 'tempo-de-atividade',
       label: 'Tempo de atividade',
       icon: <Clock className="size-4" />,
-      summary: formatUptime(uptime),
+      summary: formatUptimeLong(uptime),
       sections: uptimeSections,
     },
   ];
@@ -486,7 +472,7 @@ export default function MeuPcPage() {
           <DashboardWidget
             icon={HardDrive}
             label="Armazenamento"
-            value={`${drives.length} ${drives.length === 1 ? 'unidade' : 'unidades'}`}
+            value={plural(drives.length, 'unidade', 'unidades')}
             detail={storageDetail || 'Nenhuma unidade detectada'}
             status="accent"
           />

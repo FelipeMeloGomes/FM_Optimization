@@ -1,50 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toErrorMessage } from '../../electron/shared/errors';
-import type {
-  AsyncState,
-  StartupSetEnabledPayload,
-  StartupSnapshot,
-} from '../../electron/shared/ipc-types';
+import type { StartupSetEnabledPayload } from '../../electron/shared/ipc-types';
 import { showEnhancedToast } from '../components/EnhancedToast';
 import { useSettingsContext } from '../contexts/SettingsContext';
+import { useAsyncData } from './use-async-data';
 
 export function useStartup() {
   const { settings } = useSettingsContext();
-  const [state, setState] = useState<AsyncState<StartupSnapshot>>({ status: 'loading' });
+  const { state, reload, setData } = useAsyncData(() => window.electronAPI.startupList());
   const [busy, setBusy] = useState<Record<string, boolean>>({});
-  const requestId = useRef(0);
-
-  const load = useCallback(async () => {
-    const current = ++requestId.current;
-    setState({ status: 'loading' });
-
-    try {
-      const data = await window.electronAPI.startupList();
-      if (requestId.current === current) setState({ status: 'success', data });
-    } catch (error: unknown) {
-      if (requestId.current === current) {
-        setState({ status: 'error', error: toErrorMessage(error) });
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-    return () => {
-      requestId.current += 1;
-    };
-  }, [load]);
-
-  const reload = useCallback(() => {
-    void load();
-  }, [load]);
 
   const toggle = useCallback(
     async (payload: StartupSetEnabledPayload, label: string) => {
       setBusy((prev) => ({ ...prev, [payload.id]: true }));
       try {
         const data = await window.electronAPI.startupSetEnabled(payload);
-        setState({ status: 'success', data });
+        setData(() => data);
         showEnhancedToast({
           type: payload.enabled ? 'success' : 'warning',
           title: payload.enabled ? `${label} reativado` : `${label} desativado`,
@@ -69,7 +40,7 @@ export function useStartup() {
         });
       }
     },
-    [settings.soundEnabled]
+    [settings.soundEnabled, setData]
   );
 
   const stopService = useCallback(
@@ -77,7 +48,7 @@ export function useStartup() {
       setBusy((prev) => ({ ...prev, [id]: true }));
       try {
         const data = await window.electronAPI.startupStopService({ id });
-        setState({ status: 'success', data });
+        setData(() => data);
         showEnhancedToast({
           type: 'success',
           title: `${label} parado`,
@@ -100,7 +71,7 @@ export function useStartup() {
         });
       }
     },
-    [settings.soundEnabled]
+    [settings.soundEnabled, setData]
   );
 
   const openLocation = useCallback(async (id: string) => {

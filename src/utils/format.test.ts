@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { formatBytes, formatDuration, formatMemoryTotal } from './format';
+import {
+  formatBytes,
+  formatDateTime,
+  formatDuration,
+  formatElapsedMs,
+  formatMemoryTotal,
+  formatUptimeCompact,
+  formatUptimeLong,
+  plural,
+} from './format';
+
+process.env.TZ = 'UTC';
 
 /**
  * Esses helpers alimentam o Dashboard e o Histórico. Um erro de arredondamento
@@ -54,5 +65,62 @@ describe('formatMemoryTotal', () => {
   it('devolve o texto original quando não reconhece o formato', () => {
     expect(formatMemoryTotal('N/A')).toBe('N/A');
     expect(formatMemoryTotal('sem número')).toBe('sem número');
+  });
+});
+
+describe('formatDateTime', () => {
+  it('formata string, timestamp e Date em pt-BR', () => {
+    const expected = '02/01/2026, 03:04:05';
+    expect(formatDateTime('2026-01-02T03:04:05.000Z')).toBe(expected);
+    expect(formatDateTime(Date.UTC(2026, 0, 2, 3, 4, 5))).toBe(expected);
+    expect(formatDateTime(new Date('2026-01-02T03:04:05.000Z'))).toBe(expected);
+  });
+});
+
+describe('plural', () => {
+  it('usa o singular apenas para um', () => {
+    expect(plural(0, 'resultado', 'resultados')).toBe('0 resultados');
+    expect(plural(1, 'resultado', 'resultados')).toBe('1 resultado');
+    expect(plural(2, 'resultado', 'resultados')).toBe('2 resultados');
+  });
+});
+
+describe('formatUptimeCompact', () => {
+  it('mostra apenas minutos abaixo de uma hora', () => {
+    expect(formatUptimeCompact(0)).toBe('0m');
+    expect(formatUptimeCompact(90)).toBe('1m');
+  });
+
+  it('inclui horas e dias quando presentes', () => {
+    expect(formatUptimeCompact(3661)).toBe('1h 1m');
+    expect(formatUptimeCompact(90061)).toBe('1d 1h 1m');
+  });
+});
+
+describe('formatUptimeLong', () => {
+  it('filtra as partes zeradas', () => {
+    expect(formatUptimeLong(0)).toBe('0 s');
+    expect(formatUptimeLong(3600)).toBe('1 h');
+  });
+
+  it('mantém dias, horas, minutos e segundos', () => {
+    expect(formatUptimeLong(90061)).toBe('1 d 1 h 1 min 1 s');
+  });
+});
+
+describe('formatElapsedMs', () => {
+  it('usa milissegundos abaixo de um segundo', () => {
+    expect(formatElapsedMs(0)).toBe('0ms');
+    expect(formatElapsedMs(999)).toBe('999ms');
+  });
+
+  it('usa segundos inteiros abaixo de um minuto', () => {
+    expect(formatElapsedMs(1000)).toBe('1s');
+    expect(formatElapsedMs(1500)).toBe('1s');
+  });
+
+  it('usa minutos com os segundos restantes', () => {
+    expect(formatElapsedMs(60000)).toBe('1m 0s');
+    expect(formatElapsedMs(90061)).toBe('1m 30s');
   });
 });

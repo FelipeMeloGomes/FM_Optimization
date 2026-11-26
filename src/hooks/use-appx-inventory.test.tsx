@@ -124,4 +124,41 @@ describe('useAppxInventory — atualização e remoção', () => {
     expect(result.current.error).toBe('requer administrador');
     expect(result.current.inventory?.packages).toHaveLength(1);
   });
+
+  it('ignora o inventário de uma varredura superada por outra', async () => {
+    let resolveOld!: (value: AppxInventory) => void;
+    let resolveLatest!: (value: AppxInventory) => void;
+    const old = new Promise<AppxInventory>((resolve) => {
+      resolveOld = resolve;
+    });
+    const latest = new Promise<AppxInventory>((resolve) => {
+      resolveLatest = resolve;
+    });
+    getAppxInventory
+      .mockReset()
+      .mockResolvedValueOnce(inventory())
+      .mockReturnValueOnce(old)
+      .mockReturnValueOnce(latest);
+
+    const { result } = renderHook(() => useAppxInventory());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      void result.current.refresh();
+      void result.current.refresh();
+    });
+
+    await act(async () => {
+      resolveOld(inventory({ scannedAt: 1 }));
+      await old;
+    });
+    expect(result.current.inventory?.scannedAt).toBe(1000);
+
+    await act(async () => {
+      resolveLatest(inventory({ scannedAt: 2000 }));
+      await latest;
+    });
+    expect(result.current.inventory?.scannedAt).toBe(2000);
+    expect(result.current.isRefreshing).toBe(false);
+  });
 });

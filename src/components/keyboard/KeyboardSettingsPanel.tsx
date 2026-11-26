@@ -9,7 +9,9 @@ import {
 } from '../../../electron/shared/keyboard-settings';
 import { useKeyboardSettings } from '../../hooks/use-keyboard-settings';
 import { PageSkeleton } from '../PageSkeleton';
-import { AnimatedNumber, Button, ErrorPanel, SettingsPreviewLayout } from '../ui';
+import { SettingsApplyFooter } from '../settings/SettingsApplyFooter';
+import { SettingsPanelShell } from '../settings/SettingsPanelShell';
+import { AnimatedNumber, ErrorPanel, SettingsPreviewLayout } from '../ui';
 import { KeyboardPreview } from './KeyboardPreview';
 
 const REPEAT_DELAY_MS = [250, 500, 750, 1000];
@@ -37,14 +39,7 @@ export function KeyboardSettingsPanel() {
   }
 
   return (
-    <section className="flex flex-col gap-5 rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-foreground">Ajustes do Windows</h3>
-        <span className="shrink-0 rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">
-          tempo real
-        </span>
-      </div>
-
+    <SettingsPanelShell badge="tempo real">
       <SettingsPreviewLayout
         preview={
           <KeyboardPreview
@@ -54,39 +49,15 @@ export function KeyboardSettingsPanel() {
           />
         }
         footer={
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" disabled={!isDirty} onClick={() => void apply()}>
-                Aplicar
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => void apply(DEFAULT_KEYBOARD_SETTINGS)}
-              >
-                Restaurar padrão
-              </Button>
-              <Button size="sm" variant="ghost" disabled={!isDirty} onClick={discard}>
-                Cancelar alterações
-              </Button>
-              <Button size="sm" variant="ghost" onClick={reset}>
-                Preencher com padrões
-              </Button>
-            </div>
-            {appliedAt && <p className="mt-2 text-xs text-primary">Ajustes aplicados</p>}
-            {applyError && (
-              <ErrorPanel
-                variant="inline"
-                title="Não foi possível aplicar os ajustes"
-                message={applyError}
-                messageSeparator=": "
-                className="mt-2 border-0 bg-transparent p-0"
-                titleClassName="text-xs text-destructive"
-                messageClassName="text-xs text-destructive"
-                icon={false}
-              />
-            )}
-          </>
+          <SettingsApplyFooter
+            isDirty={isDirty}
+            appliedAt={appliedAt}
+            applyError={applyError}
+            onApply={() => void apply()}
+            onRestoreDefault={() => void apply(DEFAULT_KEYBOARD_SETTINGS)}
+            onDiscard={discard}
+            onFillDefaults={reset}
+          />
         }
       >
         <div className="flex flex-col gap-4">
@@ -161,6 +132,6 @@ export function KeyboardSettingsPanel() {
           </div>
         </div>
       </SettingsPreviewLayout>
-    </section>
+    </SettingsPanelShell>
   );
 }

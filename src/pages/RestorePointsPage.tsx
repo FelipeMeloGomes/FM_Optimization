@@ -32,10 +32,7 @@ import {
 } from '../components/ui';
 import { useRestorePointContext } from '../contexts/RestorePointContext';
 import { HERO_ART } from '../lib/hero-art';
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('pt-BR');
-}
+import { formatDateTime } from '../utils/format';
 
 export default function RestorePointsPage() {
   const {
@@ -219,7 +216,7 @@ export default function RestorePointsPage() {
                     <TableCell className="text-muted-foreground">
                       <div className="flex items-center gap-1.5">
                         <Clock className="size-3" />
-                        {formatDate(rp.creationTime)}
+                        {formatDateTime(rp.creationTime)}
                       </div>
                     </TableCell>
                     <TableCell>

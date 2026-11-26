@@ -45,6 +45,7 @@ function saveCache(items: CleanerItemStats[]): void {
 }
 
 import { toErrorMessage } from '../../electron/shared/errors';
+import { useLatestRequest } from './use-latest-request';
 
 /**
  * Estatísticas por item da página de limpeza, com cache de 5 minutos para a
@@ -58,47 +59,50 @@ export function useCleanerItems() {
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<number>(cached.current ? Date.now() : 0);
+  const { next, isCurrent, invalidate } = useLatestRequest();
 
   useEffect(() => {
-    let cancelled = false;
+    const request = next();
 
     async function init() {
       try {
         const fresh = await window.electronAPI.getCleanerItemsStats();
-        if (cancelled) return;
+        if (!isCurrent(request)) return;
         setItems(fresh);
         setError(null);
         saveCache(fresh);
         setLastRefreshed(Date.now());
       } catch (e) {
-        if (cancelled) return;
+        if (!isCurrent(request)) return;
         setError(toErrorMessage(e));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (isCurrent(request)) setLoading(false);
       }
     }
 
-    init();
+    void init();
 
     return () => {
-      cancelled = true;
+      invalidate();
     };
-  }, []);
+  }, [invalidate, isCurrent, next]);
 
   const refresh = useCallback(async () => {
+    const request = next();
     setIsRefreshing(true);
     try {
       const fresh = await window.electronAPI.getCleanerItemsStats();
+      if (!isCurrent(request)) return;
       setItems(fresh);
       setError(null);
       saveCache(fresh);
       setLastRefreshed(Date.now());
     } catch (e) {
-      setError(toErrorMessage(e));
+      if (isCurrent(request)) setError(toErrorMessage(e));
     } finally {
-      setIsRefreshing(false);
+      if (isCurrent(request)) setIsRefreshing(false);
     }
-  }, []);
+  }, [isCurrent, next]);
 
   const clean = useCallback(async (ids: CleanerItemId[]): Promise<CleanItemsResult> => {
     return window.electronAPI.cleanItems(ids);

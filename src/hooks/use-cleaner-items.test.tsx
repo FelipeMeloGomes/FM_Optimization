@@ -210,6 +210,38 @@ describe('useCleanerItems — atualização manual', () => {
     expect(result.current.error).toBe('sem permissão');
     expect(result.current.items[0].fileCount).toBe(3);
   });
+
+  it('ignora estatísticas de uma varredura superada por outra', async () => {
+    const old = deferred<CleanerItemStats[]>();
+    const latest = deferred<CleanerItemStats[]>();
+    let calls = 0;
+    installApi(() => {
+      calls += 1;
+      if (calls === 1) return Promise.resolve([item({ fileCount: 3 })]);
+      return calls === 2 ? old.promise : latest.promise;
+    });
+
+    const { result } = renderHook(() => useCleanerItems());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      void result.current.refresh();
+      void result.current.refresh();
+    });
+
+    await act(async () => {
+      old.resolve([item({ fileCount: 99 })]);
+      await old.promise;
+    });
+    expect(result.current.items[0].fileCount).toBe(3);
+
+    await act(async () => {
+      latest.resolve([item({ fileCount: 7 })]);
+      await latest.promise;
+    });
+    expect(result.current.items[0].fileCount).toBe(7);
+    expect(result.current.isRefreshing).toBe(false);
+  });
 });
 
 describe('useCleanerItems — limpeza', () => {

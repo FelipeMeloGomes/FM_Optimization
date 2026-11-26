@@ -14,6 +14,7 @@ import type {
   ElevatedLaunchResult,
 } from '../../electron/shared/ipc-types';
 import { showEnhancedToast } from '../components/EnhancedToast';
+import { useLatestRequest } from '../hooks/use-latest-request';
 import { cleanerName } from '../lib/cleaner-options';
 import { useSettingsContext } from './SettingsContext';
 
@@ -43,14 +44,20 @@ export function AutoCleanProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AutoCleanStatus | null>(null);
   const { settings, update } = useSettingsContext();
   const soundEnabled = settings.soundEnabled;
+  const { next, isCurrent } = useLatestRequest();
 
   const refresh = useCallback(async () => {
+    const request = next();
     try {
-      setStatus(await window.electronAPI.getAutoCleanStatus());
+      const status = await window.electronAPI.getAutoCleanStatus();
+      if (!isCurrent(request)) return;
+      setStatus(status);
     } catch (error) {
-      console.error('Falha ao ler estado da limpeza automática:', error);
+      if (isCurrent(request)) {
+        console.error('Falha ao ler estado da limpeza automática:', error);
+      }
     }
-  }, []);
+  }, [isCurrent, next]);
 
   useEffect(() => {
     void refresh();

@@ -5,6 +5,7 @@ import { useVirtualRows } from '../hooks/use-virtual-rows';
 import { cn } from '../lib/utils';
 import { ScriptBadge } from './ScriptBadge';
 import { Button } from './ui';
+import { VirtualSpacer } from './VirtualSpacer';
 
 const ROW_HEIGHT = 69;
 
@@ -45,9 +46,7 @@ export function VirtualizedScriptList({
       data-testid="tweaks-list"
       className="relative overflow-hidden rounded-xl border border-border bg-card"
     >
-      {paddingTop > 0 ? (
-        <div data-testid="virtual-spacer-top" style={{ height: paddingTop }} aria-hidden="true" />
-      ) : null}
+      {paddingTop > 0 ? <VirtualSpacer height={paddingTop} testId="virtual-spacer-top" /> : null}
 
       <ul ref={listRef} className="divide-y divide-border">
         {virtualItems.map((virtualRow) => {
@@ -126,11 +125,7 @@ export function VirtualizedScriptList({
       </ul>
 
       {paddingBottom > 0 ? (
-        <div
-          data-testid="virtual-spacer-bottom"
-          style={{ height: paddingBottom }}
-          aria-hidden="true"
-        />
+        <VirtualSpacer height={paddingBottom} testId="virtual-spacer-bottom" />
       ) : null}
     </div>
   );

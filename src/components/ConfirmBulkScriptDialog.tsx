@@ -1,4 +1,5 @@
 import type { ScriptEntry } from '../../electron/shared/ipc-types';
+import { plural } from '../utils/format';
 import { Button, Dialog, DialogContent, DialogTitle } from './ui';
 
 export interface ConfirmBulkScriptDialogProps {
@@ -18,7 +19,7 @@ export function ConfirmBulkScriptDialog({
   scripts,
   onConfirm,
 }: ConfirmBulkScriptDialogProps) {
-  const actionLabel = `Aplicar ${scripts.length} ${scripts.length === 1 ? 'tweak' : 'tweaks'}`;
+  const actionLabel = `Aplicar ${plural(scripts.length, 'tweak', 'tweaks')}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -26,7 +27,7 @@ export function ConfirmBulkScriptDialog({
         <div className="border-b border-border bg-gradient-to-br from-primary/10 to-transparent p-6">
           <DialogTitle className="text-base">Confirmar aplicação</DialogTitle>
           <p className="mt-1 text-xs text-muted-foreground">
-            {scripts.length === 1 ? '1 tweak selecionado' : `${scripts.length} tweaks selecionados`}
+            {plural(scripts.length, 'tweak selecionado', 'tweaks selecionados')}
           </p>
         </div>
 
@@ -40,7 +41,7 @@ export function ConfirmBulkScriptDialog({
           </ul>
 
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            {`Os ${scripts.length} ${scripts.length === 1 ? 'tweak' : 'tweaks'} abaixo serão aplicados em sequência.`}
+            {`Os ${plural(scripts.length, 'tweak', 'tweaks')} abaixo serão aplicados em sequência.`}
           </p>
 
           <p className="text-[11px] leading-relaxed text-muted-foreground">

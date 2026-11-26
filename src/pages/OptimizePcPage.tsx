@@ -6,7 +6,6 @@ import {
   Lock,
   Play,
   RotateCcw,
-  ShieldCheck,
   Square,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -23,6 +22,7 @@ import BlurText from '../components/react-bits/BlurText';
 import GlareHover from '../components/react-bits/GlareHover';
 import { RISK_STYLES } from '../components/ScriptCard';
 import {
+  AdminNotice,
   AnimatedNumber,
   Badge,
   Button,
@@ -331,23 +331,18 @@ export default function OptimizePcPage() {
           </section>
 
           {isAdmin === false && pending.length > 0 && (
-            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3">
-              <Lock className="size-4 shrink-0 text-warning" aria-hidden="true" />
-              <p className="flex-1 text-xs text-warning">
-                Aplicar ajustes precisa de administrador. O resultado continua visível para
-                consulta.
-              </p>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => void relaunchAsAdmin()}
-                disabled={elevating || applying}
-                className="gap-1.5"
-              >
-                <ShieldCheck className="size-3.5" aria-hidden="true" />
-                Reiniciar como admin
-              </Button>
-            </div>
+            <AdminNotice
+              compact
+              icon={<Lock className="size-4 shrink-0 text-warning" aria-hidden="true" />}
+              message={
+                <p className="flex-1 text-xs text-warning">
+                  Aplicar ajustes precisa de administrador. O resultado continua visível para
+                  consulta.
+                </p>
+              }
+              relaunching={elevating || applying}
+              onRelaunch={() => void relaunchAsAdmin()}
+            />
           )}
 
           <section aria-label="Ajustes pendentes" className="space-y-3">

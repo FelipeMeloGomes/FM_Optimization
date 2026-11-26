@@ -1,5 +1,6 @@
 import { PackageX } from 'lucide-react';
 import type { AppxPackageInfo } from '../../electron/shared/ipc-types';
+import { plural } from '../utils/format';
 import { Button, Dialog, DialogContent, DialogTitle } from './ui';
 
 interface ConfirmRemoveAppsDialogProps {
@@ -25,7 +26,7 @@ export function ConfirmRemoveAppsDialog({
         <div className="border-b border-border bg-gradient-to-br from-destructive/10 to-transparent p-6">
           <DialogTitle className="text-base">Remover apps selecionados</DialogTitle>
           <p className="mt-1 text-xs text-muted-foreground">
-            {apps.length === 1 ? '1 app selecionado' : `${apps.length} apps selecionados`}
+            {plural(apps.length, 'app selecionado', 'apps selecionados')}
           </p>
         </div>
 

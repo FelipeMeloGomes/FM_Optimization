@@ -2,7 +2,9 @@ import { useMemo } from 'react';
 import type { DisplayMode, DisplayMonitor } from '../../../electron/shared/display-settings';
 import { useDisplaySettings } from '../../hooks/use-display-settings';
 import { PageSkeleton } from '../PageSkeleton';
-import { AnimatedNumber, Button, ErrorPanel, SettingsPreviewLayout } from '../ui';
+import { SettingsApplyFooter } from '../settings/SettingsApplyFooter';
+import { SettingsPanelShell } from '../settings/SettingsPanelShell';
+import { AnimatedNumber, ErrorPanel, SettingsPreviewLayout } from '../ui';
 
 function resolutionKey(mode: DisplayMode): string {
   return `${mode.width}x${mode.height}`;
@@ -85,29 +87,14 @@ function MonitorCard({
           </div>
         }
         footer={
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" disabled={!isDirty} onClick={onApply}>
-                Aplicar
-              </Button>
-              <Button size="sm" variant="ghost" disabled={!isDirty} onClick={onDiscard}>
-                Cancelar alterações
-              </Button>
-            </div>
-            {applied && <p className="mt-2 text-xs text-primary">Ajustes aplicados</p>}
-            {error && (
-              <ErrorPanel
-                variant="inline"
-                title="Não foi possível aplicar"
-                message={error}
-                messageSeparator=": "
-                className="mt-2 border-0 bg-transparent p-0"
-                titleClassName="text-xs text-destructive"
-                messageClassName="text-xs text-destructive"
-                icon={false}
-              />
-            )}
-          </>
+          <SettingsApplyFooter
+            isDirty={isDirty}
+            applied={applied}
+            applyError={error}
+            applyErrorTitle="Não foi possível aplicar"
+            onApply={onApply}
+            onDiscard={onDiscard}
+          />
         }
       >
         <div className="flex flex-col gap-4">
@@ -184,14 +171,11 @@ export function DisplaySettingsPanel() {
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-foreground">Ajustes do Windows</h3>
-        <span className="shrink-0 rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">
-          Por monitor
-        </span>
-      </div>
-
+    <SettingsPanelShell
+      badge="Por monitor"
+      className="gap-4"
+      note="A mudança pode desligar a tela por alguns segundos"
+    >
       <div className="flex flex-col gap-4">
         {monitors.map((monitor) => {
           const draft = drafts[monitor.deviceName];
@@ -211,10 +195,6 @@ export function DisplaySettingsPanel() {
           );
         })}
       </div>
-
-      <p className="text-[10px] text-muted-foreground">
-        A mudança pode desligar a tela por alguns segundos
-      </p>
-    </section>
+    </SettingsPanelShell>
   );
 }

@@ -6,6 +6,7 @@ import { useSystemContext } from '../contexts/SystemContext';
 import { getScriptRoute } from '../lib/category-routes';
 import { getRamScriptId } from '../lib/ram-script';
 import { cn } from '../lib/utils';
+import { plural } from '../utils/format';
 import { ScriptBadge } from './ScriptBadge';
 
 interface CommandPaletteProps {
@@ -131,7 +132,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           </kbd>
         </div>
         <p aria-live="polite" className="sr-only">
-          {filtered.length} resultado{filtered.length === 1 ? '' : 's'}
+          {plural(filtered.length, 'resultado', 'resultados')}
         </p>
         <div
           id="command-palette-results"

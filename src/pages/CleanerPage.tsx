@@ -21,7 +21,8 @@ import { showEnhancedToast } from '../components/EnhancedToast';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
-import { Button, ErrorPanel } from '../components/ui';
+import { AdminNotice, Button, ErrorPanel } from '../components/ui';
+import { VirtualSpacer } from '../components/VirtualSpacer';
 import { useAutoCleanContext } from '../contexts/AutoCleanContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { useCleanerItems } from '../hooks/use-cleaner-items';
@@ -419,21 +420,16 @@ export default function CleanerPage() {
       )}
 
       {!isAdmin && items.some((item) => item.requiresAdmin) && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3">
-          <Lock className="size-4 shrink-0 text-warning" aria-hidden="true" />
-          <p className="flex-1 text-xs text-warning">
-            Itens com cadeado exigem administrador para serem limpos.
-          </p>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => void relaunchAsAdmin()}
-            className="gap-1.5"
-          >
-            <ShieldCheck className="size-3.5" aria-hidden="true" />
-            Reiniciar como admin
-          </Button>
-        </div>
+        <AdminNotice
+          compact
+          icon={<Lock className="size-4 shrink-0 text-warning" aria-hidden="true" />}
+          message={
+            <p className="flex-1 text-xs text-warning">
+              Itens com cadeado exigem administrador para serem limpos.
+            </p>
+          }
+          onRelaunch={() => void relaunchAsAdmin()}
+        />
       )}
 
       <section aria-label="Itens de limpeza" className="space-y-3">
@@ -487,13 +483,7 @@ export default function CleanerPage() {
           data-testid="cleaner-list"
           className="relative overflow-hidden rounded-xl border border-border bg-card"
         >
-          {paddingTop > 0 && (
-            <div
-              data-testid="virtual-spacer-top"
-              style={{ height: paddingTop }}
-              aria-hidden="true"
-            />
-          )}
+          {paddingTop > 0 && <VirtualSpacer height={paddingTop} testId="virtual-spacer-top" />}
           <ul ref={listRef} className="divide-y divide-border">
             {virtualItems.map((virtualRow) => {
               const item = items[virtualRow.index];
@@ -592,11 +582,7 @@ export default function CleanerPage() {
             })}
           </ul>
           {paddingBottom > 0 && (
-            <div
-              data-testid="virtual-spacer-bottom"
-              style={{ height: paddingBottom }}
-              aria-hidden="true"
-            />
+            <VirtualSpacer height={paddingBottom} testId="virtual-spacer-bottom" />
           )}
         </div>
       </section>

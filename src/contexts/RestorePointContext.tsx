@@ -1,5 +1,6 @@
 import { createContext, type ReactNode, useCallback, useContext, useRef, useState } from 'react';
 import type { AsyncState, RestorePointEntry } from '../../electron/shared/ipc-types';
+import { useLatestRequest } from '../hooks/use-latest-request';
 
 interface RestorePointContextValue {
   state: AsyncState<RestorePointEntry[]>;
@@ -29,26 +30,30 @@ export function RestorePointProvider({ children }: { children: ReactNode }) {
   const [adminRequired, setAdminRequired] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
   const fetchRef = useRef(false);
+  const { next, isCurrent } = useLatestRequest();
 
   const refresh = useCallback(() => {
     if (fetchRef.current) return;
     fetchRef.current = true;
+    const request = next();
     setHasFetched(true);
     setState({ status: 'loading' });
     Promise.all([window.electronAPI.getRestorePoints(), window.electronAPI.isAdmin()])
       .then(([data, admin]) => {
+        if (!isCurrent(request)) return;
         setState({ status: 'success', data });
         setIsAdmin(admin);
       })
       .catch((e) => {
+        if (!isCurrent(request)) return;
         const admin = isAdminRequiredError(e);
         setAdminRequired(admin);
         setState({ status: 'error', error: typeof e === 'string' ? e : (e as Error).message });
       })
       .finally(() => {
-        fetchRef.current = false;
+        if (isCurrent(request)) fetchRef.current = false;
       });
-  }, []);
+  }, [isCurrent, next]);
 
   const create = useCallback(
     async (name: string) => {
