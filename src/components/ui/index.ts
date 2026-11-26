@@ -28,6 +28,7 @@ export { ErrorPanel } from './ErrorPanel';
 export { Input } from './input';
 export { Label } from './label';
 export { Progress } from './progress';
+export { SearchInput, type SearchInputProps } from './SearchInput';
 export { SettingsPreviewLayout } from './SettingsPreviewLayout';
 export { Skeleton } from './skeleton';
 export { Switch } from './switch';

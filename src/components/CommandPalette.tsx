@@ -1,4 +1,4 @@
-import { Search, Terminal } from 'lucide-react';
+import { Terminal } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScriptContext } from '../contexts/ScriptContext';
@@ -8,6 +8,7 @@ import { getRamScriptId } from '../lib/ram-script';
 import { cn } from '../lib/utils';
 import { plural } from '../utils/format';
 import { ScriptBadge } from './ScriptBadge';
+import { SearchInput } from './ui/SearchInput';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -111,12 +112,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         className="relative z-10 w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl"
       >
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-          <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          <input
-            ref={inputRef}
+          <SearchInput
+            ariaLabel="Buscar tweaks"
+            bare
             type="text"
+            inputRef={inputRef}
+            wrapperClassName="flex-1"
             role="combobox"
-            aria-label="Buscar tweaks"
             aria-expanded="true"
             aria-controls="command-palette-results"
             aria-activedescendant={
@@ -125,7 +127,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             placeholder="Buscar tweaks…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           />
           <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
             ESC

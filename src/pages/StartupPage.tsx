@@ -6,7 +6,6 @@ import {
   Power,
   RefreshCw,
   Rocket,
-  Search,
   Server,
   ShieldCheck,
   Square,
@@ -33,7 +32,7 @@ import {
   DialogTitle,
   EmptyState,
   ErrorPanel,
-  Input,
+  SearchInput,
   Switch,
   Table,
   TableBody,
@@ -278,16 +277,14 @@ export default function StartupPage() {
           }}
         />
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <div className="relative w-full sm:w-56">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar…"
-              className="h-9 w-full pl-8"
-              aria-label="Buscar na lista"
-            />
-          </div>
+          <SearchInput
+            ariaLabel="Buscar na lista"
+            compact
+            wrapperClassName="w-full sm:w-56"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar…"
+          />
           <Button
             variant={onlyEnabled ? 'default' : 'outline'}
             size="sm"

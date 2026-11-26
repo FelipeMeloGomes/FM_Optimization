@@ -1,4 +1,4 @@
-import { Loader2, Lock, Package, PackageX, Search, Sparkles } from 'lucide-react';
+import { Loader2, Lock, Package, PackageX, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppxPackageInfo } from '../../electron/shared/ipc-types';
 import { ConfirmRemoveAppsDialog } from '../components/ConfirmRemoveAppsDialog';
@@ -6,7 +6,7 @@ import { showEnhancedToast } from '../components/EnhancedToast';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
-import { AdminNotice, Button, ErrorPanel, Input, Tabs } from '../components/ui';
+import { AdminNotice, Button, ErrorPanel, SearchInput, Tabs } from '../components/ui';
 import { VirtualSpacer } from '../components/VirtualSpacer';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { useAdminStatus } from '../hooks/use-admin-status';
@@ -260,20 +260,13 @@ export default function DebloatPage() {
 
       <section aria-label="Apps do Windows" className="space-y-3">
         <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-xs">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <Input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              aria-label="Buscar apps"
-              placeholder="Buscar por nome ou pacote…"
-              className="pl-9"
-            />
-          </div>
+          <SearchInput
+            ariaLabel="Buscar apps"
+            wrapperClassName="w-full sm:max-w-xs"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar por nome ou pacote…"
+          />
           <Tabs
             ariaLabel="Categorias de aplicativos"
             items={tabs}

@@ -4,7 +4,6 @@ import {
   ChevronDown,
   History,
   RotateCcw,
-  Search,
   ShieldCheck,
   Sparkles,
   Trash2,
@@ -26,8 +25,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Input,
   Progress,
+  SearchInput,
 } from '../../components/ui';
 import { useEmulatorContext } from '../../contexts/EmulatorContext';
 import { useSettingsContext } from '../../contexts/SettingsContext';
@@ -348,15 +347,12 @@ export function AppListView({ emulatorName, instance, deviceSerial, onBack }: Ap
       </div>
 
       {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar apps…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
-      </div>
+      <SearchInput
+        ariaLabel="Buscar apps"
+        placeholder="Buscar apps…"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
 
       {/* Filter + Presets + Select All */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
