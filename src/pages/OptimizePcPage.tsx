@@ -24,6 +24,7 @@ import { RISK_STYLES } from '../components/ScriptCard';
 import {
   AdminNotice,
   AnimatedNumber,
+  AsyncButton,
   Badge,
   Button,
   Card,
@@ -162,19 +163,17 @@ export default function OptimizePcPage() {
         <p className="text-xs text-muted-foreground">
           A análise consulta registro, rede e energia. Ela só começa quando você clicar no botão.
         </p>
-        <Button onClick={() => void analyze()} disabled={!canAnalyze} className="gap-1.5">
-          {analyzing ? (
-            <>
-              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              Analisando…
-            </>
-          ) : (
-            <>
-              <Play className="size-4" aria-hidden="true" />
-              {report ? 'Analisar novamente' : 'Analisar PC'}
-            </>
-          )}
-        </Button>
+        <AsyncButton
+          onClick={() => void analyze()}
+          disabled={!canAnalyze}
+          loading={analyzing}
+          loadingLabel="Analisando…"
+          busyIcon={<Loader2 className="size-4 animate-spin" aria-hidden="true" />}
+          className="gap-1.5"
+        >
+          <Play className="size-4" aria-hidden="true" />
+          {report ? 'Analisar novamente' : 'Analisar PC'}
+        </AsyncButton>
       </div>
 
       {devMode && (

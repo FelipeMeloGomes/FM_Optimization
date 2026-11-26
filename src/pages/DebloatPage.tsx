@@ -1,4 +1,4 @@
-import { Loader2, Lock, Package, PackageX, Sparkles } from 'lucide-react';
+import { Lock, Package, PackageX, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppxPackageInfo } from '../../electron/shared/ipc-types';
 import { ConfirmRemoveAppsDialog } from '../components/ConfirmRemoveAppsDialog';
@@ -6,7 +6,7 @@ import { showEnhancedToast } from '../components/EnhancedToast';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
-import { AdminNotice, Button, ErrorPanel, SearchInput, Tabs } from '../components/ui';
+import { AdminNotice, AsyncButton, Button, ErrorPanel, SearchInput, Tabs } from '../components/ui';
 import { VirtualSpacer } from '../components/VirtualSpacer';
 import { useSettingsContext } from '../contexts/SettingsContext';
 import { useAdminStatus } from '../hooks/use-admin-status';
@@ -287,24 +287,17 @@ export default function DebloatPage() {
                 : plural(selected.size, 'selecionado', 'selecionados')}
             </span>
           </div>
-          <Button
+          <AsyncButton
             size="sm"
             onClick={requestRemove}
-            disabled={selectedApps.length === 0 || removing || !isAdmin}
+            disabled={selectedApps.length === 0 || !isAdmin}
+            loading={removing}
+            loadingLabel="Removendo…"
             className="gap-1.5"
           >
-            {removing ? (
-              <>
-                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-                Removendo…
-              </>
-            ) : (
-              <>
-                <PackageX className="size-3.5" aria-hidden="true" />
-                Remover selecionados
-              </>
-            )}
-          </Button>
+            <PackageX className="size-3.5" aria-hidden="true" />
+            Remover selecionados
+          </AsyncButton>
         </div>
 
         {visible.length === 0 ? (

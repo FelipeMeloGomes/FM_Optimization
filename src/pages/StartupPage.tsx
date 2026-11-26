@@ -22,6 +22,7 @@ import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
 import {
   AdminNotice,
+  AsyncButton,
   Badge,
   Button,
   Dialog,
@@ -625,28 +626,24 @@ export default function StartupPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
+                        <AsyncButton
                           variant="ghost"
                           size="sm"
                           disabled={
-                            service.protected ||
-                            !data.isAdmin ||
-                            service.state !== 'Running' ||
-                            busy[service.id] === true
+                            service.protected || !data.isAdmin || service.state !== 'Running'
+                          }
+                          loading={busy[service.id] === true}
+                          loadingLabel="Carregando…"
+                          busyIcon={
+                            <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
                           }
                           onClick={() => setPending({ type: 'stop-service', entry: service })}
                           className="gap-1.5"
                           title="Parar agora"
                         >
-                          {busy[service.id] ? (
-                            <Loader2 className="size-3.5 animate-spin" />
-                          ) : (
-                            <Square className="size-3.5 shrink-0" />
-                          )}
-                          <span className="hidden sm:inline">
-                            {busy[service.id] ? 'Carregando…' : 'Parar'}
-                          </span>
-                        </Button>
+                          <Square className="size-3.5 shrink-0" />
+                          <span className="hidden sm:inline">Parar</span>
+                        </AsyncButton>
                       </TableCell>
                     </TableRow>
                   );
@@ -680,26 +677,23 @@ export default function StartupPage() {
             <Button variant="outline" size="sm" onClick={() => setPending(null)}>
               Cancelar
             </Button>
-            <Button
+            <AsyncButton
               variant={pending?.type === 'stop-service' ? 'destructive' : 'default'}
               size="sm"
               onClick={() => void confirmPending()}
               disabled={pending !== null && busy[pending.entry.id] === true}
+              loading={pending !== null && busy[pending.entry.id] === true}
+              loadingLabel="Carregando…"
+              busyIcon={<Loader2 className="size-3.5 animate-spin" aria-hidden="true" />}
               className="gap-1.5"
             >
-              {pending !== null && busy[pending.entry.id] ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : pending?.type === 'stop-service' ? (
+              {pending?.type === 'stop-service' ? (
                 <Square className="size-3.5" />
               ) : (
                 <Power className="size-3.5" />
               )}
-              {pending !== null && busy[pending.entry.id]
-                ? 'Carregando…'
-                : pending?.type === 'stop-service'
-                  ? 'Parar agora'
-                  : 'Desativar'}
-            </Button>
+              {pending?.type === 'stop-service' ? 'Parar agora' : 'Desativar'}
+            </AsyncButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,5 +1,6 @@
 export { AdminNotice, type AdminNoticeProps } from './AdminNotice';
 export { AnimatedNumber } from './AnimatedNumber';
+export { AsyncButton, type AsyncButtonProps } from './AsyncButton';
 export { Badge, badgeVariants } from './badge';
 export { Button, buttonVariants } from './button';
 export {

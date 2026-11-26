@@ -1,5 +1,5 @@
-import { Loader2, Zap } from 'lucide-react';
-import { Badge, Button } from './ui';
+import { Zap } from 'lucide-react';
+import { AsyncButton, Badge, Button } from './ui';
 
 export interface BulkSelectionToolbarProps<T> {
   availableIds: string[];
@@ -104,24 +104,17 @@ export function BulkSelectionToolbar<T>({
             </Button>
           </div>
         ) : null}
-        <Button
+        <AsyncButton
           size="sm"
           onClick={() => onApply(selectedItems)}
-          disabled={selectedCount === 0 || applying}
+          disabled={selectedCount === 0}
+          loading={applying}
+          loadingLabel={applyingLabel}
           className="gap-1.5"
         >
-          {applying ? (
-            <>
-              <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-              {applyingLabel}
-            </>
-          ) : (
-            <>
-              <Zap className="size-3.5" aria-hidden="true" />
-              {applyLabel}
-            </>
-          )}
-        </Button>
+          <Zap className="size-3.5" aria-hidden="true" />
+          {applyLabel}
+        </AsyncButton>
       </div>
     </div>
   );

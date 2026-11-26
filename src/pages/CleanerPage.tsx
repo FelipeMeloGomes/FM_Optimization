@@ -21,7 +21,7 @@ import { showEnhancedToast } from '../components/EnhancedToast';
 import { HeroBanner } from '../components/hero/HeroBanner';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { PageRefreshBar } from '../components/RefreshButton';
-import { AdminNotice, Button, ErrorPanel } from '../components/ui';
+import { AdminNotice, AsyncButton, Button, ErrorPanel } from '../components/ui';
 import { VirtualSpacer } from '../components/VirtualSpacer';
 import { useAutoCleanContext } from '../contexts/AutoCleanContext';
 import { useSettingsContext } from '../contexts/SettingsContext';
@@ -458,24 +458,17 @@ export default function CleanerPage() {
             <span className="text-xs text-muted-foreground tabular-nums">
               {formatBytes(selectedBytes)} · {selectedFiles.toLocaleString('pt-BR')} arquivos
             </span>
-            <Button
+            <AsyncButton
               size="sm"
               onClick={requestClean}
-              disabled={selectedItems.length === 0 || cleaning}
+              disabled={selectedItems.length === 0}
+              loading={cleaning}
+              loadingLabel="Limpando…"
               className="gap-1.5"
             >
-              {cleaning ? (
-                <>
-                  <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-                  Limpando…
-                </>
-              ) : (
-                <>
-                  <Trash2 className="size-3.5" aria-hidden="true" />
-                  Limpar selecionados
-                </>
-              )}
-            </Button>
+              <Trash2 className="size-3.5" aria-hidden="true" />
+              Limpar selecionados
+            </AsyncButton>
           </div>
         </div>
 
