@@ -188,6 +188,7 @@ describe('HistoryProvider', () => {
     const harness = installApi();
     renderProvider({ powerSaveMode: false });
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+    await waitFor(() => expect(harness.hasListener()).toBe(true));
 
     harness.api.getExecutionHistory.mockResolvedValue(HISTORY_NOVO);
     act(() => harness.emitScriptEnded({ id: 'h2', code: 0 }));
@@ -200,8 +201,8 @@ describe('HistoryProvider', () => {
     const harness = installApi();
     const { unmount } = renderProvider({ powerSaveMode: false });
     await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('success'));
+    await waitFor(() => expect(harness.hasListener()).toBe(true));
 
-    expect(harness.hasListener()).toBe(true);
     unmount();
 
     expect(harness.offScriptEnded).toHaveBeenCalledTimes(1);
