@@ -116,13 +116,11 @@ try {
   } catch { }
 } catch { }
 
+$payloadBase64 = & (Join-Path $PSScriptRoot "release-payload.ps1") -Tag $tag -Body $body
+$payloadBytes = [Convert]::FromBase64String($payloadBase64)
 $release = Invoke-RestMethod -Uri $api -Method Post -Headers @{
   Authorization = "Bearer $env:GITHUB_TOKEN"
-} -Body (@{
-  tag_name = $tag
-  name = $tag
-  body = $body
-} | ConvertTo-Json) -ContentType "application/json"
+} -Body $payloadBytes -ContentType "application/json"
 
 $uploadUrl = ($release.upload_url -replace '\{.*\}', '')
 
